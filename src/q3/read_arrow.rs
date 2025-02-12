@@ -1,4 +1,4 @@
-use super::structs::{Customer, Lineitem, Orders};
+use super::types::{Customer, Lineitem, Orders};
 use crate::utils::date_to_numeric;
 use arrow::array::{Float64Builder, Int32Builder, StringBuilder};
 use csv::ReaderBuilder;
@@ -81,17 +81,9 @@ fn read_customers(path: &str) -> Result<Customer, Box<dyn Error>> {
     for i in 0..size {
         comment.push(comment_array.value(i).to_string());
     }
-    Ok(Customer {
-        size,
-        custkey,
-        name,
-        address,
-        nationkey,
-        phone,
-        acctbal,
-        mktsegment,
-        comment,
-    })
+    Ok((
+        custkey, name, address, nationkey, phone, acctbal, mktsegment, comment, size,
+    ))
 }
 
 pub fn read_orders(path: &str) -> Result<Orders, Box<dyn Error>> {
@@ -167,8 +159,7 @@ pub fn read_orders(path: &str) -> Result<Orders, Box<dyn Error>> {
     for i in 0..size {
         comment.push(comment_array.value(i).to_string());
     }
-    Ok(Orders {
-        size,
+    Ok((
         orderkey,
         custkey,
         orderstatus,
@@ -178,7 +169,8 @@ pub fn read_orders(path: &str) -> Result<Orders, Box<dyn Error>> {
         clerk,
         shippriority,
         comment,
-    })
+        size,
+    ))
 }
 
 pub fn read_lineitems(path: &str) -> Result<Lineitem, Box<dyn Error>> {
@@ -302,8 +294,7 @@ pub fn read_lineitems(path: &str) -> Result<Lineitem, Box<dyn Error>> {
     for i in 0..size {
         comment.push(comment_array.value(i).to_string());
     }
-    Ok(Lineitem {
-        size,
+    Ok((
         orderkey,
         partkey,
         suppkey,
@@ -320,5 +311,6 @@ pub fn read_lineitems(path: &str) -> Result<Lineitem, Box<dyn Error>> {
         shipinstruct,
         shipmode,
         comment,
-    })
+        size,
+    ))
 }

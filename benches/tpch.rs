@@ -12,7 +12,7 @@ const PARALLELISM: [bool; 2] = [false, true];
 
 fn benchmark_read_q3(_c: &mut Criterion) {
     let mut c = Criterion::default().sample_size(CRITERION_MIN_SAMPLE_SIZE);
-    const SF: &str = "1";
+    const SF: &str = "10";
     for variant in ["csv", "polars", "arrow"] {
         let path = |table| format!("datasets/tpch_datasets/SF_{SF}/{table}.tbl");
         let read = match variant {

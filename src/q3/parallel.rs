@@ -1,5 +1,5 @@
 use super::read::read_q3;
-use super::structs::{Customer, Lineitem, Orders};
+use super::types::{Customer, Lineitem, Orders};
 use hashbrown::HashMap;
 use ordered_float::OrderedFloat;
 use rayon::prelude::*;
@@ -17,39 +17,46 @@ pub fn q3_rayon() -> Result<TypeQ3, Box<dyn Error>> {
 }
 
 pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ3 {
-    let c_h: HashMap<_, _> = (0..customer.size)
+    let c_h: HashMap<_, _> = (0../* size */ customer.8)
         .into_par_iter()
         .filter_map(|i| {
-            (customer.mktsegment[i] == "BUILDING")
-                .then(|| (customer.custkey[i], customer.custkey[i]))
+            (/* mktsegment */customer.6[i] == "BUILDING").then(|| {
+                (
+                    /* custkey */ customer.0[i],
+                    /* custkey */ customer.0[i],
+                )
+            })
         })
         .collect();
 
-    let o_h: HashMap<_, _> = (0..orders.size)
+    let o_h: HashMap<_, _> = (0../* size */ orders.9)
         .into_par_iter()
-        .filter(|&i| c_h.contains_key(&orders.custkey[i]))
-        .filter(|&i| orders.orderdate[i] < 19950315)
+        .filter(|&i| c_h.contains_key(&/* custkey */ orders.1[i]))
+        .filter(|&i| /* orderdate */ orders.4[i] < 19950315)
         .map(|i| {
             (
-                orders.orderkey[i],
-                (orders.orderdate[i], orders.shippriority[i]),
+                /* orderkey */ orders.0[i],
+                (
+                    /* orderdate */ orders.4[i],
+                    /* shippriority */ orders.7[i],
+                ),
             )
         })
         .collect();
 
-    let l_h = (0..lineitem.size)
+    let l_h = (0../* size */ lineitem.16)
         .into_par_iter()
-        .filter(|&i| lineitem.shipdate[i] > 19950315)
-        .filter(|&i| o_h.contains_key(&lineitem.orderkey[i]))
+        .filter(|&i| /* shipdate */ lineitem.10[i] > 19950315)
+        .filter(|&i| o_h.contains_key(&/* orderkey */ lineitem.0[i]))
         .fold(
             || HashMap::new(),
             |mut acc, i| {
                 *acc.entry((
-                    lineitem.orderkey[i],
-                    o_h[&lineitem.orderkey[i]].0,
-                    o_h[&lineitem.orderkey[i]].1,
+                    /* orderkey */ lineitem.0[i],
+                    o_h[&/* orderkey */ lineitem.0[i]].0,
+                    o_h[&/* orderkey */ lineitem.0[i]].1,
                 ))
-                .or_default() += lineitem.extendedprice[i] * (1.0 - lineitem.discount[i]);
+                .or_default() += /* extendedprice */ lineitem.5[i] * (1.0 - /* discount */ lineitem.6[i]);
                 acc
             },
         )

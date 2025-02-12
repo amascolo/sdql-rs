@@ -1,4 +1,4 @@
-use super::structs::{Customer, Lineitem, Orders};
+use super::types::{Customer, Lineitem, Orders};
 use crate::utils::date_to_numeric;
 use polars::prelude::*;
 use std::error::Error;
@@ -86,8 +86,7 @@ fn read_customers_polars(path: &str) -> Result<Customer, Box<dyn Error>> {
         .map(|x| x.unwrap_or("").to_string())
         .collect();
 
-    Ok(Customer {
-        size: df.height(),
+    Ok((
         custkey,
         name,
         address,
@@ -96,7 +95,8 @@ fn read_customers_polars(path: &str) -> Result<Customer, Box<dyn Error>> {
         acctbal,
         mktsegment,
         comment,
-    })
+        df.height(),
+    ))
 }
 
 fn read_orders_polars(path: &str) -> Result<Orders, Box<dyn Error>> {
@@ -177,9 +177,7 @@ fn read_orders_polars(path: &str) -> Result<Orders, Box<dyn Error>> {
         .map(|x| x.unwrap_or("").to_string())
         .collect();
 
-    // Return the populated Orders struct
-    Ok(Orders {
-        size: df.height(),
+    Ok((
         orderkey,
         custkey,
         orderstatus,
@@ -189,7 +187,8 @@ fn read_orders_polars(path: &str) -> Result<Orders, Box<dyn Error>> {
         clerk,
         shippriority,
         comment,
-    })
+        df.height(),
+    ))
 }
 
 fn read_lineitems_polars(path: &str) -> Result<Lineitem, Box<dyn Error>> {
@@ -323,8 +322,7 @@ fn read_lineitems_polars(path: &str) -> Result<Lineitem, Box<dyn Error>> {
         .map(|x| x.unwrap_or("").to_string())
         .collect();
 
-    Ok(Lineitem {
-        size: df.height(),
+    Ok((
         orderkey,
         partkey,
         suppkey,
@@ -341,5 +339,6 @@ fn read_lineitems_polars(path: &str) -> Result<Lineitem, Box<dyn Error>> {
         shipinstruct,
         shipmode,
         comment,
-    })
+        df.height(),
+    ))
 }

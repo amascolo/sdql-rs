@@ -1,4 +1,4 @@
-use super::structs::{Customer, Lineitem, Orders};
+use super::types::{Customer, Lineitem, Orders};
 use crate::utils::date_to_numeric;
 use csv::ReaderBuilder;
 use std::error::Error;
@@ -28,6 +28,7 @@ fn read_customers(path: &str) -> Result<Customer, Box<dyn Error>> {
     let mut acctbal = Vec::new();
     let mut mktsegment = Vec::new();
     let mut comment = Vec::new();
+    let mut size = 0;
 
     for result in reader.records() {
         let record = result?;
@@ -39,18 +40,11 @@ fn read_customers(path: &str) -> Result<Customer, Box<dyn Error>> {
         acctbal.push(record.get(5).unwrap().parse()?);
         mktsegment.push(record.get(6).unwrap().to_string());
         comment.push(record.get(7).unwrap().to_string());
+        size += 1;
     }
-    Ok(Customer {
-        size: custkey.len(),
-        custkey,
-        name,
-        address,
-        nationkey,
-        phone,
-        acctbal,
-        mktsegment,
-        comment,
-    })
+    Ok((
+        custkey, name, address, nationkey, phone, acctbal, mktsegment, comment, size,
+    ))
 }
 
 fn read_orders(path: &str) -> Result<Orders, Box<dyn Error>> {
@@ -67,6 +61,7 @@ fn read_orders(path: &str) -> Result<Orders, Box<dyn Error>> {
     let mut clerk = Vec::new();
     let mut shippriority = Vec::new();
     let mut comment = Vec::new();
+    let mut size = 0;
 
     for result in reader.records() {
         let record = result?;
@@ -79,9 +74,9 @@ fn read_orders(path: &str) -> Result<Orders, Box<dyn Error>> {
         clerk.push(record.get(6).unwrap().to_string());
         shippriority.push(record.get(7).unwrap().parse()?);
         comment.push(record.get(8).unwrap().to_string());
+        size += 1;
     }
-    Ok(Orders {
-        size: orderkey.len(),
+    Ok((
         orderkey,
         custkey,
         orderstatus,
@@ -91,7 +86,8 @@ fn read_orders(path: &str) -> Result<Orders, Box<dyn Error>> {
         clerk,
         shippriority,
         comment,
-    })
+        size,
+    ))
 }
 
 fn read_lineitems(path: &str) -> Result<Lineitem, Box<dyn Error>> {
@@ -115,6 +111,7 @@ fn read_lineitems(path: &str) -> Result<Lineitem, Box<dyn Error>> {
     let mut shipinstruct = Vec::new();
     let mut shipmode = Vec::new();
     let mut comment = Vec::new();
+    let mut size = 0;
 
     for result in reader.records() {
         let record = result?;
@@ -134,9 +131,9 @@ fn read_lineitems(path: &str) -> Result<Lineitem, Box<dyn Error>> {
         shipinstruct.push(record.get(13).unwrap().to_string());
         shipmode.push(record.get(14).unwrap().to_string());
         comment.push(record.get(15).unwrap().to_string());
+        size += 1;
     }
-    Ok(Lineitem {
-        size: orderkey.len(),
+    Ok((
         orderkey,
         partkey,
         suppkey,
@@ -153,5 +150,6 @@ fn read_lineitems(path: &str) -> Result<Lineitem, Box<dyn Error>> {
         shipinstruct,
         shipmode,
         comment,
-    })
+        size,
+    ))
 }
