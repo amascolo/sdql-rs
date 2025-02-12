@@ -2,8 +2,8 @@ use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criteri
 use itertools::iproduct;
 use sdql::q3::parallel::q3_query_rayon;
 use sdql::q3::read::read_q3;
-use sdql::q3::read_arrow::read_q3_arrow;
 use sdql::q3::read_polars::read_q3_polars;
+use sdql::q3::read_polars_unsafe::read_q3_polars as read_q3_polars_unsafe;
 use sdql::q3::sequential::q3_query;
 
 const CRITERION_MIN_SAMPLE_SIZE: usize = 10;
@@ -12,13 +12,13 @@ const PARALLELISM: [bool; 2] = [false, true];
 
 fn benchmark_read_q3(_c: &mut Criterion) {
     let mut c = Criterion::default().sample_size(CRITERION_MIN_SAMPLE_SIZE);
-    const SF: &str = "10";
-    for variant in ["csv", "polars", "arrow"] {
+    const SF: &str = "1";
+    for variant in ["csv", "polars", "polars_unsafe"] {
         let path = |table| format!("datasets/tpch_datasets/SF_{SF}/{table}.tbl");
         let read = match variant {
             "csv" => read_q3,
             "polars" => read_q3_polars,
-            "arrow" => read_q3_arrow,
+            "polars_unsafe" => read_q3_polars_unsafe,
             _ => unreachable!(),
         };
         let id = format!("q3_SF{SF}_{variant}");
