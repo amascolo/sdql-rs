@@ -1,4 +1,5 @@
-use super::read::{read_q3, Customer, Lineitem, Orders};
+use super::read::read_q3;
+use super::structs::{Customer, Lineitem, Orders};
 use hashbrown::HashMap;
 use ordered_float::OrderedFloat;
 use std::error::Error;
