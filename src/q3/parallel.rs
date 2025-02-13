@@ -19,13 +19,12 @@ pub fn q3_rayon() -> Result<TypeQ3, Box<dyn Error>> {
 pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ3 {
     let c_h: HashMap<_, _> = (0../* size */ customer.8)
         .into_par_iter()
-        .filter_map(|i| {
-            (/* mktsegment */customer.6[i] == "BUILDING").then(|| {
-                (
-                    /* custkey */ customer.0[i],
-                    /* custkey */ customer.0[i],
-                )
-            })
+        .filter(|&i| /* mktsegment */ customer.6[i] == "BUILDING")
+        .map(|i| {
+            (
+                /* custkey */ customer.0[i],
+                /* custkey */ customer.0[i],
+            )
         })
         .collect();
 
@@ -49,7 +48,7 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
         .filter(|&i| /* shipdate */ lineitem.10[i] > 19950315)
         .filter(|&i| o_h.contains_key(&/* orderkey */ lineitem.0[i]))
         .fold(
-            || HashMap::new(),
+            HashMap::new,
             |mut acc, i| {
                 *acc.entry((
                     /* orderkey */ lineitem.0[i],
@@ -61,7 +60,7 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
             },
         )
         .reduce(
-            || HashMap::new(),
+            HashMap::new,
             |mut acc, partial| {
                 for (key, value) in partial {
                     *acc.entry(key).or_default() += value;
