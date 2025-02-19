@@ -76,7 +76,7 @@ enum BinaryOp {
 enum Expr<'src> {
     Error,
     Value(Value<'src>),
-    List(Vec<Spanned<Self>>),
+    Record(Vec<Spanned<Self>>),
     Local(&'src str),
     Let(&'src str, Box<Spanned<Self>>, Box<Spanned<Self>>),
     Then(Box<Spanned<Self>>, Box<Spanned<Self>>),
@@ -103,13 +103,6 @@ where
 
             let ident = select! { Token::Ident(ident) => ident }.labelled("identifier");
 
-            // A list of expressions
-            let items = expr
-                .clone()
-                .separated_by(just(Token::Ctrl(',')))
-                .allow_trailing()
-                .collect::<Vec<_>>();
-
             // A let expression
             let let_ = just(Token::Let)
                 .ignore_then(ident)
@@ -120,16 +113,23 @@ where
                 .then(expr.clone())
                 .map(|((name, val), body)| Expr::Let(name, Box::new(val), Box::new(body)));
 
-            let list = items
+            // A list of expressions
+            let items = expr
                 .clone()
-                .map(Expr::List)
-                .delimited_by(just(Token::Ctrl('[')), just(Token::Ctrl(']')));
+                .separated_by(just(Token::Ctrl(',')))
+                .allow_trailing()
+                .collect::<Vec<_>>();
+
+            let record = items
+                .clone()
+                .map(Expr::Record)
+                .delimited_by(just(Token::Op("<")), just(Token::Op(">")));
 
             // 'Atoms' are expressions that contain no ambiguity
             let atom = val
                 .or(ident.map(Expr::Local))
                 .or(let_)
-                .or(list)
+                .or(record)
                 // In Nano Rust, `print` is just a keyword, just like Python 2, for simplicity
                 // .or(just(Token::Print)
                 //     .ignore_then(
@@ -647,6 +647,17 @@ mod tests {
                 Box::new((Expr::Local("y"), (8..9).into())),
                 Box::new((Expr::Local("z"), (13..14).into())),
             ),
+        )
+    }
+
+    #[test]
+    fn records() {
+        check_expr(
+            "<k, v>",
+            Expr::Record(vec![
+                (Expr::Local("k"), (1..2).into()),
+                (Expr::Local("v"), (4..5).into()),
+            ]),
         )
     }
 }
