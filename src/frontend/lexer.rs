@@ -53,9 +53,16 @@ pub(super) fn lexer<'src>()
         .then_ignore(just('"'))
         .map(Token::Str);
 
-    let op = one_of("+*-/!=")
+    let op = just("==")
+        .or(just("!="))
+        .or(just("!"))
+        .or(just("-"))
+        .or(just("="))
+        .or(just("+"))
+        .or(just("*"))
+        .or(just("/"))
         .repeated()
-        .at_least(1)
+        .exactly(1)
         .to_slice()
         .map(Token::Op);
 

@@ -2,7 +2,7 @@ mod lexer;
 
 use chumsky::{input::ValueInput, prelude::*};
 
-use lexer::{lexer, Span, Spanned, Token};
+use lexer::{Span, Spanned, Token};
 
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]
@@ -12,7 +12,6 @@ enum Value<'src> {
     Num(f64),
     Str(&'src str),
     List(Vec<Self>),
-    // Func(&'src str),
 }
 
 #[allow(dead_code)]
@@ -75,8 +74,9 @@ enum Expr<'src> {
     Local(&'src str),
     Let(&'src str, Box<Spanned<Self>>, Box<Spanned<Self>>),
     Then(Box<Spanned<Self>>, Box<Spanned<Self>>),
+    Not(Box<Spanned<Self>>),
+    Neg(Box<Spanned<Self>>),
     Binary(Box<Spanned<Self>>, BinaryOp, Box<Spanned<Self>>),
-    Call(Box<Spanned<Self>>, Spanned<Vec<Spanned<Self>>>),
     If(Box<Spanned<Self>>, Box<Spanned<Self>>, Box<Spanned<Self>>),
 }
 
@@ -158,22 +158,25 @@ where
                 )))
                 .boxed();
 
-            // Function calls have very high precedence so we prioritise them
-            let call = atom.foldl_with(
-                items
-                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')')))
-                    .map_with(|args, e| (args, e.span()))
-                    .repeated(),
-                |f, args, e| (Expr::Call(Box::new(f), args), e.span()),
-            );
+            let neg = just(Token::Op("-"))
+                .repeated()
+                .foldr(atom, |_op, rhs @ (_, span)| {
+                    (Expr::Neg(Box::new(rhs)), (span.start - 1..span.end).into())
+                });
+
+            let not = just(Token::Op("!"))
+                .repeated()
+                .foldr(neg, |_op, rhs @ (_, span)| {
+                    (Expr::Not(Box::new(rhs)), (span.start - 1..span.end).into())
+                });
 
             // Product ops (multiply and divide) have equal precedence
             let op = just(Token::Op("*"))
                 .to(BinaryOp::Mul)
                 .or(just(Token::Op("/")).to(BinaryOp::Div));
-            let product = call
+            let product = not
                 .clone()
-                .foldl_with(op.then(call).repeated(), |a, (op, b), e| {
+                .foldl_with(op.then(not).repeated(), |a, (op, b), e| {
                     (Expr::Binary(Box::new(a), op, Box::new(b)), e.span())
                 });
 
@@ -218,10 +221,10 @@ where
         let if_ = recursive(|if_| {
             just(Token::If)
                 .ignore_then(expr.clone())
-                .then(block.clone())
+                .then(expr.clone()) // TODO expr was block
                 .then(
                     just(Token::Else)
-                        .ignore_then(block.clone().or(if_))
+                        .ignore_then(expr.clone().or(if_)) // TODO expr was block
                         .or_not(),
                 )
                 .map_with(|((cond, a), b), e| {
@@ -317,8 +320,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use lexer::lexer;
 
-    fn check_expr(src: &str, exp: Expr) -> () {
+    fn check_expr(src: &str, exp: Expr) {
         let (tokens, _errs) = lexer().parse(src).into_output_errors();
 
         let tokens = tokens.unwrap();
@@ -347,8 +351,15 @@ mod tests {
     fn constants() {
         check_expr("true", Expr::Value(Value::Bool(true)));
         check_expr("false", Expr::Value(Value::Bool(false)));
+        check_expr(
+            "!true",
+            Expr::Not(Box::new((Expr::Value(Value::Bool(true)), (1..5).into()))),
+        );
         check_expr("52", Expr::Value(Value::Num(52f64)));
-        // check_expr("-52", Expr::Value(Value::Num(-52f64)));
+        check_expr(
+            "-52",
+            Expr::Neg(Box::new((Expr::Value(Value::Num(52.0)), (1..3).into()))),
+        );
         check_expr("52.1", Expr::Value(Value::Num(52.1f64)));
         check_expr("\"foo\"", Expr::Value(Value::Str("foo")));
     }
@@ -356,19 +367,32 @@ mod tests {
     // FIXME
     #[test]
     fn if_then_else() {
-        // it should "work for if then else" in {
-        //     sdql"if true then 0 else 1" should be(IfThenElse(Const(true), Const(0), Const(1)))
-        //     sdql"if (true) then (0) else (1)" should be(IfThenElse(Const(true), Const(0), Const(1)))
-        //     sdql"if (!true) then (0) else (1)" should be(IfThenElse(Not(Const(true)), Const(0), Const(1)))
-        // }
         check_expr(
             "if true then 0 else 1",
             Expr::If(
-                Box::new((Expr::Value(Value::Bool(true)), (0..0).into())),
-                Box::new((Expr::Value(Value::Num(0f64)), (0..0).into())),
-                Box::new((Expr::Value(Value::Num(1f64)), (0..0).into())),
+                Box::new((Expr::Value(Value::Bool(true)), (3..7).into())),
+                Box::new((Expr::Value(Value::Num(0f64)), (13..14).into())),
+                Box::new((Expr::Value(Value::Num(1f64)), (20..21).into())),
             ),
-        )
+        );
+
+        check_expr(
+            "if (true) then (0) else (1)",
+            Expr::If(
+                Box::new((Expr::Value(Value::Bool(true)), (4..8).into())),
+                Box::new((Expr::Value(Value::Num(0f64)), (16..17).into())),
+                Box::new((Expr::Value(Value::Num(1f64)), (25..26).into())),
+            ),
+        );
+
+        // check_expr(
+        //     "if (!true) then (0) else (1)",
+        //     Expr::If(
+        //         Box::new((Expr::Value(Value::Bool(true)), (5..9).into())),
+        //         Box::new((Expr::Value(Value::Num(0f64)), (17..18).into())),
+        //         Box::new((Expr::Value(Value::Num(1f64)), (26..27).into())),
+        //     ),
+        // );
     }
 
     #[test]
@@ -409,5 +433,141 @@ mod tests {
                 Box::new((Expr::Value(Value::Num(2.0)), (25..26).into())),
             ),
         );
+    }
+
+    #[test]
+    fn arithmetic() {
+        check_expr(
+            "2 * 3",
+            Expr::Binary(
+                Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
+                BinaryOp::Mul,
+                Box::new((Expr::Value(Value::Num(3f64)), (4..5).into())),
+            ),
+        );
+
+        check_expr(
+            "2 + 3",
+            Expr::Binary(
+                Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
+                BinaryOp::Add,
+                Box::new((Expr::Value(Value::Num(3f64)), (4..5).into())),
+            ),
+        );
+
+        check_expr(
+            "2 / 3",
+            Expr::Binary(
+                Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
+                BinaryOp::Div,
+                Box::new((Expr::Value(Value::Num(3f64)), (4..5).into())),
+            ),
+        );
+
+        check_expr(
+            "2 - 3",
+            Expr::Binary(
+                Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
+                BinaryOp::Sub,
+                Box::new((Expr::Value(Value::Num(3f64)), (4..5).into())),
+            ),
+        );
+
+        check_expr(
+            "2 + 1 * 3",
+            Expr::Binary(
+                Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
+                BinaryOp::Add,
+                Box::new((
+                    Expr::Binary(
+                        Box::new((Expr::Value(Value::Num(1f64)), (4..5).into())),
+                        BinaryOp::Mul,
+                        Box::new((Expr::Value(Value::Num(3f64)), (8..9).into())),
+                    ),
+                    (4..9).into(),
+                )),
+            ),
+        );
+
+        check_expr(
+            "2 * 1 + 3",
+            Expr::Binary(
+                Box::new((
+                    Expr::Binary(
+                        Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
+                        BinaryOp::Mul,
+                        Box::new((Expr::Value(Value::Num(1f64)), (4..5).into())),
+                    ),
+                    (0..5).into(),
+                )),
+                BinaryOp::Add,
+                Box::new((Expr::Value(Value::Num(3f64)), (8..9).into())),
+            ),
+        );
+
+        check_expr(
+            "(2 * 1) + 3",
+            Expr::Binary(
+                Box::new((
+                    Expr::Binary(
+                        Box::new((Expr::Value(Value::Num(2f64)), (1..2).into())),
+                        BinaryOp::Mul,
+                        Box::new((Expr::Value(Value::Num(1f64)), (5..6).into())),
+                    ),
+                    (1..6).into(),
+                )),
+                BinaryOp::Add,
+                Box::new((Expr::Value(Value::Num(3f64)), (10..11).into())),
+            ),
+        );
+
+        check_expr(
+            "-x + y",
+            Expr::Binary(
+                Box::new((
+                    Expr::Neg(Box::new((Expr::Local("x"), (1..2).into()))),
+                    (0..2).into(),
+                )),
+                BinaryOp::Add,
+                Box::new((Expr::Local("y"), (5..6).into())),
+            ),
+        );
+
+        check_expr(
+            "-x * y",
+            Expr::Binary(
+                Box::new((
+                    Expr::Neg(Box::new((Expr::Local("x"), (1..2).into()))),
+                    (0..2).into(),
+                )),
+                BinaryOp::Mul,
+                Box::new((Expr::Local("y"), (5..6).into())),
+            ),
+        );
+
+        check_expr(
+            "-(x + y)",
+            Expr::Neg(Box::new((
+                Expr::Binary(
+                    Box::new((Expr::Local("x"), (2..3).into())),
+                    BinaryOp::Add,
+                    Box::new((Expr::Local("y"), (6..7).into())),
+                ),
+                (2..7).into(),
+            ))),
+        );
+
+        // TODO
+        // sdql"2 < 3" should be(Cmp(Const(2.0), Const(3.0), "<"))
+        // sdql"2 < 3 * 1" should be(Cmp(Const(2.0), Mult(Const(3.0), Const(1.0)), "<"))
+        // sdql"2 < (3 * 1)" should be(Cmp(Const(2.0), Mult(Const(3.0), Const(1.0)), "<"))
+        // sdql"2 * 3" should be(Mult(Const(2.0), Const(3.0)))
+        // sdql"2 ^ 0" should be(Const(1))
+        // sdql"2 ^ 1" should be(Const(2))
+        // sdql"2 ^ 2" should be(Mult(Const(2), Const(2)))
+        // sdql"2 ^ 3" should be(Mult(Mult(Const(2), Const(2)), Const(2)))
+        // sdql"2 && 3" should be(And(Const(2.0), Const(3.0)))
+        // sdql"2 || 3" should be(Or(Const(2.0), Const(3.0)))
+        // sdql"!2" should be(Not(Const(2.0)))
     }
 }
