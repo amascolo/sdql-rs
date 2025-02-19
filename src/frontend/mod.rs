@@ -76,7 +76,7 @@ enum BinaryOp {
 enum Expr<'src> {
     Error,
     Value(Value<'src>),
-    Record(Vec<Spanned<Self>>),
+    Record(Vec<(Spanned<Self>, Spanned<Self>)>),
     Local(&'src str),
     Let(&'src str, Box<Spanned<Self>>, Box<Spanned<Self>>),
     Then(Box<Spanned<Self>>, Box<Spanned<Self>>),
@@ -116,6 +116,8 @@ where
             // A list of expressions
             let items = expr
                 .clone()
+                .then_ignore(just(Token::Op("=")))
+                .then(expr.clone())
                 .separated_by(just(Token::Ctrl(',')))
                 .allow_trailing()
                 .collect::<Vec<_>>();
@@ -653,10 +655,16 @@ mod tests {
     #[test]
     fn records() {
         check_expr(
-            "<k, v>",
+            "<k = 1, v = 2>",
             Expr::Record(vec![
-                (Expr::Local("k"), (1..2).into()),
-                (Expr::Local("v"), (4..5).into()),
+                (
+                    (Expr::Local("k"), (1..2).into()),
+                    (Expr::Value(Value::Num(1f64)), (5..6).into()),
+                ),
+                (
+                    (Expr::Local("v"), (8..9).into()),
+                    (Expr::Value(Value::Num(2f64)), (12..13).into()),
+                ),
             ]),
         )
     }
