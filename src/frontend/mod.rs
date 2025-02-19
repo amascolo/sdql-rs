@@ -204,8 +204,6 @@ where
                 just(Token::Op(">=")).to(BinaryOp::GreatEq),
                 just(Token::Op("<")).to(BinaryOp::Less),
                 just(Token::Op(">")).to(BinaryOp::Great),
-                just(Token::Op("&&")).to(BinaryOp::And),
-                just(Token::Op("||")).to(BinaryOp::Or),
             ));
             let compare = sum
                 .clone()
@@ -213,7 +211,21 @@ where
                     (Expr::Binary(Box::new(a), op, Box::new(b)), e.span())
                 });
 
-            compare.labelled("expression").as_context()
+            let op = just(Token::Op("&&")).to(BinaryOp::And);
+            let and = compare
+                .clone()
+                .foldl_with(op.then(compare).repeated(), |a, (op, b), e| {
+                    (Expr::Binary(Box::new(a), op, Box::new(b)), e.span())
+                });
+
+            let op = just(Token::Op("||")).to(BinaryOp::Or);
+            let or = and
+                .clone()
+                .foldl_with(op.then(and).repeated(), |a, (op, b), e| {
+                    (Expr::Binary(Box::new(a), op, Box::new(b)), e.span())
+                });
+
+            or.labelled("expression").as_context()
         });
 
         // Blocks are expressions but delimited with braces
@@ -469,6 +481,72 @@ mod tests {
         );
 
         check_expr(
+            "2 / 3",
+            Expr::Binary(
+                Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
+                BinaryOp::Div,
+                Box::new((Expr::Value(Value::Num(3f64)), (4..5).into())),
+            ),
+        );
+
+        check_expr(
+            "2 - 3",
+            Expr::Binary(
+                Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
+                BinaryOp::Sub,
+                Box::new((Expr::Value(Value::Num(3f64)), (4..5).into())),
+            ),
+        );
+
+        check_expr(
+            "2 + 1 * 3",
+            Expr::Binary(
+                Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
+                BinaryOp::Add,
+                Box::new((
+                    Expr::Binary(
+                        Box::new((Expr::Value(Value::Num(1f64)), (4..5).into())),
+                        BinaryOp::Mul,
+                        Box::new((Expr::Value(Value::Num(3f64)), (8..9).into())),
+                    ),
+                    (4..9).into(),
+                )),
+            ),
+        );
+
+        check_expr(
+            "2 * 1 + 3",
+            Expr::Binary(
+                Box::new((
+                    Expr::Binary(
+                        Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
+                        BinaryOp::Mul,
+                        Box::new((Expr::Value(Value::Num(1f64)), (4..5).into())),
+                    ),
+                    (0..5).into(),
+                )),
+                BinaryOp::Add,
+                Box::new((Expr::Value(Value::Num(3f64)), (8..9).into())),
+            ),
+        );
+
+        check_expr(
+            "6 / 3 * 2",
+            Expr::Binary(
+                Box::new((
+                    Expr::Binary(
+                        Box::new((Expr::Value(Value::Num(6f64)), (0..1).into())),
+                        BinaryOp::Div,
+                        Box::new((Expr::Value(Value::Num(3f64)), (4..5).into())),
+                    ),
+                    (0..5).into(),
+                )),
+                BinaryOp::Mul,
+                Box::new((Expr::Value(Value::Num(2f64)), (8..9).into())),
+            ),
+        );
+
+        check_expr(
             "2 < 3",
             Expr::Binary(
                 Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
@@ -543,21 +621,20 @@ mod tests {
             ),
         );
 
-        // FIXME
-        // check_expr(
-        //     "true || false && true",
-        //     Expr::Binary(
-        //         Box::new((Expr::Value(Value::Bool(true)), (0..4).into())),
-        //         BinaryOp::Or,
-        //         Box::new((
-        //             Expr::Binary(
-        //                 Box::new((Expr::Value(Value::Bool(false)), (8..13).into())),
-        //                 BinaryOp::And,
-        //                 Box::new((Expr::Value(Value::Bool(true)), (17..21).into())),
-        //             ),
-        //             (8..21).into(),
-        //         )),
-        //     ),
-        // );
+        check_expr(
+            "true || false && true",
+            Expr::Binary(
+                Box::new((Expr::Value(Value::Bool(true)), (0..4).into())),
+                BinaryOp::Or,
+                Box::new((
+                    Expr::Binary(
+                        Box::new((Expr::Value(Value::Bool(false)), (8..13).into())),
+                        BinaryOp::And,
+                        Box::new((Expr::Value(Value::Bool(true)), (17..21).into())),
+                    ),
+                    (8..21).into(),
+                )),
+            ),
+        );
     }
 }
