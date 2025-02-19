@@ -5,7 +5,7 @@ pub type Span = SimpleSpan;
 pub type Spanned<T> = (T, Span);
 
 #[derive(Clone, Debug, PartialEq)]
-enum Token<'src> {
+pub(super) enum Token<'src> {
     Null,
     Bool(bool),
     Num(f64),
@@ -39,7 +39,7 @@ impl fmt::Display for Token<'_> {
     }
 }
 
-fn lexer<'src>()
+pub(super) fn lexer<'src>()
 -> impl Parser<'src, &'src str, Vec<Spanned<Token<'src>>>, extra::Err<Rich<'src, char, Span>>> {
     let num = text::int(10)
         .then(just('.').then(text::digits(10)).or_not())
@@ -87,20 +87,4 @@ fn lexer<'src>()
         .recover_with(skip_then_retry_until(any().ignored(), end()))
         .repeated()
         .collect()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test() {
-        let src = "if true then 0 else 1";
-        let (tokens, errs) = lexer().parse(src).into_output_errors();
-        let tokens = tokens.unwrap();
-        for (t, _span) in tokens {
-            println!("{t}");
-        }
-        assert!(errs.is_empty());
-    }
 }
