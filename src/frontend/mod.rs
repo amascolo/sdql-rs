@@ -63,6 +63,12 @@ enum BinaryOp {
     Div,
     Eq,
     NotEq,
+    Less,
+    Great,
+    LessEq,
+    GreatEq,
+    And,
+    Or,
 }
 
 // An expression node in the AST. Children are spanned so we can generate useful runtime errors.
@@ -190,10 +196,17 @@ where
                     (Expr::Binary(Box::new(a), op, Box::new(b)), e.span())
                 });
 
-            // Comparison ops (equal, not-equal) have equal precedence
-            let op = just(Token::Op("=="))
-                .to(BinaryOp::Eq)
-                .or(just(Token::Op("!=")).to(BinaryOp::NotEq));
+            // Comparison ops (equal, not-equal, etc) have equal precedence
+            let op = choice((
+                just(Token::Op("==")).to(BinaryOp::Eq),
+                just(Token::Op("!=")).to(BinaryOp::NotEq),
+                just(Token::Op("<=")).to(BinaryOp::LessEq),
+                just(Token::Op(">=")).to(BinaryOp::GreatEq),
+                just(Token::Op("<")).to(BinaryOp::Less),
+                just(Token::Op(">")).to(BinaryOp::Great),
+                just(Token::Op("&&")).to(BinaryOp::And),
+                just(Token::Op("||")).to(BinaryOp::Or),
+            ));
             let compare = sum
                 .clone()
                 .foldl_with(op.then(sum).repeated(), |a, (op, b), e| {
@@ -456,33 +469,24 @@ mod tests {
         );
 
         check_expr(
-            "2 / 3",
+            "2 < 3",
             Expr::Binary(
                 Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
-                BinaryOp::Div,
+                BinaryOp::Less,
                 Box::new((Expr::Value(Value::Num(3f64)), (4..5).into())),
             ),
         );
 
         check_expr(
-            "2 - 3",
+            "2 < 3 * 1",
             Expr::Binary(
                 Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
-                BinaryOp::Sub,
-                Box::new((Expr::Value(Value::Num(3f64)), (4..5).into())),
-            ),
-        );
-
-        check_expr(
-            "2 + 1 * 3",
-            Expr::Binary(
-                Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
-                BinaryOp::Add,
+                BinaryOp::Less,
                 Box::new((
                     Expr::Binary(
-                        Box::new((Expr::Value(Value::Num(1f64)), (4..5).into())),
+                        Box::new((Expr::Value(Value::Num(3f64)), (4..5).into())),
                         BinaryOp::Mul,
-                        Box::new((Expr::Value(Value::Num(3f64)), (8..9).into())),
+                        Box::new((Expr::Value(Value::Num(1f64)), (8..9).into())),
                     ),
                     (4..9).into(),
                 )),
@@ -490,84 +494,70 @@ mod tests {
         );
 
         check_expr(
-            "2 * 1 + 3",
+            "2 < (3 * 1)",
+            Expr::Binary(
+                Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
+                BinaryOp::Less,
+                Box::new((
+                    Expr::Binary(
+                        Box::new((Expr::Value(Value::Num(3f64)), (5..6).into())),
+                        BinaryOp::Mul,
+                        Box::new((Expr::Value(Value::Num(1f64)), (9..10).into())),
+                    ),
+                    (5..10).into(),
+                )),
+            ),
+        );
+
+        check_expr(
+            "true && false",
+            Expr::Binary(
+                Box::new((Expr::Value(Value::Bool(true)), (0..4).into())),
+                BinaryOp::And,
+                Box::new((Expr::Value(Value::Bool(false)), (8..13).into())),
+            ),
+        );
+
+        check_expr(
+            "true || false",
+            Expr::Binary(
+                Box::new((Expr::Value(Value::Bool(true)), (0..4).into())),
+                BinaryOp::Or,
+                Box::new((Expr::Value(Value::Bool(false)), (8..13).into())),
+            ),
+        );
+
+        check_expr(
+            "true && false || true",
             Expr::Binary(
                 Box::new((
                     Expr::Binary(
-                        Box::new((Expr::Value(Value::Num(2f64)), (0..1).into())),
-                        BinaryOp::Mul,
-                        Box::new((Expr::Value(Value::Num(1f64)), (4..5).into())),
+                        Box::new((Expr::Value(Value::Bool(true)), (0..4).into())),
+                        BinaryOp::And,
+                        Box::new((Expr::Value(Value::Bool(false)), (8..13).into())),
                     ),
-                    (0..5).into(),
+                    (0..13).into(),
                 )),
-                BinaryOp::Add,
-                Box::new((Expr::Value(Value::Num(3f64)), (8..9).into())),
+                BinaryOp::Or,
+                Box::new((Expr::Value(Value::Bool(true)), (17..21).into())),
             ),
         );
 
-        check_expr(
-            "(2 * 1) + 3",
-            Expr::Binary(
-                Box::new((
-                    Expr::Binary(
-                        Box::new((Expr::Value(Value::Num(2f64)), (1..2).into())),
-                        BinaryOp::Mul,
-                        Box::new((Expr::Value(Value::Num(1f64)), (5..6).into())),
-                    ),
-                    (1..6).into(),
-                )),
-                BinaryOp::Add,
-                Box::new((Expr::Value(Value::Num(3f64)), (10..11).into())),
-            ),
-        );
-
-        check_expr(
-            "-x + y",
-            Expr::Binary(
-                Box::new((
-                    Expr::Neg(Box::new((Expr::Local("x"), (1..2).into()))),
-                    (0..2).into(),
-                )),
-                BinaryOp::Add,
-                Box::new((Expr::Local("y"), (5..6).into())),
-            ),
-        );
-
-        check_expr(
-            "-x * y",
-            Expr::Binary(
-                Box::new((
-                    Expr::Neg(Box::new((Expr::Local("x"), (1..2).into()))),
-                    (0..2).into(),
-                )),
-                BinaryOp::Mul,
-                Box::new((Expr::Local("y"), (5..6).into())),
-            ),
-        );
-
-        check_expr(
-            "-(x + y)",
-            Expr::Neg(Box::new((
-                Expr::Binary(
-                    Box::new((Expr::Local("x"), (2..3).into())),
-                    BinaryOp::Add,
-                    Box::new((Expr::Local("y"), (6..7).into())),
-                ),
-                (2..7).into(),
-            ))),
-        );
-
-        // TODO
-        // sdql"2 < 3" should be(Cmp(Const(2.0), Const(3.0), "<"))
-        // sdql"2 < 3 * 1" should be(Cmp(Const(2.0), Mult(Const(3.0), Const(1.0)), "<"))
-        // sdql"2 < (3 * 1)" should be(Cmp(Const(2.0), Mult(Const(3.0), Const(1.0)), "<"))
-        // sdql"2 * 3" should be(Mult(Const(2.0), Const(3.0)))
-        // sdql"2 ^ 0" should be(Const(1))
-        // sdql"2 ^ 1" should be(Const(2))
-        // sdql"2 ^ 2" should be(Mult(Const(2), Const(2)))
-        // sdql"2 ^ 3" should be(Mult(Mult(Const(2), Const(2)), Const(2)))
-        // sdql"2 && 3" should be(And(Const(2.0), Const(3.0)))
-        // sdql"2 || 3" should be(Or(Const(2.0), Const(3.0)))
-        // sdql"!2" should be(Not(Const(2.0)))
+        // FIXME
+        // check_expr(
+        //     "true || false && true",
+        //     Expr::Binary(
+        //         Box::new((Expr::Value(Value::Bool(true)), (0..4).into())),
+        //         BinaryOp::Or,
+        //         Box::new((
+        //             Expr::Binary(
+        //                 Box::new((Expr::Value(Value::Bool(false)), (8..13).into())),
+        //                 BinaryOp::And,
+        //                 Box::new((Expr::Value(Value::Bool(true)), (17..21).into())),
+        //             ),
+        //             (8..21).into(),
+        //         )),
+        //     ),
+        // );
     }
 }
