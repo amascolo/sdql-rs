@@ -637,4 +637,16 @@ mod tests {
             ),
         );
     }
+
+    #[test]
+    fn comments() {
+        check_expr(
+            "let x = y in z // comment for let",
+            Expr::Let(
+                "x",
+                Box::new((Expr::Local("y"), (8..9).into())),
+                Box::new((Expr::Local("z"), (13..14).into())),
+            ),
+        )
+    }
 }
