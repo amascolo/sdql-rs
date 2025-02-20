@@ -403,7 +403,7 @@ mod tests {
         check_expr("\"foo\"", Expr::Value(Value::Str("foo")));
     }
 
-    // FIXME
+    // FIXME parse errors
     #[test]
     fn if_then_else() {
         check_expr(
@@ -424,14 +424,17 @@ mod tests {
             ),
         );
 
-        // check_expr(
-        //     "if (!true) then (0) else (1)",
-        //     Expr::If(
-        //         Box::new((Expr::Value(Value::Bool(true)), (5..9).into())),
-        //         Box::new((Expr::Value(Value::Num(0f64)), (17..18).into())),
-        //         Box::new((Expr::Value(Value::Num(1f64)), (26..27).into())),
-        //     ),
-        // );
+        check_expr(
+            "if (!true) then (0) else (1)",
+            Expr::If(
+                Box::new((
+                    Expr::Not(Box::new((Expr::Value(Value::Bool(true)), (5..9).into()))),
+                    (4..9).into(),
+                )),
+                Box::new((Expr::Value(Value::Num(0f64)), (17..18).into())),
+                Box::new((Expr::Value(Value::Num(1f64)), (26..27).into())),
+            ),
+        );
     }
 
     #[test]
