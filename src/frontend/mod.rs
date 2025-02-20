@@ -76,7 +76,8 @@ enum BinaryOp {
 enum Expr<'src> {
     Error,
     Value(Value<'src>),
-    Record(Vec<Record<'src>>),
+    Record(Vec<Pair<'src>>),
+    Dict(Vec<Pair<'src>>),
     Local(&'src str),
     Let(&'src str, Box<Spanned<Self>>, Box<Spanned<Self>>),
     Then(Box<Spanned<Self>>, Box<Spanned<Self>>),
@@ -87,7 +88,7 @@ enum Expr<'src> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-struct Record<'src> {
+struct Pair<'src> {
     key: Spanned<Expr<'src>>,
     value: Spanned<Expr<'src>>,
 }
@@ -119,8 +120,26 @@ where
                 .then(expr.clone())
                 .map(|((name, val), body)| Expr::Let(name, Box::new(val), Box::new(body)));
 
-            // A list of expressions
-            let items = expr
+            let dict_items = expr
+                .clone()
+                .then_ignore(just(Token::Arrow("->")))
+                .then(expr.clone())
+                .separated_by(just(Token::Ctrl(',')))
+                .allow_trailing()
+                .collect::<Vec<_>>();
+
+            let dict = dict_items
+                .clone()
+                .map(|v| {
+                    Expr::Dict(
+                        v.into_iter()
+                            .map(|(key, value)| Pair { key, value })
+                            .collect(),
+                    )
+                })
+                .delimited_by(just(Token::Ctrl('{')), just(Token::Ctrl('}')));
+
+            let record_items = expr
                 .clone()
                 .then_ignore(just(Token::Op("=")))
                 .then(expr.clone())
@@ -128,12 +147,12 @@ where
                 .allow_trailing()
                 .collect::<Vec<_>>();
 
-            let record = items
+            let record = record_items
                 .clone()
                 .map(|v| {
                     Expr::Record(
                         v.into_iter()
-                            .map(|(key, value)| Record { key, value })
+                            .map(|(key, value)| Pair { key, value })
                             .collect(),
                     )
                 })
@@ -143,14 +162,8 @@ where
             let atom = val
                 .or(ident.map(Expr::Local))
                 .or(let_)
+                .or(dict)
                 .or(record)
-                // In Nano Rust, `print` is just a keyword, just like Python 2, for simplicity
-                // .or(just(Token::Print)
-                //     .ignore_then(
-                //         expr.clone()
-                //             .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
-                //     )
-                //     .map(|expr| Expr::Print(Box::new(expr))))
                 .map_with(|expr, e| (expr, e.span()))
                 // Atoms can also just be normal expressions, but surrounded with parentheses
                 .or(expr
@@ -368,7 +381,7 @@ mod tests {
         // for (t, _span) in &tokens {
         //     println!("{t}");
         // }
-        // assert!(errs.is_empty());
+        // assert!(_errs.is_empty());
 
         let tokens = tokens
             .as_slice()
@@ -667,16 +680,28 @@ mod tests {
         )
     }
 
+    // FIXME
+    // #[test]
+    // fn dicts() {
+    //     check_expr(
+    //         "{ k -> v}",
+    //         Expr::Dict(vec![Pair {
+    //             key: (Expr::Local("k"), (1..2).into()),
+    //             value: (Expr::Local("v"), (6..7).into()),
+    //         }]),
+    //     )
+    // }
+
     #[test]
     fn records() {
         check_expr(
             "<k = 1, v = 2>",
             Expr::Record(vec![
-                Record {
+                Pair {
                     key: (Expr::Local("k"), (1..2).into()),
                     value: (Expr::Value(Value::Num(1f64)), (5..6).into()),
                 },
-                Record {
+                Pair {
                     key: (Expr::Local("v"), (8..9).into()),
                     value: (Expr::Value(Value::Num(2f64)), (12..13).into()),
                 },

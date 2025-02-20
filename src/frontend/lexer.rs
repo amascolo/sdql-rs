@@ -18,6 +18,7 @@ pub(super) enum Token<'src> {
     Then,
     Else,
     In,
+    Arrow(&'src str),
 }
 
 impl fmt::Display for Token<'_> {
@@ -35,6 +36,7 @@ impl fmt::Display for Token<'_> {
             Token::Then => write!(f, "then"),
             Token::Else => write!(f, "else"),
             Token::In => write!(f, "in"),
+            Token::Arrow(s) => write!(f, "{}", s),
         }
     }
 }
@@ -53,6 +55,8 @@ pub(super) fn lexer<'src>()
         .then_ignore(just('"'))
         .map(Token::Str);
 
+    let arrows = just("<-").or(just("->")).map(Token::Arrow);
+
     let op = just("==")
         .or(just("!="))
         .or(just("<="))
@@ -67,9 +71,6 @@ pub(super) fn lexer<'src>()
         .or(just("+"))
         .or(just("*"))
         .or(just("/"))
-        .repeated()
-        .exactly(1)
-        .to_slice()
         .map(Token::Op);
 
     let ctrl = one_of("()[]{};,").map(Token::Ctrl);
@@ -86,7 +87,7 @@ pub(super) fn lexer<'src>()
         _ => Token::Ident(ident),
     });
 
-    let token = num.or(str_).or(op).or(ctrl).or(ident);
+    let token = num.or(str_).or(arrows).or(op).or(ctrl).or(ident);
 
     let comment = just("//")
         .then(any().and_is(just('\n').not()).repeated())
