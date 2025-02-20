@@ -76,7 +76,7 @@ enum BinaryOp {
 enum Expr<'src> {
     Error,
     Value(Value<'src>),
-    Record(Vec<(Spanned<Self>, Spanned<Self>)>),
+    Record(Vec<Record<'src>>),
     Local(&'src str),
     Let(&'src str, Box<Spanned<Self>>, Box<Spanned<Self>>),
     Then(Box<Spanned<Self>>, Box<Spanned<Self>>),
@@ -84,6 +84,12 @@ enum Expr<'src> {
     Neg(Box<Spanned<Self>>),
     Binary(Box<Spanned<Self>>, BinaryOp, Box<Spanned<Self>>),
     If(Box<Spanned<Self>>, Box<Spanned<Self>>, Box<Spanned<Self>>),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+struct Record<'src> {
+    key: Spanned<Expr<'src>>,
+    value: Spanned<Expr<'src>>,
 }
 
 fn expr_parser<'src, I>()
@@ -124,7 +130,13 @@ where
 
             let record = items
                 .clone()
-                .map(Expr::Record)
+                .map(|v| {
+                    Expr::Record(
+                        v.into_iter()
+                            .map(|(key, value)| Record { key, value })
+                            .collect(),
+                    )
+                })
                 .delimited_by(just(Token::Op("<")), just(Token::Op(">")));
 
             // 'Atoms' are expressions that contain no ambiguity
@@ -657,14 +669,14 @@ mod tests {
         check_expr(
             "<k = 1, v = 2>",
             Expr::Record(vec![
-                (
-                    (Expr::Local("k"), (1..2).into()),
-                    (Expr::Value(Value::Num(1f64)), (5..6).into()),
-                ),
-                (
-                    (Expr::Local("v"), (8..9).into()),
-                    (Expr::Value(Value::Num(2f64)), (12..13).into()),
-                ),
+                Record {
+                    key: (Expr::Local("k"), (1..2).into()),
+                    value: (Expr::Value(Value::Num(1f64)), (5..6).into()),
+                },
+                Record {
+                    key: (Expr::Local("v"), (8..9).into()),
+                    value: (Expr::Value(Value::Num(2f64)), (12..13).into()),
+                },
             ]),
         )
     }
