@@ -257,15 +257,13 @@ where
         let if_ = recursive(|if_| {
             just(Token::If)
                 .ignore_then(expr.clone())
-                .then(just(Token::Then))
-                .then(expr.clone())
+                .then(just(Token::Then).ignore_then(expr.clone()))
                 .then(just(Token::Else).ignore_then(expr.clone().or(if_)).or_not())
-                .map_with(|(((cond, _), a), b), e| {
+                .map_with(|((cond, a), b), e| {
                     (
                         Expr::If(
                             Box::new(cond),
                             Box::new(a),
-                            // If an `if` expression has no trailing `else` block, we magic up one that just produces null
                             Box::new(b.unwrap_or_else(|| (Expr::Value(Value::Null), e.span()))),
                         ),
                         e.span(),
