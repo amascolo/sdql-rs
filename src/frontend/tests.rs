@@ -334,29 +334,28 @@ fn comments() {
     )
 }
 
-// FIXME
-// #[test]
-// fn dicts() {
-//     check_expr(
-//         "{ k -> v}",
-//         Expr::Dict(vec![Pair {
-//             key: (Expr::Local("k"), (1..2).into()),
-//             value: (Expr::Local("v"), (6..7).into()),
-//         }]),
-//     )
-// }
+#[test]
+fn dicts() {
+    check_expr(
+        "{k -> v}",
+        Expr::Dict(vec![Pair {
+            key: (Expr::Local("k"), (1..2).into()),
+            value: (Expr::Local("v"), (6..7).into()),
+        }]),
+    )
+}
 
 #[test]
 fn records() {
     check_expr(
-        "<k = 1, v = 2>",
+        "<a = 1, b = 2>",
         Expr::Record(vec![
             Pair {
-                key: (Expr::Local("k"), (1..2).into()),
+                key: (Expr::Local("a"), (1..2).into()),
                 value: (Expr::Value(Value::Num(1f64)), (5..6).into()),
             },
             Pair {
-                key: (Expr::Local("v"), (8..9).into()),
+                key: (Expr::Local("b"), (8..9).into()),
                 value: (Expr::Value(Value::Num(2f64)), (12..13).into()),
             },
         ]),
