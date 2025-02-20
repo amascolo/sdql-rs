@@ -81,7 +81,6 @@ enum Expr<'src> {
     Dict(Vec<Pair<'src>>),
     Local(&'src str),
     Let(&'src str, Box<Spanned<Self>>, Box<Spanned<Self>>),
-    Then(Box<Spanned<Self>>, Box<Spanned<Self>>),
     Not(Box<Spanned<Self>>),
     Neg(Box<Spanned<Self>>),
     Binary(Box<Spanned<Self>>, BinaryOp, Box<Spanned<Self>>),
@@ -116,7 +115,6 @@ where
                 .ignore_then(ident)
                 .then_ignore(just(Token::Op("=")))
                 .then(inline_expr)
-                // .then_ignore(just(Token::Ctrl(';')))
                 .then_ignore(just(Token::In))
                 .then(expr.clone())
                 .map(|((name, val), body)| Expr::Let(name, Box::new(val), Box::new(body)));
@@ -256,31 +254,13 @@ where
             or.labelled("expression").as_context()
         });
 
-        // Blocks are expressions but delimited with braces
-        let block = expr
-            .clone()
-            .delimited_by(just(Token::Ctrl('{')), just(Token::Ctrl('}')))
-            // Attempt to recover anything that looks like a block but contains errors
-            .recover_with(via_parser(nested_delimiters(
-                Token::Ctrl('{'),
-                Token::Ctrl('}'),
-                [
-                    (Token::Ctrl('('), Token::Ctrl(')')),
-                    (Token::Ctrl('['), Token::Ctrl(']')),
-                ],
-                |span| (Expr::Error, span),
-            )));
-
         let if_ = recursive(|if_| {
             just(Token::If)
                 .ignore_then(expr.clone())
-                .then(expr.clone()) // TODO expr was block
-                .then(
-                    just(Token::Else)
-                        .ignore_then(expr.clone().or(if_)) // TODO expr was block
-                        .or_not(),
-                )
-                .map_with(|((cond, a), b), e| {
+                .then(just(Token::Then))
+                .then(expr.clone())
+                .then(just(Token::Else).ignore_then(expr.clone().or(if_)).or_not())
+                .map_with(|(((cond, _), a), b), e| {
                     (
                         Expr::If(
                             Box::new(cond),
@@ -293,54 +273,6 @@ where
                 })
         });
 
-        // Both blocks and `if` are 'block expressions' and can appear in the place of statements
-        let block_expr = block.or(if_);
-
-        let block_chain = block_expr
-            .clone()
-            .foldl_with(block_expr.clone().repeated(), |a, b, e| {
-                (Expr::Then(Box::new(a), Box::new(b)), e.span())
-            });
-
-        let block_recovery = nested_delimiters(
-            Token::Ctrl('{'),
-            Token::Ctrl('}'),
-            [
-                (Token::Ctrl('('), Token::Ctrl(')')),
-                (Token::Ctrl('['), Token::Ctrl(']')),
-            ],
-            |span| (Expr::Error, span),
-        );
-
-        block_chain
-            .labelled("block")
-            // Expressions, chained by semicolons, are statements
-            .or(inline_expr.clone())
-            .recover_with(skip_then_retry_until(
-                block_recovery.ignored().or(any().ignored()),
-                one_of([
-                    Token::Ctrl(';'),
-                    Token::Ctrl('}'),
-                    Token::Ctrl(')'),
-                    Token::Ctrl(']'),
-                ])
-                .ignored(),
-            ))
-            .foldl_with(
-                just(Token::Ctrl(';')).ignore_then(expr.or_not()).repeated(),
-                |a, b, e| {
-                    let span: Span = e.span();
-                    (
-                        Expr::Then(
-                            Box::new(a),
-                            // If there is no b expression then its span is the end of the statement/block.
-                            Box::new(
-                                b.unwrap_or_else(|| (Expr::Value(Value::Null), span.to_end())),
-                            ),
-                        ),
-                        span,
-                    )
-                },
-            )
+        inline_expr.or(if_)
     })
 }
