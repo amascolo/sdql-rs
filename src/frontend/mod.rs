@@ -51,7 +51,6 @@ impl std::fmt::Display for Value<'_> {
                     .collect::<Vec<_>>()
                     .join(", ")
             ),
-            // Self::Func(name) => write!(f, "<function: {}>", name),
         }
     }
 }
@@ -85,12 +84,21 @@ enum Expr<'src> {
     Neg(Box<Spanned<Self>>),
     Binary(Box<Spanned<Self>>, BinaryOp, Box<Spanned<Self>>),
     If(Box<Spanned<Self>>, Box<Spanned<Self>>, Box<Spanned<Self>>),
+    Sum(Box<Sum<'src>>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
 struct Pair<'src> {
     key: Spanned<Expr<'src>>,
     value: Spanned<Expr<'src>>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+struct Sum<'src> {
+    key: Spanned<Expr<'src>>,
+    value: Spanned<Expr<'src>>,
+    head: Spanned<Expr<'src>>,
+    body: Spanned<Expr<'src>>,
 }
 
 fn expr_parser<'src, I>()
@@ -271,6 +279,28 @@ where
                 })
         });
 
-        inline_expr.or(if_)
+        let sum = just(Token::Sum)
+            .ignore_then(
+                inline_expr
+                    .clone()
+                    .then(just(Token::Ctrl(',')).ignore_then(inline_expr.clone()))
+                    .delimited_by(just(Token::Op("<")), just(Token::Op(">")))
+                    .then(just(Token::Arrow("<-")).ignore_then(inline_expr.clone()))
+                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+            )
+            .then(inline_expr.clone())
+            .map_with(|(((key, value), head), body), e| {
+                (
+                    Expr::Sum(Box::new(Sum {
+                        key,
+                        value,
+                        head,
+                        body,
+                    })),
+                    e.span(),
+                )
+            });
+
+        inline_expr.or(if_).or(sum)
     })
 }

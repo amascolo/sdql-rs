@@ -361,3 +361,32 @@ fn records() {
         ]),
     )
 }
+
+#[test]
+fn sum() {
+    check_expr(
+        "sum(<k,v> <- X) v",
+        Expr::Sum(Box::new(Sum {
+            key: (Expr::Local("k"), (5..6).into()),
+            value: (Expr::Local("v"), (7..8).into()),
+            head: (Expr::Local("X"), (13..14).into()),
+            body: (Expr::Local("v"), (16..17).into()),
+        })),
+    );
+
+    check_expr(
+        "sum(<k,v> <- X) {k -> v}",
+        Expr::Sum(Box::new(Sum {
+            key: (Expr::Local("k"), (5..6).into()),
+            value: (Expr::Local("v"), (7..8).into()),
+            head: (Expr::Local("X"), (13..14).into()),
+            body: (
+                Expr::Dict(vec![Pair {
+                    key: (Expr::Local("k"), (17..18).into()),
+                    value: (Expr::Local("v"), (22..23).into()),
+                }]),
+                (16..24).into(),
+            ),
+        })),
+    );
+}

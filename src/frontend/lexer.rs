@@ -19,6 +19,7 @@ pub(super) enum Token<'src> {
     Else,
     In,
     Arrow(&'src str),
+    Sum,
 }
 
 impl fmt::Display for Token<'_> {
@@ -37,6 +38,7 @@ impl fmt::Display for Token<'_> {
             Token::Else => write!(f, "else"),
             Token::In => write!(f, "in"),
             Token::Arrow(s) => write!(f, "{}", s),
+            Token::Sum => write!(f, "sum"),
         }
     }
 }
@@ -84,6 +86,7 @@ pub(super) fn lexer<'src>()
         "true" => Token::Bool(true),
         "false" => Token::Bool(false),
         "null" => Token::Null,
+        "sum" => Token::Sum,
         _ => Token::Ident(ident),
     });
 
