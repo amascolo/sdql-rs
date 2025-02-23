@@ -75,7 +75,6 @@ enum BinaryOp {
 // An expression node in the AST. Children are spanned so we can generate useful runtime errors.
 #[derive(Clone, Debug, PartialEq)]
 enum Expr<'src> {
-    Error,
     Value(Value<'src>),
     Record(Vec<Pair<'src>>),
     Dict(Dict<'src>),
@@ -146,12 +145,14 @@ where
                 .allow_trailing()
                 .collect::<Vec<_>>();
 
-            let hint = just(Token::At).ignore_then(
-                just(Token::DictHint(DictHint::HashDict))
-                    .or(just(Token::DictHint(DictHint::SortDict)))
-                    .or(just(Token::DictHint(DictHint::SmallVecDict)))
-                    .or(just(Token::DictHint(DictHint::Vec))),
-            );
+            let hint = just(Token::At)
+                .ignore_then(
+                    just(Token::DictHint(DictHint::HashDict))
+                        .or(just(Token::DictHint(DictHint::SortDict)))
+                        .or(just(Token::DictHint(DictHint::SmallVecDict)))
+                        .or(just(Token::DictHint(DictHint::Vec))),
+                )
+                .boxed();
 
             let dict = hint
                 .or_not()
@@ -188,37 +189,15 @@ where
                 })
                 .delimited_by(just(Token::Op("<")), just(Token::Op(">")));
 
-            // 'Atoms' are expressions that contain no ambiguity
             let atom = val
                 .or(ident.map(Expr::Local))
                 .or(let_)
                 .or(dict)
                 .or(record)
                 .map_with(|expr, e| (expr, e.span()))
-                // Atoms can also just be normal expressions, but surrounded with parentheses
                 .or(expr
                     .clone()
                     .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))))
-                // Attempt to recover anything that looks like a parenthesised expression but contains errors
-                .recover_with(via_parser(nested_delimiters(
-                    Token::Ctrl('('),
-                    Token::Ctrl(')'),
-                    [
-                        (Token::Ctrl('['), Token::Ctrl(']')),
-                        (Token::Ctrl('{'), Token::Ctrl('}')),
-                    ],
-                    |span| (Expr::Error, span),
-                )))
-                // Attempt to recover anything that looks like a list but contains errors
-                .recover_with(via_parser(nested_delimiters(
-                    Token::Ctrl('['),
-                    Token::Ctrl(']'),
-                    [
-                        (Token::Ctrl('('), Token::Ctrl(')')),
-                        (Token::Ctrl('{'), Token::Ctrl('}')),
-                    ],
-                    |span| (Expr::Error, span),
-                )))
                 .boxed();
 
             let neg = just(Token::Op("-"))
