@@ -346,50 +346,49 @@ fn dicts() {
         }),
     );
 
-    // FIXME
-    // check_expr(
-    //     "@hashdict {k -> v}",
-    //     Expr::Dict(Dict {
-    //         map: vec![Pair {
-    //             key: (Expr::Local("k"), (1..2).into()),
-    //             value: (Expr::Local("v"), (6..7).into()),
-    //         }],
-    //         hint: Some(DictHint::HashDict),
-    //     }),
-    // );
-    //
-    // check_expr(
-    //     "@sortdict {k -> v}",
-    //     Expr::Dict(Dict {
-    //         map: vec![Pair {
-    //             key: (Expr::Local("k"), (1..2).into()),
-    //             value: (Expr::Local("v"), (6..7).into()),
-    //         }],
-    //         hint: Some(DictHint::SortDict),
-    //     }),
-    // );
-    //
-    // check_expr(
-    //     "@smallvecdict {k -> v}",
-    //     Expr::Dict(Dict {
-    //         map: vec![Pair {
-    //             key: (Expr::Local("k"), (1..2).into()),
-    //             value: (Expr::Local("v"), (6..7).into()),
-    //         }],
-    //         hint: Some(DictHint::SmallVecDict),
-    //     }),
-    // );
-    //
-    // check_expr(
-    //     "@vec {k -> v}",
-    //     Expr::Dict(Dict {
-    //         map: vec![Pair {
-    //             key: (Expr::Local("k"), (1..2).into()),
-    //             value: (Expr::Local("v"), (6..7).into()),
-    //         }],
-    //         hint: Some(DictHint::Vec),
-    //     }),
-    // );
+    check_expr(
+        "@hashdict {k -> v}",
+        Expr::Dict(Dict {
+            map: vec![Pair {
+                key: (Expr::Local("k"), (11..12).into()),
+                value: (Expr::Local("v"), (16..17).into()),
+            }],
+            hint: Some(DictHint::HashDict),
+        }),
+    );
+
+    check_expr(
+        "@sortdict {k -> v}",
+        Expr::Dict(Dict {
+            map: vec![Pair {
+                key: (Expr::Local("k"), (11..12).into()),
+                value: (Expr::Local("v"), (16..17).into()),
+            }],
+            hint: Some(DictHint::SortDict),
+        }),
+    );
+
+    check_expr(
+        "@smallvecdict {k -> v}",
+        Expr::Dict(Dict {
+            map: vec![Pair {
+                key: (Expr::Local("k"), (15..16).into()),
+                value: (Expr::Local("v"), (20..21).into()),
+            }],
+            hint: Some(DictHint::SmallVecDict),
+        }),
+    );
+
+    check_expr(
+        "@vec {k -> v}",
+        Expr::Dict(Dict {
+            map: vec![Pair {
+                key: (Expr::Local("k"), (6..7).into()),
+                value: (Expr::Local("v"), (11..12).into()),
+            }],
+            hint: Some(DictHint::Vec),
+        }),
+    );
 }
 
 #[test]

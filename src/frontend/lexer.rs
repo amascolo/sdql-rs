@@ -73,6 +73,7 @@ pub(super) fn lexer<'src>()
         .map(Token::Str);
 
     let arrows = just("<-").or(just("->")).map(Token::Arrow);
+    let at = just("@").map(|_| Token::At);
 
     let op = just("==")
         .or(just("!="))
@@ -102,7 +103,6 @@ pub(super) fn lexer<'src>()
         "false" => Token::Bool(false),
         "null" => Token::Null,
         "sum" => Token::Sum,
-        "@" => Token::At,
         "hashdict" => Token::DictHint(DictHint::HashDict),
         "sortdict" => Token::DictHint(DictHint::SortDict),
         "smallvecdict" => Token::DictHint(DictHint::SmallVecDict),
@@ -110,7 +110,7 @@ pub(super) fn lexer<'src>()
         _ => Token::Ident(ident),
     });
 
-    let token = num.or(str_).or(arrows).or(op).or(ctrl).or(ident);
+    let token = num.or(str_).or(arrows).or(op).or(at).or(ctrl).or(ident);
 
     let comment = just("//")
         .then(any().and_is(just('\n').not()).repeated())
