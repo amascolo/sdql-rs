@@ -70,7 +70,6 @@ fn constants() {
     check_expr("\"foo\"", Expr::Value(Value::Str("foo")));
 }
 
-// FIXME parse errors
 #[test]
 fn if_then_else() {
     check_expr(
