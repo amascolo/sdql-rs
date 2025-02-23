@@ -23,14 +23,35 @@ pub(super) enum Token<'src> {
     At,
     DictHint(DictHint),
     Load,
+    Type(ScalarType),
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub(super) enum DictHint {
+pub(crate) enum DictHint {
     HashDict,
     SortDict,
     SmallVecDict,
     Vec,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(super) enum ScalarType {
+    String,
+    Bool,
+    Int,
+    Long,
+}
+
+impl fmt::Display for ScalarType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ScalarType::String => "string",
+            ScalarType::Bool => "bool",
+            ScalarType::Int => "int",
+            ScalarType::Long => "long",
+        }
+        .fmt(f)
+    }
 }
 
 impl fmt::Display for Token<'_> {
@@ -56,6 +77,7 @@ impl fmt::Display for Token<'_> {
             Token::DictHint(DictHint::SmallVecDict) => write!(f, "smallvecdict"),
             Token::DictHint(DictHint::Vec) => write!(f, "vec"),
             Token::Load => write!(f, "load"),
+            Token::Type(type_) => write!(f, "{type_}"),
         }
     }
 }

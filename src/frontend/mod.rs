@@ -115,6 +115,20 @@ struct Sum<'src> {
     body: Spanned<Expr<'src>>,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) enum Type {
+    String,
+    Bool,
+    Int,
+    Long,
+    Record(Vec<Self>),
+    Dict {
+        key: Box<Self>,
+        value: Box<Self>,
+        hint: Option<DictHint>,
+    },
+}
+
 fn expr_parser<'src, I>()
 -> impl Parser<'src, I, Spanned<Expr<'src>>, extra::Err<Rich<'src, Token<'src>, Span>>> + Clone
 where
