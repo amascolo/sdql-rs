@@ -409,6 +409,38 @@ fn records() {
 }
 
 #[test]
+fn fields() {
+    check_expr(
+        "x.name",
+        Expr::Field {
+            expr: Box::new((Expr::Local("x"), (0..1).into())),
+            field: "name",
+        },
+    );
+
+    check_expr(
+        "x.foo * y.doo",
+        Expr::Binary(
+            Box::new((
+                Expr::Field {
+                    expr: Box::new((Expr::Local("x"), (0..1).into())),
+                    field: "foo",
+                },
+                (0..5).into(),
+            )),
+            BinaryOp::Mul,
+            Box::new((
+                Expr::Field {
+                    expr: Box::new((Expr::Local("y"), (8..9).into())),
+                    field: "doo",
+                },
+                (8..13).into(),
+            )),
+        ),
+    );
+}
+
+#[test]
 fn sum() {
     check_expr(
         "sum(<k,v> <- X) v",

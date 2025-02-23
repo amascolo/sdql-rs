@@ -86,6 +86,10 @@ enum Expr<'src> {
     Binary(Box<Spanned<Self>>, BinaryOp, Box<Spanned<Self>>),
     If(Box<Spanned<Self>>, Box<Spanned<Self>>, Box<Spanned<Self>>),
     Sum(Box<Sum<'src>>),
+    Field {
+        expr: Box<Spanned<Self>>,
+        field: &'src str,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Default)]
@@ -223,9 +227,23 @@ where
                     (Expr::Neg(Box::new(rhs)), (span.start - 1..span.end).into())
                 });
 
+            let field = neg
+                .clone()
+                .then(just(Token::Ctrl('.')).ignore_then(ident).or_not())
+                .map_with(|(expr, field), e| match field {
+                    None => expr,
+                    Some(field) => (
+                        Expr::Field {
+                            expr: Box::new(expr),
+                            field,
+                        },
+                        e.span(),
+                    ),
+                });
+
             let not = just(Token::Op("!"))
                 .repeated()
-                .foldr(neg, |_op, rhs @ (_, span)| {
+                .foldr(field, |_op, rhs @ (_, span)| {
                     (Expr::Not(Box::new(rhs)), (span.start - 1..span.end).into())
                 });
 

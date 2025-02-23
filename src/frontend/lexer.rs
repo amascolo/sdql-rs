@@ -59,7 +59,7 @@ impl fmt::Display for Token<'_> {
 }
 
 pub(super) fn lexer<'src>()
--> impl Parser<'src, &'src str, Vec<Spanned<Token<'src>>>, extra::Err<Rich<'src, char, Span>>> {
+    -> impl Parser<'src, &'src str, Vec<Spanned<Token<'src>>>, extra::Err<Rich<'src, char, Span>>> {
     let num = text::int(10)
         .then(just('.').then(text::digits(10)).or_not())
         .to_slice()
@@ -91,7 +91,7 @@ pub(super) fn lexer<'src>()
         .or(just("/"))
         .map(Token::Op);
 
-    let ctrl = one_of("()[]{};,").map(Token::Ctrl);
+    let ctrl = one_of("()[]{};,.").map(Token::Ctrl);
 
     let ident = text::ascii::ident().map(|ident: &str| match ident {
         "let" => Token::Let,
