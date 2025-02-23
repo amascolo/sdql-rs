@@ -324,21 +324,12 @@ where
         let str_select = select! { Token::Str(s) => s }.labelled("str");
 
         // TODO
-        // let load = just(Token::Load)
-        //     .ignore_then(
-        //         just(Token::Ctrl(']'))
-        //             .not()
-        //             .delimited_by(just(Token::Ctrl('[')), just(Token::Ctrl(']'))),
-        //     )
-        //     .then(just(str).delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))))
-        //     .map(|f| match f() {
-        //         Token::Str(s) => s,
-        //         _ => unimplemented!(),
-        //     });
+        let type_ = any().and_is(just(Token::Ctrl(']')).not()).repeated();
 
         let load = just(Token::Load)
-            .ignore_then(str_select.delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))))
-            .map_with(|path, e| (Expr::Load { r#type: None, path }, e.span()));
+            .ignore_then(type_.delimited_by(just(Token::Ctrl('[')), just(Token::Ctrl(']'))))
+            .then(str_select.delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))))
+            .map_with(|(_type, path), e| (Expr::Load { r#type: None, path }, e.span()));
 
         inline_expr.or(if_).or(sum).or(load)
     })

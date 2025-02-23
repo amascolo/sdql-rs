@@ -475,7 +475,7 @@ fn sum() {
 #[test]
 fn load() {
     check_expr(
-        "load(\"foo.csv\")",
+        "load[{string -> bool}](\"foo.csv\")",
         Expr::Load {
             r#type: None, // TODO [{string -> bool}]
             path: "foo.csv",
