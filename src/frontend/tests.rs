@@ -337,11 +337,59 @@ fn comments() {
 fn dicts() {
     check_expr(
         "{k -> v}",
-        Expr::Dict(vec![Pair {
-            key: (Expr::Local("k"), (1..2).into()),
-            value: (Expr::Local("v"), (6..7).into()),
-        }]),
-    )
+        Expr::Dict(Dict {
+            map: vec![Pair {
+                key: (Expr::Local("k"), (1..2).into()),
+                value: (Expr::Local("v"), (6..7).into()),
+            }],
+            hint: None,
+        }),
+    );
+
+    // FIXME
+    // check_expr(
+    //     "@hashdict {k -> v}",
+    //     Expr::Dict(Dict {
+    //         map: vec![Pair {
+    //             key: (Expr::Local("k"), (1..2).into()),
+    //             value: (Expr::Local("v"), (6..7).into()),
+    //         }],
+    //         hint: Some(DictHint::HashDict),
+    //     }),
+    // );
+    //
+    // check_expr(
+    //     "@sortdict {k -> v}",
+    //     Expr::Dict(Dict {
+    //         map: vec![Pair {
+    //             key: (Expr::Local("k"), (1..2).into()),
+    //             value: (Expr::Local("v"), (6..7).into()),
+    //         }],
+    //         hint: Some(DictHint::SortDict),
+    //     }),
+    // );
+    //
+    // check_expr(
+    //     "@smallvecdict {k -> v}",
+    //     Expr::Dict(Dict {
+    //         map: vec![Pair {
+    //             key: (Expr::Local("k"), (1..2).into()),
+    //             value: (Expr::Local("v"), (6..7).into()),
+    //         }],
+    //         hint: Some(DictHint::SmallVecDict),
+    //     }),
+    // );
+    //
+    // check_expr(
+    //     "@vec {k -> v}",
+    //     Expr::Dict(Dict {
+    //         map: vec![Pair {
+    //             key: (Expr::Local("k"), (1..2).into()),
+    //             value: (Expr::Local("v"), (6..7).into()),
+    //         }],
+    //         hint: Some(DictHint::Vec),
+    //     }),
+    // );
 }
 
 #[test]
@@ -358,7 +406,7 @@ fn records() {
                 value: (Expr::Value(Value::Num(2f64)), (12..13).into()),
             },
         ]),
-    )
+    );
 }
 
 #[test]
@@ -380,10 +428,13 @@ fn sum() {
             value: (Expr::Local("v"), (7..8).into()),
             head: (Expr::Local("X"), (13..14).into()),
             body: (
-                Expr::Dict(vec![Pair {
-                    key: (Expr::Local("k"), (17..18).into()),
-                    value: (Expr::Local("v"), (22..23).into()),
-                }]),
+                Expr::Dict(Dict {
+                    map: vec![Pair {
+                        key: (Expr::Local("k"), (17..18).into()),
+                        value: (Expr::Local("v"), (22..23).into()),
+                    }],
+                    hint: None,
+                }),
                 (16..24).into(),
             ),
         })),

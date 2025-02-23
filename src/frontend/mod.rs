@@ -3,6 +3,7 @@ mod tests;
 
 use chumsky::{input::ValueInput, prelude::*};
 
+use crate::frontend::lexer::DictHint;
 use lexer::{Span, Spanned, Token};
 
 #[allow(dead_code)]
@@ -77,7 +78,7 @@ enum Expr<'src> {
     Error,
     Value(Value<'src>),
     Record(Vec<Pair<'src>>),
-    Dict(Vec<Pair<'src>>),
+    Dict(Dict<'src>),
     Local(&'src str),
     Let(&'src str, Box<Spanned<Self>>, Box<Spanned<Self>>),
     Not(Box<Spanned<Self>>),
@@ -85,6 +86,12 @@ enum Expr<'src> {
     Binary(Box<Spanned<Self>>, BinaryOp, Box<Spanned<Self>>),
     If(Box<Spanned<Self>>, Box<Spanned<Self>>, Box<Spanned<Self>>),
     Sum(Box<Sum<'src>>),
+}
+
+#[derive(Clone, Debug, PartialEq, Default)]
+struct Dict<'src> {
+    map: Vec<Pair<'src>>,
+    hint: Option<DictHint>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -135,16 +142,28 @@ where
                 .allow_trailing()
                 .collect::<Vec<_>>();
 
-            let dict = dict_items
-                .clone()
-                .map(|v| {
-                    Expr::Dict(
-                        v.into_iter()
+            let hint = just(Token::At).ignore_then(
+                just(Token::DictHint(DictHint::HashDict))
+                    .or(just(Token::DictHint(DictHint::SortDict)))
+                    .or(just(Token::DictHint(DictHint::SmallVecDict)))
+                    .or(just(Token::DictHint(DictHint::Vec))),
+            );
+
+            let dict = hint
+                .or_not()
+                .then(dict_items.delimited_by(just(Token::Ctrl('{')), just(Token::Ctrl('}'))))
+                .map(|(hint, v)| {
+                    Expr::Dict(Dict {
+                        map: v
+                            .into_iter()
                             .map(|(key, value)| Pair { key, value })
                             .collect(),
-                    )
-                })
-                .delimited_by(just(Token::Ctrl('{')), just(Token::Ctrl('}')));
+                        hint: hint.map(|hint| match hint {
+                            Token::DictHint(hint) => hint,
+                            _ => unreachable!(),
+                        }),
+                    })
+                });
 
             let record_items = expr
                 .clone()

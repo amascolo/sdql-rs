@@ -20,6 +20,16 @@ pub(super) enum Token<'src> {
     In,
     Arrow(&'src str),
     Sum,
+    At,
+    DictHint(DictHint),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(super) enum DictHint {
+    HashDict,
+    SortDict,
+    SmallVecDict,
+    Vec,
 }
 
 impl fmt::Display for Token<'_> {
@@ -39,6 +49,11 @@ impl fmt::Display for Token<'_> {
             Token::In => write!(f, "in"),
             Token::Arrow(s) => write!(f, "{}", s),
             Token::Sum => write!(f, "sum"),
+            Token::At => write!(f, "@"),
+            Token::DictHint(DictHint::HashDict) => write!(f, "hashdict"),
+            Token::DictHint(DictHint::SortDict) => write!(f, "sortdict"),
+            Token::DictHint(DictHint::SmallVecDict) => write!(f, "smallvecdict"),
+            Token::DictHint(DictHint::Vec) => write!(f, "vec"),
         }
     }
 }
@@ -87,6 +102,11 @@ pub(super) fn lexer<'src>()
         "false" => Token::Bool(false),
         "null" => Token::Null,
         "sum" => Token::Sum,
+        "@" => Token::At,
+        "hashdict" => Token::DictHint(DictHint::HashDict),
+        "sortdict" => Token::DictHint(DictHint::SortDict),
+        "smallvecdict" => Token::DictHint(DictHint::SmallVecDict),
+        "vec" => Token::DictHint(DictHint::Vec),
         _ => Token::Ident(ident),
     });
 
