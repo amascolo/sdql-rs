@@ -89,6 +89,10 @@ enum Expr<'src> {
         expr: Box<Spanned<Self>>,
         field: &'src str,
     },
+    Load {
+        r#type: Option<&'src str>,
+        path: &'src str,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Default)]
@@ -317,6 +321,25 @@ where
                 )
             });
 
-        inline_expr.or(if_).or(sum)
+        let str_select = select! { Token::Str(s) => s }.labelled("str");
+
+        // TODO
+        // let load = just(Token::Load)
+        //     .ignore_then(
+        //         just(Token::Ctrl(']'))
+        //             .not()
+        //             .delimited_by(just(Token::Ctrl('[')), just(Token::Ctrl(']'))),
+        //     )
+        //     .then(just(str).delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))))
+        //     .map(|f| match f() {
+        //         Token::Str(s) => s,
+        //         _ => unimplemented!(),
+        //     });
+
+        let load = just(Token::Load)
+            .ignore_then(str_select.delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))))
+            .map_with(|path, e| (Expr::Load { r#type: None, path }, e.span()));
+
+        inline_expr.or(if_).or(sum).or(load)
     })
 }

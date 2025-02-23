@@ -22,6 +22,7 @@ pub(super) enum Token<'src> {
     Sum,
     At,
     DictHint(DictHint),
+    Load,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -36,30 +37,31 @@ impl fmt::Display for Token<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Token::Null => write!(f, "null"),
-            Token::Bool(x) => write!(f, "{}", x),
-            Token::Num(n) => write!(f, "{}", n),
-            Token::Str(s) => write!(f, "{}", s),
-            Token::Op(s) => write!(f, "{}", s),
-            Token::Ctrl(c) => write!(f, "{}", c),
-            Token::Ident(s) => write!(f, "{}", s),
+            Token::Bool(x) => write!(f, "{x}"),
+            Token::Num(n) => write!(f, "{n}"),
+            Token::Str(s) => write!(f, "\"{s}\""),
+            Token::Op(s) => write!(f, "{s}"),
+            Token::Ctrl(c) => write!(f, "{c}"),
+            Token::Ident(s) => write!(f, "{s}"),
             Token::Let => write!(f, "let"),
             Token::If => write!(f, "if"),
             Token::Then => write!(f, "then"),
             Token::Else => write!(f, "else"),
             Token::In => write!(f, "in"),
-            Token::Arrow(s) => write!(f, "{}", s),
+            Token::Arrow(s) => write!(f, "{s}"),
             Token::Sum => write!(f, "sum"),
             Token::At => write!(f, "@"),
             Token::DictHint(DictHint::HashDict) => write!(f, "hashdict"),
             Token::DictHint(DictHint::SortDict) => write!(f, "sortdict"),
             Token::DictHint(DictHint::SmallVecDict) => write!(f, "smallvecdict"),
             Token::DictHint(DictHint::Vec) => write!(f, "vec"),
+            Token::Load => write!(f, "load"),
         }
     }
 }
 
 pub(super) fn lexer<'src>()
-    -> impl Parser<'src, &'src str, Vec<Spanned<Token<'src>>>, extra::Err<Rich<'src, char, Span>>> {
+-> impl Parser<'src, &'src str, Vec<Spanned<Token<'src>>>, extra::Err<Rich<'src, char, Span>>> {
     let num = text::int(10)
         .then(just('.').then(text::digits(10)).or_not())
         .to_slice()
@@ -107,6 +109,7 @@ pub(super) fn lexer<'src>()
         "sortdict" => Token::DictHint(DictHint::SortDict),
         "smallvecdict" => Token::DictHint(DictHint::SmallVecDict),
         "vec" => Token::DictHint(DictHint::Vec),
+        "load" => Token::Load,
         _ => Token::Ident(ident),
     });
 
