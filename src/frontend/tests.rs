@@ -1,30 +1,5 @@
 #![cfg(test)]
 
-// let src = "3";
-// let (tokens, errs) = lexer().parse(src).into_output_errors();
-//
-// let tokens = tokens.unwrap();
-// for (t, _span) in &tokens {
-//     println!("{t}");
-// }
-// assert!(errs.is_empty());
-//
-// let tokens = tokens
-//     .as_slice()
-//     .map((src.len()..src.len()).into(), |(t, s)| (t, s));
-// let (ast, parse_errs) = expr_parser()
-//     .map_with(|ast, e| (ast, e.span()))
-//     .parse(tokens)
-//     .into_output_errors();
-//
-// dbg!(&parse_errs);
-//
-// let ((expr, _), _) = ast.unwrap();
-// // let main = ast.get("main").unwrap();
-// // let Func{args: _, span: _, body} = main;
-//
-// println!("{expr:?}")
-
 use super::*;
 use lexer::lexer;
 

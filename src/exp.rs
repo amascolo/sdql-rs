@@ -33,9 +33,3 @@ pub struct Sym(pub String);
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DictNode(Vec<(Box<Exp>, Box<Exp>)>);
-
-// impl DictNode {
-//     pub fn new() -> Self {
-//         DictNode(vec![])
-//     }
-// }
