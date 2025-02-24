@@ -1,16 +1,17 @@
 use prettyplease::unparse;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{parse2, parse_quote, parse_str, Ident, Type};
+use syn::{parse2, parse_quote, Ident, Type};
 
-fn parse_type(t: &str) -> Type {
-    match t {
-        "i32" => parse_quote!(i32),
-        "String" => parse_quote!(String),
-        "f64" => parse_quote!(f64),
-        _ => parse_str(t).unwrap(),
-    }
-}
+// use syn::parse_str;
+// fn parse_type(t: &str) -> Type {
+//     match t {
+//         "i32" => parse_quote!(i32),
+//         "String" => parse_quote!(String),
+//         "f64" => parse_quote!(f64),
+//         _ => parse_str(t).unwrap(),
+//     }
+// }
 
 fn generate_ast(type_name: &str, field_types: &[Type]) -> TokenStream {
     let type_ident = Ident::new(type_name, Span::call_site());
