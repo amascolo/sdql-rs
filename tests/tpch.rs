@@ -9,21 +9,21 @@ mod tests {
 
     #[test]
     fn q3_works() {
-        assert!(q3().is_ok());
+        assert!(q3("0.01").is_ok());
     }
 
     #[test]
     fn q3_rayon_works() {
-        assert!(q3_rayon().is_ok());
+        assert!(q3_rayon("0.01").is_ok());
     }
 
     #[test]
     fn q6_works() {
-        assert!(q6().is_ok());
+        assert!(q6("0.01").is_ok());
     }
 
     #[test]
     fn q6_rayon_works() {
-        assert!(q6_rayon().is_ok());
+        assert!(q6_rayon("0.01").is_ok());
     }
 }
