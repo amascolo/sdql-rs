@@ -1,5 +1,6 @@
-use crate::utils::print_date;
+use crate::utils::{format_date, round};
 use hashbrown::HashMap;
+use itertools::Itertools;
 use ordered_float::OrderedFloat;
 
 pub mod parallel;
@@ -7,15 +8,19 @@ pub mod sequential;
 
 type TypeQ3 = HashMap<(i32, i32, i32, OrderedFloat<f64>), i32>;
 
-pub fn print_q3_result(result: TypeQ3) {
-    for (key, val) in result.iter() {
-        println!(
-            "<{}, {}, {}, {:.4}>:{}",
-            key.0,
-            print_date(key.1),
-            key.2,
-            key.3,
-            val
-        );
-    }
+pub fn format_q3_result(result: &TypeQ3) -> String {
+    result
+        .iter()
+        .map(|(key, val)| {
+            format!(
+                "<{},{},{},{}>:{}\n",
+                key.0,
+                format_date(key.1),
+                key.2,
+                round(key.3.into_inner(), 4),
+                val
+            )
+        })
+        .sorted()
+        .collect()
 }
