@@ -1,5 +1,7 @@
 use sdql::tpch::q3::parallel::q3_rayon;
 use sdql::tpch::q3::sequential::q3;
+use sdql::tpch::q6::parallel::q6_rayon;
+use sdql::tpch::q6::sequential::q6;
 
 #[cfg(test)]
 mod tests {
@@ -13,5 +15,15 @@ mod tests {
     #[test]
     fn q3_rayon_works() {
         assert!(q3_rayon().is_ok());
+    }
+
+    #[test]
+    fn q6_works() {
+        assert!(q6().is_ok());
+    }
+
+    #[test]
+    fn q6_rayon_works() {
+        assert!(q6_rayon().is_ok());
     }
 }

@@ -1,24 +1,9 @@
+use super::TypeQ3;
 use crate::tpch::read::{read_customers, read_lineitems, read_orders};
 use crate::tpch::types::{Customer, Lineitem, Orders};
-use crate::utils::print_date;
 use hashbrown::HashMap;
 use ordered_float::OrderedFloat;
 use std::error::Error;
-
-type TypeQ3 = HashMap<(i32, i32, i32, OrderedFloat<f64>), i32>;
-
-pub fn print_q3_result(result: TypeQ3) {
-    for (key, val) in result.iter() {
-        println!(
-            "<{}, {}, {}, {}>:{}",
-            key.0,
-            print_date(key.1),
-            key.2,
-            key.3,
-            val
-        );
-    }
-}
 
 pub fn q3() -> Result<TypeQ3, Box<dyn Error>> {
     let customer = read_customers("datasets/tpch_datasets/SF_1/customer.tbl")?;

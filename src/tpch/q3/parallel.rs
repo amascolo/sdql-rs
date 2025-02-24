@@ -1,11 +1,10 @@
+use super::TypeQ3;
 use crate::tpch::read::{read_customers, read_lineitems, read_orders};
 use crate::tpch::types::{Customer, Lineitem, Orders};
 use hashbrown::HashMap;
 use ordered_float::OrderedFloat;
 use rayon::prelude::*;
 use std::error::Error;
-
-type TypeQ3 = HashMap<(i32, i32, i32, OrderedFloat<f64>), i32>;
 
 pub fn q3_rayon() -> Result<TypeQ3, Box<dyn Error>> {
     let customer = read_customers("datasets/tpch_datasets/SF_1/customer.tbl")?;
