@@ -3,19 +3,7 @@ use crate::utils::date_to_numeric;
 use csv::ReaderBuilder;
 use std::error::Error;
 
-pub fn read_q3(
-    customers_path: &str,
-    orders_path: &str,
-    lineitems_path: &str,
-) -> Result<(Customer, Orders, Lineitem), Box<dyn Error>> {
-    Ok((
-        read_customers(customers_path)?,
-        read_orders(orders_path)?,
-        read_lineitems(lineitems_path)?,
-    ))
-}
-
-fn read_customers(path: &str) -> Result<Customer, Box<dyn Error>> {
+pub fn read_customers(path: &str) -> Result<Customer, Box<dyn Error>> {
     let mut reader = ReaderBuilder::new()
         .has_headers(false)
         .delimiter(b'|')
@@ -47,7 +35,7 @@ fn read_customers(path: &str) -> Result<Customer, Box<dyn Error>> {
     ))
 }
 
-fn read_orders(path: &str) -> Result<Orders, Box<dyn Error>> {
+pub fn read_orders(path: &str) -> Result<Orders, Box<dyn Error>> {
     let mut reader = ReaderBuilder::new()
         .has_headers(false)
         .delimiter(b'|')
@@ -90,7 +78,7 @@ fn read_orders(path: &str) -> Result<Orders, Box<dyn Error>> {
     ))
 }
 
-fn read_lineitems(path: &str) -> Result<Lineitem, Box<dyn Error>> {
+pub fn read_lineitems(path: &str) -> Result<Lineitem, Box<dyn Error>> {
     let mut reader = ReaderBuilder::new()
         .has_headers(false)
         .delimiter(b'|')

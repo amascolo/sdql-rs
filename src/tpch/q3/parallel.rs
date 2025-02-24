@@ -1,5 +1,5 @@
-use super::read::read_q3;
-use super::types::{Customer, Lineitem, Orders};
+use crate::tpch::read::{read_customers, read_lineitems, read_orders};
+use crate::tpch::types::{Customer, Lineitem, Orders};
 use hashbrown::HashMap;
 use ordered_float::OrderedFloat;
 use rayon::prelude::*;
@@ -8,11 +8,9 @@ use std::error::Error;
 type TypeQ3 = HashMap<(i32, i32, i32, OrderedFloat<f64>), i32>;
 
 pub fn q3_rayon() -> Result<TypeQ3, Box<dyn Error>> {
-    let (customer, orders, lineitem) = read_q3(
-        "datasets/tpch_datasets/SF_1/customer.tbl",
-        "datasets/tpch_datasets/SF_1/orders.tbl",
-        "datasets/tpch_datasets/SF_1/lineitem.tbl",
-    )?;
+    let customer = read_customers("datasets/tpch_datasets/SF_1/customer.tbl")?;
+    let orders = read_orders("datasets/tpch_datasets/SF_1/orders.tbl")?;
+    let lineitem = read_lineitems("datasets/tpch_datasets/SF_1/lineitem.tbl")?;
     Ok(q3_query_rayon(&customer, &orders, &lineitem))
 }
 

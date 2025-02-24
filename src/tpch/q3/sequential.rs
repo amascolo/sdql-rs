@@ -1,5 +1,5 @@
-use super::read::read_q3;
-use super::types::{Customer, Lineitem, Orders};
+use crate::tpch::read::{read_customers, read_lineitems, read_orders};
+use crate::tpch::types::{Customer, Lineitem, Orders};
 use crate::utils::print_date;
 use hashbrown::HashMap;
 use ordered_float::OrderedFloat;
@@ -21,11 +21,9 @@ pub fn print_q3_result(result: TypeQ3) {
 }
 
 pub fn q3() -> Result<TypeQ3, Box<dyn Error>> {
-    let (customer, orders, lineitem) = read_q3(
-        "datasets/tpch_datasets/SF_1/customer.tbl",
-        "datasets/tpch_datasets/SF_1/orders.tbl",
-        "datasets/tpch_datasets/SF_1/lineitem.tbl",
-    )?;
+    let customer = read_customers("datasets/tpch_datasets/SF_1/customer.tbl")?;
+    let orders = read_orders("datasets/tpch_datasets/SF_1/orders.tbl")?;
+    let lineitem = read_lineitems("datasets/tpch_datasets/SF_1/lineitem.tbl")?;
     Ok(q3_query(&customer, &orders, &lineitem))
 }
 
