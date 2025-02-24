@@ -3,7 +3,7 @@ mod tests;
 
 use chumsky::{input::ValueInput, prelude::*};
 
-use crate::frontend::lexer::DictHint;
+use crate::frontend::lexer::{DictHint, ScalarType};
 use lexer::{Span, Spanned, Token};
 
 #[allow(dead_code)]
@@ -90,7 +90,7 @@ enum Expr<'src> {
         field: &'src str,
     },
     Load {
-        r#type: Option<&'src str>,
+        r#type: Option<Type>,
         path: &'src str,
     },
 }
@@ -337,13 +337,48 @@ where
 
         let str_select = select! { Token::Str(s) => s }.labelled("str");
 
-        // TODO
-        let type_ = any().and_is(just(Token::Ctrl(']')).not()).repeated();
+        let type_ = recursive(|type_| {
+            let scalar = choice((
+                just(Token::Type(ScalarType::String)).to(Type::String),
+                just(Token::Type(ScalarType::Bool)).to(Type::Bool),
+                just(Token::Type(ScalarType::Int)).to(Type::Int),
+                just(Token::Type(ScalarType::Long)).to(Type::Long),
+            ));
+
+            let record_type = type_
+                .clone()
+                .separated_by(just(Token::Ctrl(',')))
+                .allow_trailing()
+                .collect::<Vec<_>>()
+                .delimited_by(just(Token::Op("<")), just(Token::Op(">")))
+                .map(|v| Type::Record(v));
+
+            let dict_type = type_
+                .clone()
+                .then_ignore(just(Token::Arrow("->")))
+                .then(type_.clone())
+                .delimited_by(just(Token::Ctrl('{')), just(Token::Ctrl('}')))
+                .map(|(key, value)| Type::Dict {
+                    key: Box::new(key),
+                    value: Box::new(value),
+                    hint: None,
+                });
+
+            scalar.or(record_type).or(dict_type)
+        });
 
         let load = just(Token::Load)
             .ignore_then(type_.delimited_by(just(Token::Ctrl('[')), just(Token::Ctrl(']'))))
             .then(str_select.delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))))
-            .map_with(|(_type, path), e| (Expr::Load { r#type: None, path }, e.span()));
+            .map_with(|(r#type, path), e| {
+                (
+                    Expr::Load {
+                        r#type: Some(r#type),
+                        path,
+                    },
+                    e.span(),
+                )
+            });
 
         inline_expr.or(if_).or(sum).or(load)
     })

@@ -32,10 +32,7 @@ fn check_expr(src: &str, exp: Expr) {
     let (tokens, _errs) = lexer().parse(src).into_output_errors();
 
     let tokens = tokens.unwrap();
-    // for (t, _span) in &tokens {
-    //     println!("{t}");
-    // }
-    // assert!(_errs.is_empty());
+    let tokens_for_debug = tokens.clone();
 
     let tokens = tokens
         .as_slice()
@@ -46,6 +43,10 @@ fn check_expr(src: &str, exp: Expr) {
         .into_output_errors();
 
     if !parse_errs.is_empty() {
+        for (t, _span) in &tokens_for_debug {
+            println!("{t}");
+        }
+        assert!(_errs.is_empty());
         dbg!(&parse_errs);
     }
 
@@ -477,7 +478,11 @@ fn load() {
     check_expr(
         "load[{string -> bool}](\"foo.csv\")",
         Expr::Load {
-            r#type: None, // TODO [{string -> bool}]
+            r#type: Some(Type::Dict {
+                key: Box::new(Type::String),
+                value: Box::new(Type::Bool),
+                hint: None,
+            }),
             path: "foo.csv",
         },
     );

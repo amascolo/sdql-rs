@@ -99,6 +99,16 @@ pub(super) fn lexer<'src>()
     let arrows = just("<-").or(just("->")).map(Token::Arrow);
     let at = just("@").map(|_| Token::At);
 
+    let type_ = just("string")
+        .or(just("bool").or(just("int").or(just("long"))))
+        .map(|s| match s {
+            "string" => Token::Type(ScalarType::String),
+            "bool" => Token::Type(ScalarType::Bool),
+            "int" => Token::Type(ScalarType::Int),
+            "long" => Token::Type(ScalarType::Long),
+            _ => unreachable!(),
+        });
+
     let op = just("==")
         .or(just("!="))
         .or(just("<="))
@@ -135,7 +145,14 @@ pub(super) fn lexer<'src>()
         _ => Token::Ident(ident),
     });
 
-    let token = num.or(str_).or(arrows).or(op).or(at).or(ctrl).or(ident);
+    let token = num
+        .or(str_)
+        .or(arrows)
+        .or(op)
+        .or(at)
+        .or(ctrl)
+        .or(type_)
+        .or(ident);
 
     let comment = just("//")
         .then(any().and_is(just('\n').not()).repeated())
