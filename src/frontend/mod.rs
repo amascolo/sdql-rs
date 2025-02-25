@@ -288,7 +288,7 @@ where
 
         let type_ = recursive(|type_| {
             let scalar = choice((
-                just(Token::Type(ScalarType::String)).to(Type::String(None)),
+                just(Token::Type(ScalarType::String)).to(Type::String { max_len: None }),
                 just(Token::Type(ScalarType::Bool)).to(Type::Bool),
                 just(Token::Type(ScalarType::Int)).to(Type::Int),
                 just(Token::Type(ScalarType::Long)).to(Type::Long),

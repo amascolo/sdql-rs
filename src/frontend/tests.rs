@@ -465,7 +465,7 @@ fn load() {
         "load[{string -> bool}](\"foo.csv\")",
         Expr::Load {
             r#type: Type::Dict {
-                key: Box::new(Type::String(None)),
+                key: Box::new(Type::String { max_len: None }),
                 value: Box::new(Type::Bool),
                 hint: None,
             },
