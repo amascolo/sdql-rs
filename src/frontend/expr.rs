@@ -1,5 +1,8 @@
+#![allow(dead_code)]
+
 use super::lexer::{DictHint, Spanned};
 use super::r#type::Type;
+use std::fmt;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expr<'src> {
@@ -57,7 +60,6 @@ pub enum Expr<'src> {
     Unique(Box<Spanned<Self>>),
 }
 
-#[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value<'src> {
     Bool(bool),
@@ -95,8 +97,8 @@ pub enum BinaryOp {
     Or,
 }
 
-impl std::fmt::Display for Value<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Display for Value<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::String(x) => write!(f, "{x}"),
             Self::Bool(x) => write!(f, "{x}"),
@@ -104,5 +106,35 @@ impl std::fmt::Display for Value<'_> {
             Self::Long(x) => write!(f, "{x}"),
             Self::Float(x) => write!(f, "{x}"),
         }
+    }
+}
+
+impl fmt::Display for UnaryOp {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::Not => "!",
+            Self::Neg => "-",
+        }
+        .fmt(f)
+    }
+}
+
+impl fmt::Display for BinaryOp {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::Add => "+",
+            Self::Sub => "-",
+            Self::Mul => "*",
+            Self::Div => "/",
+            Self::Eq => "==",
+            Self::NotEq => "!=",
+            Self::Less => "<",
+            Self::Great => ">",
+            Self::LessEq => "<=",
+            Self::GreatEq => ">=",
+            Self::And => "&&",
+            Self::Or => "||",
+        }
+        .fmt(f)
     }
 }
