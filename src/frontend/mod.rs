@@ -5,7 +5,7 @@ mod tests;
 mod r#type;
 
 use chumsky::{input::ValueInput, prelude::*};
-use expr::{BinaryOp, Expr, Pair, UnaryOp, Value};
+use expr::{BinaryOp, DictEntry, Expr, RecordValue, UnaryOp, Value};
 use lexer::{DictHint, ScalarType, Span, Spanned, Token};
 use r#type::Type;
 
@@ -82,7 +82,7 @@ where
                 .map(|(hint, v)| Expr::Dict {
                     map: v
                         .into_iter()
-                        .map(|(key, value)| Pair { key, value })
+                        .map(|(key, value)| DictEntry { key, val: value })
                         .collect(),
                     hint: hint.map(|hint| match hint {
                         Token::DictHint(hint) => hint,
@@ -103,7 +103,7 @@ where
                 .map(|v| {
                     Expr::Record(
                         v.into_iter()
-                            .map(|(key, value)| Pair { key, value })
+                            .map(|(name, val)| RecordValue { name, val })
                             .collect(),
                     )
                 })

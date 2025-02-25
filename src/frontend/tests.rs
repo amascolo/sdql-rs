@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use super::*;
-use expr::{BinaryOp, Expr, Pair, Value};
+use expr::{BinaryOp, DictEntry, Expr, Value};
 use lexer::lexer;
 use r#type::Type;
 
@@ -325,9 +325,9 @@ fn dicts() {
     check_expr(
         "{k -> v}",
         Expr::Dict {
-            map: vec![Pair {
+            map: vec![DictEntry {
                 key: (Expr::Sym("k"), (1..2).into()),
-                value: (Expr::Sym("v"), (6..7).into()),
+                val: (Expr::Sym("v"), (6..7).into()),
             }],
             hint: None,
         },
@@ -336,9 +336,9 @@ fn dicts() {
     check_expr(
         "@hashdict {k -> v}",
         Expr::Dict {
-            map: vec![Pair {
+            map: vec![DictEntry {
                 key: (Expr::Sym("k"), (11..12).into()),
-                value: (Expr::Sym("v"), (16..17).into()),
+                val: (Expr::Sym("v"), (16..17).into()),
             }],
             hint: Some(DictHint::HashDict),
         },
@@ -347,9 +347,9 @@ fn dicts() {
     check_expr(
         "@sortdict {k -> v}",
         Expr::Dict {
-            map: vec![Pair {
+            map: vec![DictEntry {
                 key: (Expr::Sym("k"), (11..12).into()),
-                value: (Expr::Sym("v"), (16..17).into()),
+                val: (Expr::Sym("v"), (16..17).into()),
             }],
             hint: Some(DictHint::SortDict),
         },
@@ -358,9 +358,9 @@ fn dicts() {
     check_expr(
         "@smallvecdict {k -> v}",
         Expr::Dict {
-            map: vec![Pair {
+            map: vec![DictEntry {
                 key: (Expr::Sym("k"), (15..16).into()),
-                value: (Expr::Sym("v"), (20..21).into()),
+                val: (Expr::Sym("v"), (20..21).into()),
             }],
             hint: Some(DictHint::SmallVecDict),
         },
@@ -369,9 +369,9 @@ fn dicts() {
     check_expr(
         "@vec {k -> v}",
         Expr::Dict {
-            map: vec![Pair {
+            map: vec![DictEntry {
                 key: (Expr::Sym("k"), (6..7).into()),
-                value: (Expr::Sym("v"), (11..12).into()),
+                val: (Expr::Sym("v"), (11..12).into()),
             }],
             hint: Some(DictHint::Vec),
         },
@@ -383,13 +383,13 @@ fn records() {
     check_expr(
         "<a = 1, b = 2>",
         Expr::Record(vec![
-            Pair {
-                key: (Expr::Sym("a"), (1..2).into()),
-                value: (Expr::Value(Value::Float(1f64)), (5..6).into()),
+            RecordValue {
+                name: (Expr::Sym("a"), (1..2).into()),
+                val: (Expr::Value(Value::Float(1f64)), (5..6).into()),
             },
-            Pair {
-                key: (Expr::Sym("b"), (8..9).into()),
-                value: (Expr::Value(Value::Float(2f64)), (12..13).into()),
+            RecordValue {
+                name: (Expr::Sym("b"), (8..9).into()),
+                val: (Expr::Value(Value::Float(2f64)), (12..13).into()),
             },
         ]),
     );
@@ -447,9 +447,9 @@ fn sum() {
             head: Box::new((Expr::Sym("X"), (13..14).into())),
             body: Box::new((
                 Expr::Dict {
-                    map: vec![Pair {
+                    map: vec![DictEntry {
                         key: (Expr::Sym("k"), (17..18).into()),
-                        value: (Expr::Sym("v"), (22..23).into()),
+                        val: (Expr::Sym("v"), (22..23).into()),
                     }],
                     hint: None,
                 },

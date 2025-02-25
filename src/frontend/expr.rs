@@ -8,9 +8,9 @@ use std::fmt;
 pub enum Expr<'src> {
     Sym(&'src str),
     Value(Value<'src>),
-    Record(Vec<Pair<'src>>),
+    Record(Vec<RecordValue<'src>>),
     Dict {
-        map: Vec<Pair<'src>>,
+        map: Vec<DictEntry<'src>>,
         hint: Option<DictHint>,
     },
     Let {
@@ -70,9 +70,17 @@ pub enum Value<'src> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Pair<'src> {
+pub struct RecordValue<'src> {
+    // FIXME
+    // pub name: Field<'src>,
+    pub name: Spanned<Expr<'src>>,
+    pub val: Spanned<Expr<'src>>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct DictEntry<'src> {
     pub key: Spanned<Expr<'src>>,
-    pub value: Spanned<Expr<'src>>,
+    pub val: Spanned<Expr<'src>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
