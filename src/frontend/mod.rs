@@ -1,11 +1,12 @@
 #![allow(dead_code)]
 mod lexer;
 mod tests;
-
-use chumsky::{input::ValueInput, prelude::*};
+mod r#type;
 
 use crate::frontend::lexer::{DictHint, ScalarType};
+use chumsky::{input::ValueInput, prelude::*};
 use lexer::{Span, Spanned, Token};
+use r#type::Type;
 
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]
@@ -114,20 +115,6 @@ struct Sum<'src> {
     value: Spanned<Expr<'src>>,
     head: Spanned<Expr<'src>>,
     body: Spanned<Expr<'src>>,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub(crate) enum Type {
-    String,
-    Bool,
-    Int,
-    Long,
-    Record(Vec<Self>),
-    Dict {
-        key: Box<Self>,
-        value: Box<Self>,
-        hint: Option<DictHint>,
-    },
 }
 
 fn expr_parser<'src, I>()
@@ -340,7 +327,7 @@ where
 
         let type_ = recursive(|type_| {
             let scalar = choice((
-                just(Token::Type(ScalarType::String)).to(Type::String),
+                just(Token::Type(ScalarType::String)).to(Type::String(None)),
                 just(Token::Type(ScalarType::Bool)).to(Type::Bool),
                 just(Token::Type(ScalarType::Int)).to(Type::Int),
                 just(Token::Type(ScalarType::Long)).to(Type::Long),

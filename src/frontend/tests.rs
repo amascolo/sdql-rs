@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 use super::*;
+use crate::frontend::r#type::Type;
 use lexer::lexer;
 
 fn check_expr(src: &str, exp: Expr) {
@@ -454,7 +455,7 @@ fn load() {
         "load[{string -> bool}](\"foo.csv\")",
         Expr::Load {
             r#type: Some(Type::Dict {
-                key: Box::new(Type::String),
+                key: Box::new(Type::String(None)),
                 value: Box::new(Type::Bool),
                 hint: None,
             }),
