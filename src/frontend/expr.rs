@@ -54,7 +54,7 @@ pub enum Expr<'src> {
         args: Vec<Spanned<Self>>,
     },
     Promote {
-        r#type: Type,
+        r#type: Spanned<Type>,
         expr: Box<Spanned<Self>>,
     },
     Unique(Box<Spanned<Self>>),
@@ -71,9 +71,7 @@ pub enum Value<'src> {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecordValue<'src> {
-    // FIXME
-    // pub name: Field<'src>,
-    pub name: Spanned<Expr<'src>>,
+    pub name: Spanned<Field<'src>>,
     pub val: Spanned<Expr<'src>>,
 }
 

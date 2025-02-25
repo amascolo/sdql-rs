@@ -384,11 +384,11 @@ fn records() {
         "<a = 1, b = 2>",
         Expr::Record(vec![
             RecordValue {
-                name: (Expr::Sym("a"), (1..2).into()),
+                name: ("a".into(), (1..2).into()),
                 val: (Expr::Value(Value::Float(1f64)), (5..6).into()),
             },
             RecordValue {
-                name: (Expr::Sym("b"), (8..9).into()),
+                name: ("b".into(), (8..9).into()),
                 val: (Expr::Value(Value::Float(2f64)), (12..13).into()),
             },
         ]),

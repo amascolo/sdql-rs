@@ -90,8 +90,7 @@ where
                     }),
                 });
 
-            let record_items = expr
-                .clone()
+            let record_items = ident
                 .then_ignore(just(Token::Op("=")))
                 .then(expr.clone())
                 .separated_by(just(Token::Ctrl(',')))
@@ -103,7 +102,10 @@ where
                 .map(|v| {
                     Expr::Record(
                         v.into_iter()
-                            .map(|(name, val)| RecordValue { name, val })
+                            .map(|(name, val @ (_, span))| RecordValue {
+                                name: (name.into(), (span.start - 4..span.end - 4).into()), // FIXME
+                                val,
+                            })
                             .collect(),
                     )
                 })
