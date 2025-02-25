@@ -34,7 +34,7 @@ pub enum Expr<'src> {
         field: &'src str,
     },
     Load {
-        r#type: Option<Type>, // TODO remove option?
+        r#type: Type,
         path: &'src str,
     },
     Sum {

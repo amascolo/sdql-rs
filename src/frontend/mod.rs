@@ -319,15 +319,7 @@ where
         let load = just(Token::Load)
             .ignore_then(type_.delimited_by(just(Token::Ctrl('[')), just(Token::Ctrl(']'))))
             .then(str_select.delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))))
-            .map_with(|(r#type, path), e| {
-                (
-                    Expr::Load {
-                        r#type: Some(r#type),
-                        path,
-                    },
-                    e.span(),
-                )
-            });
+            .map_with(|(r#type, path), e| (Expr::Load { r#type, path }, e.span()));
 
         inline_expr.or(if_).or(sum).or(load)
     })

@@ -464,11 +464,11 @@ fn load() {
     check_expr(
         "load[{string -> bool}](\"foo.csv\")",
         Expr::Load {
-            r#type: Some(Type::Dict {
+            r#type: Type::Dict {
                 key: Box::new(Type::String(None)),
                 value: Box::new(Type::Bool),
                 hint: None,
-            }),
+            },
             path: "foo.csv",
         },
     );
