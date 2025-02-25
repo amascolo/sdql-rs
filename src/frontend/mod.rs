@@ -1,22 +1,13 @@
 #![allow(dead_code)]
+mod expr;
 mod lexer;
 mod tests;
 mod r#type;
 
-use crate::frontend::lexer::{DictHint, ScalarType};
 use chumsky::{input::ValueInput, prelude::*};
-use lexer::{Span, Spanned, Token};
+use expr::{BinaryOp, Dict, Expr, Pair, Sum, Value};
+use lexer::{DictHint, ScalarType, Span, Spanned, Token};
 use r#type::Type;
-
-#[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq)]
-enum Value<'src> {
-    Null,
-    Bool(bool),
-    Num(f64),
-    Str(&'src str),
-    List(Vec<Self>),
-}
 
 #[allow(dead_code)]
 // #[derive(Debug)]
@@ -37,84 +28,6 @@ impl Value<'_> {
             })
         }
     }
-}
-
-impl std::fmt::Display for Value<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::Null => write!(f, "null"),
-            Self::Bool(x) => write!(f, "{}", x),
-            Self::Num(x) => write!(f, "{}", x),
-            Self::Str(x) => write!(f, "{}", x),
-            Self::List(xs) => write!(
-                f,
-                "[{}]",
-                xs.iter()
-                    .map(|x| x.to_string())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ),
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-enum BinaryOp {
-    Add,
-    Sub,
-    Mul,
-    Div,
-    Eq,
-    NotEq,
-    Less,
-    Great,
-    LessEq,
-    GreatEq,
-    And,
-    Or,
-}
-
-// An expression node in the AST. Children are spanned so we can generate useful runtime errors.
-#[derive(Clone, Debug, PartialEq)]
-enum Expr<'src> {
-    Value(Value<'src>),
-    Record(Vec<Pair<'src>>),
-    Dict(Dict<'src>),
-    Local(&'src str),
-    Let(&'src str, Box<Spanned<Self>>, Box<Spanned<Self>>),
-    Not(Box<Spanned<Self>>),
-    Neg(Box<Spanned<Self>>),
-    Binary(Box<Spanned<Self>>, BinaryOp, Box<Spanned<Self>>),
-    If(Box<Spanned<Self>>, Box<Spanned<Self>>, Box<Spanned<Self>>),
-    Sum(Box<Sum<'src>>),
-    Field {
-        expr: Box<Spanned<Self>>,
-        field: &'src str,
-    },
-    Load {
-        r#type: Option<Type>,
-        path: &'src str,
-    },
-}
-
-#[derive(Clone, Debug, PartialEq, Default)]
-struct Dict<'src> {
-    map: Vec<Pair<'src>>,
-    hint: Option<DictHint>,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-struct Pair<'src> {
-    key: Spanned<Expr<'src>>,
-    value: Spanned<Expr<'src>>,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-struct Sum<'src> {
-    key: Spanned<Expr<'src>>,
-    value: Spanned<Expr<'src>>,
-    head: Spanned<Expr<'src>>,
-    body: Spanned<Expr<'src>>,
 }
 
 fn expr_parser<'src, I>()
