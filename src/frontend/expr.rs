@@ -33,6 +33,7 @@ pub enum Expr<'src> {
         expr: Box<Spanned<Self>>,
         field: &'src str,
     },
+    Get(Box<Spanned<Self>>, Box<Spanned<Self>>),
     Load {
         r#type: Type,
         path: &'src str,
