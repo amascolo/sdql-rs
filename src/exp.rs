@@ -14,16 +14,17 @@ pub enum Exp {
     IfThenElse(Box<Exp>, Box<Exp>, Box<Exp>),
     Sum(Sym, Sym, Box<Exp>, Box<Exp>),
     Get(Box<Exp>, Box<Exp>),
-    LetBinding(Sym, Box<Exp>, Box<Exp>),
+    // LetBinding(Sym, Box<Exp>, Box<Exp>),
     // Load(String, Type, DictNode),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
-    Int(i64),
-    Float(f64),
     Str(String),
     Bool(bool),
+    Int(i32),
+    Long(i64),
+    Float(f64),
 }
 
 pub type Field = String;

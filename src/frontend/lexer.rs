@@ -6,7 +6,6 @@ pub type Spanned<T> = (T, Span);
 
 #[derive(Clone, Debug, PartialEq)]
 pub(super) enum Token<'src> {
-    Null,
     Bool(bool),
     Num(f64),
     Str(&'src str),
@@ -57,7 +56,6 @@ impl fmt::Display for ScalarType {
 impl fmt::Display for Token<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Token::Null => write!(f, "null"),
             Token::Bool(x) => write!(f, "{x}"),
             Token::Num(n) => write!(f, "{n}"),
             Token::Str(s) => write!(f, "\"{s}\""),
@@ -135,7 +133,6 @@ pub(super) fn lexer<'src>()
         "else" => Token::Else,
         "true" => Token::Bool(true),
         "false" => Token::Bool(false),
-        "null" => Token::Null,
         "sum" => Token::Sum,
         "hashdict" => Token::DictHint(DictHint::HashDict),
         "sortdict" => Token::DictHint(DictHint::SortDict),

@@ -5,7 +5,7 @@ mod tests;
 mod r#type;
 
 use chumsky::{input::ValueInput, prelude::*};
-use expr::{BinaryOp, Dict, Expr, Pair, Sum, Value};
+use expr::{BinaryOp, Expr, Pair, UnaryOp, Value};
 use lexer::{DictHint, ScalarType, Span, Spanned, Token};
 use r#type::Type;
 
@@ -19,7 +19,7 @@ struct Error {
 impl Value<'_> {
     #[allow(dead_code)]
     fn num(self, span: Span) -> Result<f64, Error> {
-        if let Value::Num(x) = self {
+        if let Value::Float(x) = self {
             Ok(x)
         } else {
             Err(Error {
@@ -38,10 +38,9 @@ where
     recursive(|expr| {
         let inline_expr = recursive(|inline_expr| {
             let val = select! {
-                Token::Null => Expr::Value(Value::Null),
                 Token::Bool(x) => Expr::Value(Value::Bool(x)),
-                Token::Num(n) => Expr::Value(Value::Num(n)),
-                Token::Str(s) => Expr::Value(Value::Str(s)),
+                Token::Num(n) => Expr::Value(Value::Float(n)),
+                Token::Str(s) => Expr::Value(Value::String(s)),
             }
             .labelled("value");
 
@@ -54,7 +53,11 @@ where
                 .then(inline_expr)
                 .then_ignore(just(Token::In))
                 .then(expr.clone())
-                .map(|((name, val), body)| Expr::Let(name, Box::new(val), Box::new(body)));
+                .map(|((name, val), body)| Expr::Let {
+                    lhs: name,
+                    rhs: Box::new(val),
+                    cont: Box::new(body),
+                });
 
             let dict_items = expr
                 .clone()
@@ -76,17 +79,15 @@ where
             let dict = hint
                 .or_not()
                 .then(dict_items.delimited_by(just(Token::Ctrl('{')), just(Token::Ctrl('}'))))
-                .map(|(hint, v)| {
-                    Expr::Dict(Dict {
-                        map: v
-                            .into_iter()
-                            .map(|(key, value)| Pair { key, value })
-                            .collect(),
-                        hint: hint.map(|hint| match hint {
-                            Token::DictHint(hint) => hint,
-                            _ => unreachable!(),
-                        }),
-                    })
+                .map(|(hint, v)| Expr::Dict {
+                    map: v
+                        .into_iter()
+                        .map(|(key, value)| Pair { key, value })
+                        .collect(),
+                    hint: hint.map(|hint| match hint {
+                        Token::DictHint(hint) => hint,
+                        _ => unreachable!(),
+                    }),
                 });
 
             let record_items = expr
@@ -109,7 +110,7 @@ where
                 .delimited_by(just(Token::Op("<")), just(Token::Op(">")));
 
             let atom = val
-                .or(ident.map(Expr::Local))
+                .or(ident.map(Expr::Sym))
                 .or(let_)
                 .or(dict)
                 .or(record)
@@ -122,7 +123,13 @@ where
             let neg = just(Token::Op("-"))
                 .repeated()
                 .foldr(atom, |_op, rhs @ (_, span)| {
-                    (Expr::Neg(Box::new(rhs)), (span.start - 1..span.end).into())
+                    (
+                        Expr::Unary {
+                            op: UnaryOp::Neg,
+                            expr: Box::new(rhs),
+                        },
+                        (span.start - 1..span.end).into(),
+                    )
                 });
 
             let field = neg
@@ -142,7 +149,13 @@ where
             let not = just(Token::Op("!"))
                 .repeated()
                 .foldr(field, |_op, rhs @ (_, span)| {
-                    (Expr::Not(Box::new(rhs)), (span.start - 1..span.end).into())
+                    (
+                        Expr::Unary {
+                            op: UnaryOp::Not,
+                            expr: Box::new(rhs),
+                        },
+                        (span.start - 1..span.end).into(),
+                    )
                 });
 
             // Product ops (multiply and divide) have equal precedence
@@ -152,7 +165,14 @@ where
             let product = not
                 .clone()
                 .foldl_with(op.then(not).repeated(), |a, (op, b), e| {
-                    (Expr::Binary(Box::new(a), op, Box::new(b)), e.span())
+                    (
+                        Expr::Binary {
+                            lhs: Box::new(a),
+                            op,
+                            rhs: Box::new(b),
+                        },
+                        e.span(),
+                    )
                 });
 
             // Sum ops (add and subtract) have equal precedence
@@ -162,7 +182,14 @@ where
             let sum = product
                 .clone()
                 .foldl_with(op.then(product).repeated(), |a, (op, b), e| {
-                    (Expr::Binary(Box::new(a), op, Box::new(b)), e.span())
+                    (
+                        Expr::Binary {
+                            lhs: Box::new(a),
+                            op,
+                            rhs: Box::new(b),
+                        },
+                        e.span(),
+                    )
                 });
 
             // Comparison ops (equal, not-equal, etc) have equal precedence
@@ -177,21 +204,42 @@ where
             let compare = sum
                 .clone()
                 .foldl_with(op.then(sum).repeated(), |a, (op, b), e| {
-                    (Expr::Binary(Box::new(a), op, Box::new(b)), e.span())
+                    (
+                        Expr::Binary {
+                            lhs: Box::new(a),
+                            op,
+                            rhs: Box::new(b),
+                        },
+                        e.span(),
+                    )
                 });
 
             let op = just(Token::Op("&&")).to(BinaryOp::And);
             let and = compare
                 .clone()
                 .foldl_with(op.then(compare).repeated(), |a, (op, b), e| {
-                    (Expr::Binary(Box::new(a), op, Box::new(b)), e.span())
+                    (
+                        Expr::Binary {
+                            lhs: Box::new(a),
+                            op,
+                            rhs: Box::new(b),
+                        },
+                        e.span(),
+                    )
                 });
 
             let op = just(Token::Op("||")).to(BinaryOp::Or);
             let or = and
                 .clone()
                 .foldl_with(op.then(and).repeated(), |a, (op, b), e| {
-                    (Expr::Binary(Box::new(a), op, Box::new(b)), e.span())
+                    (
+                        Expr::Binary {
+                            lhs: Box::new(a),
+                            op,
+                            rhs: Box::new(b),
+                        },
+                        e.span(),
+                    )
                 });
 
             or.labelled("expression").as_context()
@@ -204,11 +252,11 @@ where
                 .then(just(Token::Else).ignore_then(expr.clone().or(if_)).or_not())
                 .map_with(|((cond, a), b), e| {
                     (
-                        Expr::If(
-                            Box::new(cond),
-                            Box::new(a),
-                            Box::new(b.unwrap_or_else(|| (Expr::Value(Value::Null), e.span()))),
-                        ),
+                        Expr::If {
+                            r#if: Box::new(cond),
+                            then: Box::new(a),
+                            r#else: b.map(Box::new),
+                        },
                         e.span(),
                     )
                 })
@@ -224,14 +272,14 @@ where
                     .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
             )
             .then(inline_expr.clone())
-            .map_with(|(((key, value), head), body), e| {
+            .map_with(|(((key, val), head), body), e| {
                 (
-                    Expr::Sum(Box::new(Sum {
-                        key,
-                        value,
-                        head,
-                        body,
-                    })),
+                    Expr::Sum {
+                        key: Box::new(key),
+                        val: Box::new(val),
+                        head: Box::new(head),
+                        body: Box::new(body),
+                    },
                     e.span(),
                 )
             });

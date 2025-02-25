@@ -3,40 +3,67 @@ use super::r#type::Type;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expr<'src> {
+    Sym(&'src str),
     Value(Value<'src>),
     Record(Vec<Pair<'src>>),
-    Dict(Dict<'src>),
-    Local(&'src str),
-    Let(&'src str, Box<Spanned<Self>>, Box<Spanned<Self>>),
-    Not(Box<Spanned<Self>>),
-    Neg(Box<Spanned<Self>>),
-    Binary(Box<Spanned<Self>>, BinaryOp, Box<Spanned<Self>>),
-    If(Box<Spanned<Self>>, Box<Spanned<Self>>, Box<Spanned<Self>>),
-    Sum(Box<Sum<'src>>),
+    Dict {
+        map: Vec<Pair<'src>>,
+        hint: Option<DictHint>,
+    },
+    Let {
+        lhs: &'src str,
+        rhs: Box<Spanned<Self>>,
+        cont: Box<Spanned<Self>>,
+    },
+    Unary {
+        op: UnaryOp,
+        expr: Box<Spanned<Self>>,
+    },
+    Binary {
+        lhs: Box<Spanned<Self>>,
+        op: BinaryOp,
+        rhs: Box<Spanned<Self>>,
+    },
+    If {
+        r#if: Box<Spanned<Self>>,
+        then: Box<Spanned<Self>>,
+        r#else: Option<Box<Spanned<Self>>>,
+    },
     Field {
         expr: Box<Spanned<Self>>,
         field: &'src str,
     },
     Load {
-        r#type: Option<Type>,
+        r#type: Option<Type>, // TODO remove option?
         path: &'src str,
     },
+    Sum {
+        key: Box<Spanned<Self>>,
+        val: Box<Spanned<Self>>,
+        head: Box<Spanned<Self>>,
+        body: Box<Spanned<Self>>,
+    },
+    Range(Box<Spanned<Self>>),
+    Concat(Box<Spanned<Self>>, Box<Spanned<Self>>),
+    External {
+        func: &'src str,
+        args: Vec<Spanned<Self>>,
+    },
+    Promote {
+        r#type: Type,
+        expr: Box<Spanned<Self>>,
+    },
+    Unique(Box<Spanned<Self>>),
 }
 
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value<'src> {
-    Null,
     Bool(bool),
-    Num(f64),
-    Str(&'src str),
-    List(Vec<Self>),
-}
-
-#[derive(Clone, Debug, PartialEq, Default)]
-pub struct Dict<'src> {
-    pub map: Vec<Pair<'src>>,
-    pub hint: Option<DictHint>,
+    Float(f64),
+    Int(i32),
+    Long(i64),
+    String(&'src str),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -46,11 +73,9 @@ pub struct Pair<'src> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Sum<'src> {
-    pub key: Spanned<Expr<'src>>,
-    pub value: Spanned<Expr<'src>>,
-    pub head: Spanned<Expr<'src>>,
-    pub body: Spanned<Expr<'src>>,
+pub enum UnaryOp {
+    Not,
+    Neg,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -72,18 +97,11 @@ pub enum BinaryOp {
 impl std::fmt::Display for Value<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::Null => write!(f, "null"),
-            Self::Bool(x) => write!(f, "{}", x),
-            Self::Num(x) => write!(f, "{}", x),
-            Self::Str(x) => write!(f, "{}", x),
-            Self::List(xs) => write!(
-                f,
-                "[{}]",
-                xs.iter()
-                    .map(|x| x.to_string())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ),
+            Self::String(x) => write!(f, "{x}"),
+            Self::Bool(x) => write!(f, "{x}"),
+            Self::Int(x) => write!(f, "{x}"),
+            Self::Long(x) => write!(f, "{x}"),
+            Self::Float(x) => write!(f, "{x}"),
         }
     }
 }
