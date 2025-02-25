@@ -466,7 +466,7 @@ fn load() {
         Expr::Load {
             r#type: Type::Dict {
                 key: Box::new(Type::String { max_len: None }),
-                value: Box::new(Type::Bool),
+                val: Box::new(Type::Bool),
                 hint: None,
             },
             path: "foo.csv",

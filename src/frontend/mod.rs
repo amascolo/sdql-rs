@@ -82,7 +82,7 @@ where
                 .map(|(hint, v)| Expr::Dict {
                     map: v
                         .into_iter()
-                        .map(|(key, value)| DictEntry { key, val: value })
+                        .map(|(key, val)| DictEntry { key, val })
                         .collect(),
                     hint: hint.map(|hint| match hint {
                         Token::DictHint(hint) => hint,
@@ -309,9 +309,9 @@ where
                 .then_ignore(just(Token::Arrow("->")))
                 .then(type_.clone())
                 .delimited_by(just(Token::Ctrl('{')), just(Token::Ctrl('}')))
-                .map(|(key, value)| Type::Dict {
+                .map(|(key, val)| Type::Dict {
                     key: Box::new(key),
-                    value: Box::new(value),
+                    val: Box::new(val),
                     hint: None,
                 });
 

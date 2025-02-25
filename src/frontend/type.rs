@@ -13,7 +13,7 @@ pub(crate) enum Type {
     Record(Vec<Self>),
     Dict {
         key: Box<Self>,
-        value: Box<Self>,
+        val: Box<Self>,
         hint: Option<DictHint>,
     },
 }

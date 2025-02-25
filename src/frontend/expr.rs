@@ -83,8 +83,8 @@ pub struct DictEntry<'src> {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum UnaryOp {
-    Not,
     Neg,
+    Not,
 }
 
 #[derive(Clone, Debug, PartialEq)]
