@@ -24,7 +24,7 @@ impl Value<'_> {
         } else {
             Err(Error {
                 span,
-                msg: format!("'{}' is not a number", self),
+                msg: format!("'{self}' is not a number"),
             })
         }
     }
