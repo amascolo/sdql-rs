@@ -401,7 +401,7 @@ fn fields() {
         "x.name",
         Expr::Field {
             expr: Box::new((Expr::Sym("x"), (0..1).into())),
-            field: "name",
+            field: "name".into(),
         },
     );
 
@@ -411,7 +411,7 @@ fn fields() {
             lhs: Box::new((
                 Expr::Field {
                     expr: Box::new((Expr::Sym("x"), (0..1).into())),
-                    field: "foo",
+                    field: "foo".into(),
                 },
                 (0..5).into(),
             )),
@@ -419,7 +419,7 @@ fn fields() {
             rhs: Box::new((
                 Expr::Field {
                     expr: Box::new((Expr::Sym("y"), (8..9).into())),
-                    field: "doo",
+                    field: "doo".into(),
                 },
                 (8..13).into(),
             )),

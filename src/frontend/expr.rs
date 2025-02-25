@@ -34,7 +34,7 @@ pub enum Expr<'src> {
     },
     Field {
         expr: Box<Spanned<Self>>,
-        field: &'src str,
+        field: Field<'src>,
     },
     Get(Box<Spanned<Self>>, Box<Spanned<Self>>),
     Load {
@@ -95,6 +95,15 @@ pub enum BinaryOp {
     GreatEq,
     And,
     Or,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Field<'src>(&'src str);
+
+impl<'src> From<&'src str> for Field<'src> {
+    fn from(s: &'src str) -> Self {
+        Field(s)
+    }
 }
 
 impl fmt::Display for Value<'_> {

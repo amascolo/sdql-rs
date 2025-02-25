@@ -140,7 +140,7 @@ where
                     Some(field) => (
                         Expr::Field {
                             expr: Box::new(expr),
-                            field,
+                            field: field.into(),
                         },
                         e.span(),
                     ),
