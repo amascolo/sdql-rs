@@ -56,7 +56,7 @@ impl fmt::Display for Type<'_> {
                     "<{}>",
                     fields
                         .iter()
-                        .map(|rt| format!("{rt}"))
+                        .map(ToString::to_string)
                         .collect::<Vec<_>>()
                         .join(", ")
                 )

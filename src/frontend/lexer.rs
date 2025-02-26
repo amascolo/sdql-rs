@@ -2,7 +2,7 @@ use chumsky::prelude::*;
 use std::fmt;
 
 pub type Span = SimpleSpan;
-pub type Spanned<T> = (T, Span);
+pub type Spanned<T> = (T, Span); // TODO newtype + display
 
 #[derive(Clone, Debug, PartialEq)]
 pub(super) enum Token<'src> {
