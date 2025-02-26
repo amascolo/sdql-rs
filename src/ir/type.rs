@@ -2,7 +2,7 @@ use derive_more::Display;
 use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum Type<'src> {
+pub enum Type<'src> {
     Bool,
     Int,
     Long,
@@ -25,7 +25,7 @@ pub struct RecordType<'src> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) enum DictHint {
+pub enum DictHint {
     HashDict,
     SortDict,
     SmallVecDict,

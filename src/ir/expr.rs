@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
-use super::lexer::Spanned;
-use super::r#type::{DictHint, Field, Type};
+use crate::frontend::lexer::Spanned;
+use crate::ir::r#type::{DictHint, Field, Type};
 use std::fmt;
 use time::Date;
 

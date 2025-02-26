@@ -1,13 +1,11 @@
 #![allow(dead_code)]
-mod expr;
-mod lexer;
+pub mod lexer;
 mod tests;
-mod r#type;
 
+use crate::ir::expr::{BinaryOp, DictEntry, Expr, RecordValue, UnaryOp};
+use crate::ir::r#type::{DictHint, RecordType, Type};
 use chumsky::{input::ValueInput, prelude::*};
-use expr::{BinaryOp, DictEntry, Expr, RecordValue, UnaryOp};
 use lexer::{ScalarType, Spanned, Token};
-use r#type::{DictHint, RecordType, Type};
 
 #[allow(dead_code)]
 // #[derive(Debug)]

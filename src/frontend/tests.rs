@@ -1,9 +1,9 @@
 #![cfg(test)]
 
 use super::*;
-use expr::{BinaryOp, DictEntry, Expr};
+use crate::ir::expr::{BinaryOp, DictEntry, Expr};
+use crate::ir::r#type::{DictHint, Type};
 use lexer::lexer;
-use r#type::Type;
 
 fn check_expr(src: &str, exp: Expr) {
     let (tokens, _errs) = lexer().parse(src).into_output_errors();

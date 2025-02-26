@@ -1,4 +1,4 @@
-use crate::frontend::r#type::DictHint;
+use crate::ir::r#type::DictHint;
 use chumsky::prelude::*;
 use std::fmt;
 
