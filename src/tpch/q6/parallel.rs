@@ -1,4 +1,5 @@
 use super::TypeQ6;
+use super::{_19940101, _19950101};
 use crate::tpch::read::read_lineitems;
 use crate::tpch::types::Lineitem;
 use rayon::prelude::*;
@@ -16,8 +17,8 @@ pub fn q6_query_rayon(lineitem: &Lineitem) -> TypeQ6 {
             if (0.05 <= /* discount */ lineitem.6[i])
                 && (/* discount */lineitem.6[i] <= 0.07)
                 && (/* quantity */lineitem.4[i] < 24f64)
-                && (19940101 <= /* shipdate */ lineitem.10[i])
-                && (/* shipdate */lineitem.10[i] < 19950101)
+                && (_19940101 <= /* shipdate */ lineitem.10[i])
+                && (/* shipdate */lineitem.10[i] < _19950101)
             {
                 /* extendedprice */
                 lineitem.5[i] * /* discount */ lineitem.6[i]
@@ -27,18 +28,3 @@ pub fn q6_query_rayon(lineitem: &Lineitem) -> TypeQ6 {
         })
         .sum()
 }
-
-// note: this performed 25% faster
-// pub fn q6_query_rayon(lineitem: &Lineitem) -> TypeQ6 {
-//     (0../* size */ lineitem.16)
-//         .into_par_iter()
-//         .filter(|&i| {
-//             (0.05 <= /* discount */ lineitem.6[i])
-//                 && (/* discount */lineitem.6[i] <= 0.07)
-//                 && (/* quantity */lineitem.4[i] < 24f64)
-//                 && (19940101 <= /* shipdate */ lineitem.10[i])
-//                 && (/* shipdate */lineitem.10[i] < 19950101)
-//         })
-//         .map(|i| /* extendedprice */ lineitem.5[i] * /* discount */ lineitem.6[i])
-//         .sum()
-// }

@@ -1,4 +1,5 @@
 use super::TypeQ3;
+use super::_19950315;
 use crate::tpch::read::{read_customers, read_lineitems, read_orders};
 use crate::tpch::types::{Customer, Lineitem, Orders};
 use hashbrown::HashMap;
@@ -28,7 +29,7 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
     let o_h: HashMap<_, _> = (0../* size */ orders.9)
         .into_par_iter()
         .filter(|&i| c_h.contains_key(&/* custkey */ orders.1[i]))
-        .filter(|&i| /* orderdate */ orders.4[i] < 19950315)
+        .filter(|&i| /* orderdate */ orders.4[i] < _19950315)
         .map(|i| {
             (
                 /* orderkey */ orders.0[i],
@@ -42,7 +43,7 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
 
     let l_h = (0../* size */ lineitem.16)
         .into_par_iter()
-        .filter(|&i| /* shipdate */ lineitem.10[i] > 19950315)
+        .filter(|&i| /* shipdate */ lineitem.10[i] > _19950315)
         .filter(|&i| o_h.contains_key(&/* orderkey */ lineitem.0[i]))
         .fold(
             HashMap::new,

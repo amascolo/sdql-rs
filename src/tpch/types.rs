@@ -1,3 +1,5 @@
+use time::Date;
+
 pub type Customer = (
     /* custkey */ Vec<i32>,
     /* name */ Vec<String>,
@@ -15,7 +17,7 @@ pub type Orders = (
     /* custkey */ Vec<i32>,
     /* orderstatus */ Vec<String>,
     /* totalprice */ Vec<f64>,
-    /* orderdate */ Vec<i32>,
+    /* orderdate */ Vec<Date>,
     /* orderpriority */ Vec<String>,
     /* clerk */ Vec<String>,
     /* shippriority */ Vec<i32>,
@@ -34,9 +36,9 @@ pub type Lineitem = (
     /* tax */ Vec<f64>,
     /* returnflag */ Vec<String>,
     /* linestatus */ Vec<String>,
-    /* shipdate */ Vec<i32>,
-    /* commitdate */ Vec<i32>,
-    /* receiptdate */ Vec<i32>,
+    /* shipdate */ Vec<Date>,
+    /* commitdate */ Vec<Date>,
+    /* receiptdate */ Vec<Date>,
     /* shipinstruct */ Vec<String>,
     /* shipmode */ Vec<String>,
     /* comment */ Vec<String>,
