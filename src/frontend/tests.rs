@@ -462,13 +462,16 @@ fn sum() {
 #[test]
 fn load() {
     check_expr(
-        "load[{string -> bool}](\"foo.csv\")",
+        "load[<foobar: {string -> bool}>](\"foo.csv\")",
         Expr::Load {
-            r#type: Type::Dict {
-                key: Box::new(Type::String { max_len: None }),
-                val: Box::new(Type::Bool),
-                hint: None,
-            },
+            r#type: Type::Record(vec![RecordType {
+                name: "foobar".into(),
+                r#type: Type::Dict {
+                    key: Box::new(Type::String { max_len: None }),
+                    val: Box::new(Type::Bool),
+                    hint: None,
+                },
+            }]),
             path: "foo.csv",
         },
     );

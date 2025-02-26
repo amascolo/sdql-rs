@@ -7,7 +7,7 @@ mod r#type;
 use chumsky::{input::ValueInput, prelude::*};
 use expr::{BinaryOp, DictEntry, Expr, RecordValue, UnaryOp, Value};
 use lexer::{DictHint, ScalarType, Span, Spanned, Token};
-use r#type::Type;
+use r#type::{RecordType, Type};
 
 #[allow(dead_code)]
 // #[derive(Debug)]
@@ -296,13 +296,25 @@ where
                 just(Token::Type(ScalarType::Long)).to(Type::Long),
             ));
 
-            let record_type = type_
-                .clone()
+            let ident = select! { Token::Ident(ident) => ident }.labelled("identifier"); // TODO
+
+            let record_type = ident
+                .then_ignore(just(Token::Ctrl(':')))
+                .then(type_.clone())
                 .separated_by(just(Token::Ctrl(',')))
                 .allow_trailing()
                 .collect::<Vec<_>>()
                 .delimited_by(just(Token::Op("<")), just(Token::Op(">")))
-                .map(|v| Type::Record(v));
+                .map(|v| {
+                    Type::Record(
+                        v.into_iter()
+                            .map(|(name, r#type)| RecordType {
+                                name: name.into(),
+                                r#type,
+                            })
+                            .collect(),
+                    )
+                });
 
             let dict_type = type_
                 .clone()

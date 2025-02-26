@@ -1,8 +1,9 @@
+use crate::frontend::expr::Field;
 use crate::frontend::lexer::DictHint;
 use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum Type {
+pub(crate) enum Type<'src> {
     Bool,
     Int,
     Long,
@@ -10,7 +11,7 @@ pub(crate) enum Type {
     String {
         max_len: Option<i32>,
     },
-    Record(Vec<Self>),
+    Record(Vec<RecordType<'src>>),
     Dict {
         key: Box<Self>,
         val: Box<Self>,
@@ -18,7 +19,13 @@ pub(crate) enum Type {
     },
 }
 
-impl fmt::Display for Type {
+#[derive(Clone, Debug, PartialEq)]
+pub struct RecordType<'src> {
+    pub name: Field<'src>,
+    pub r#type: Type<'src>,
+}
+
+impl fmt::Display for Type<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::Bool => write!(f, "bool"),

@@ -38,7 +38,7 @@ pub enum Expr<'src> {
     },
     Get(Box<Spanned<Self>>, Box<Spanned<Self>>),
     Load {
-        r#type: Type,
+        r#type: Type<'src>,
         path: &'src str,
     },
     Sum {
@@ -54,7 +54,7 @@ pub enum Expr<'src> {
         args: Vec<Spanned<Self>>,
     },
     Promote {
-        r#type: Spanned<Type>,
+        r#type: Spanned<Type<'src>>,
         expr: Box<Spanned<Self>>,
     },
     Unique(Box<Spanned<Self>>),

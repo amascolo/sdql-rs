@@ -75,7 +75,7 @@ impl fmt::Display for Token<'_> {
             Token::DictHint(DictHint::SmallVecDict) => write!(f, "smallvecdict"),
             Token::DictHint(DictHint::Vec) => write!(f, "vec"),
             Token::Load => write!(f, "load"),
-            Token::Type(type_) => write!(f, "{type_}"),
+            Token::Type(t) => write!(f, "{t}"),
         }
     }
 }
@@ -123,7 +123,7 @@ pub(super) fn lexer<'src>()
         .or(just("/"))
         .map(Token::Op);
 
-    let ctrl = one_of("()[]{};,.").map(Token::Ctrl);
+    let ctrl = one_of("()[]{}:;,.").map(Token::Ctrl);
 
     let ident = text::ascii::ident().map(|ident: &str| match ident {
         "let" => Token::Let,
