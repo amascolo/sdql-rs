@@ -80,7 +80,7 @@ impl fmt::Display for RecordType<'_> {
 impl fmt::Display for DictHint {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::HashDict => "hasdict",
+            Self::HashDict => "hashdict",
             Self::SortDict => "sortdict",
             Self::SmallVecDict => "smallvecdict",
             Self::Vec => "vec",
