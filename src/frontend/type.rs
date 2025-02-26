@@ -36,7 +36,21 @@ impl fmt::Display for Type<'_> {
                 max_len: Some(max_len),
             } => write!(f, "string({max_len})"),
             Self::String { max_len: None } => write!(f, "string"),
-            _ => todo!(),
+            Self::Record(fields) => {
+                write!(
+                    f,
+                    "<{}>",
+                    fields
+                        .iter()
+                        .map(|rt| format!("{}: {}", rt.name, rt.r#type))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )
+            }
+            Self::Dict { key, val, hint } => match hint {
+                Some(hint) => write!(f, "@{hint} {{{key} -> {val}}}"),
+                None => write!(f, "{{{key} -> {val}}}"),
+            },
         }
     }
 }

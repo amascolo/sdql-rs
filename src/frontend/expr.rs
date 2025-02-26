@@ -2,6 +2,7 @@
 
 use super::lexer::{DictHint, Spanned};
 use super::r#type::Type;
+use derive_more::Display;
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -103,7 +104,7 @@ pub enum BinaryOp {
     Or,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Debug, Display, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Field<'src>(&'src str);
 
 impl<'src> From<&'src str> for Field<'src> {
