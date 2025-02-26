@@ -7,14 +7,30 @@ use time::Date;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expr<'src> {
-    Sym(&'src str),
-    Bool(bool),
-    Date(Date),
-    Float(f64),
-    Int(i32),
-    Long(i64),
-    String(&'src str),
-    Record(Vec<RecordValue<'src>>),
+    Sym {
+        val: &'src str,
+    },
+    Bool {
+        val: bool,
+    },
+    Date {
+        val: Date,
+    },
+    Float {
+        val: f64,
+    },
+    Int {
+        val: i32,
+    },
+    Long {
+        val: i64,
+    },
+    String {
+        val: &'src str,
+    },
+    Record {
+        vals: Vec<RecordValue<'src>>,
+    },
     Dict {
         map: Vec<DictEntry<'src>>,
         hint: Option<DictHint>,
@@ -42,7 +58,10 @@ pub enum Expr<'src> {
         expr: Box<Spanned<Self>>,
         field: Field<'src>,
     },
-    Get(Box<Spanned<Self>>, Box<Spanned<Self>>),
+    Get {
+        lhs: Box<Spanned<Self>>,
+        rhs: Box<Spanned<Self>>,
+    },
     Load {
         r#type: Type<'src>,
         path: &'src str,
@@ -53,17 +72,24 @@ pub enum Expr<'src> {
         head: Box<Spanned<Self>>,
         body: Box<Spanned<Self>>,
     },
-    Range(Box<Spanned<Self>>),
-    Concat(Box<Spanned<Self>>, Box<Spanned<Self>>),
+    Range {
+        expr: Box<Spanned<Self>>,
+    },
+    Concat {
+        lhs: Box<Spanned<Self>>,
+        rhs: Box<Spanned<Self>>,
+    },
     External {
         func: &'src str, // TODO enum
         args: Vec<Spanned<Self>>,
     },
     Promote {
-        r#type: Spanned<Type<'src>>,
+        r#type: Spanned<Type<'src>>, // TODO rename to promo
         expr: Box<Spanned<Self>>,
     },
-    Unique(Box<Spanned<Self>>),
+    Unique {
+        expr: Box<Spanned<Self>>,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -103,18 +129,17 @@ pub enum BinaryOp {
 impl fmt::Display for Expr<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Sym(x) => write!(f, "{x}"),
-            Self::Bool(x) => write!(f, "{x}"),
-            Self::Date(x) => write!(f, "{x}"),
-            Self::Float(x) => write!(f, "{x}"),
-            Self::Int(x) => write!(f, "{x}"),
-            Self::Long(x) => write!(f, "{x}"),
-            Self::String(x) => write!(f, "\"{x}\""),
-            Self::Record(fields) => write!(
+            Self::Sym { val } => write!(f, "{val}"),
+            Self::Bool { val } => write!(f, "{val}"),
+            Self::Date { val } => write!(f, "{val}"),
+            Self::Float { val } => write!(f, "{val}"),
+            Self::Int { val } => write!(f, "{val}"),
+            Self::Long { val } => write!(f, "{val}"),
+            Self::String { val } => write!(f, "\"{val}\""),
+            Self::Record { vals } => write!(
                 f,
                 "<{}>",
-                fields
-                    .iter()
+                vals.iter()
                     .map(ToString::to_string)
                     .collect::<Vec<_>>()
                     .join(", ")
@@ -138,7 +163,7 @@ impl fmt::Display for Expr<'_> {
                 None => write!(f, "if {} then {}", r#if.0, then.0),
             },
             Self::Field { expr, field } => write!(f, "{}.{}", expr.0, field),
-            Self::Get(lhs, rhs) => write!(f, "{}({})", lhs.0, rhs.0),
+            Self::Get { lhs, rhs } => write!(f, "{}({})", lhs.0, rhs.0),
             Self::Load { r#type, path } => write!(f, "load[{}]({})", r#type, path),
             Self::Sum {
                 key,
@@ -146,8 +171,8 @@ impl fmt::Display for Expr<'_> {
                 head,
                 body,
             } => write!(f, "sum(<{}, {}> <- {}) {}", key.0, val.0, head.0, body.0),
-            Self::Range(e) => write!(f, "range({})", e.0),
-            Self::Concat(lhs, rhs) => write!(f, "concat({}, {})", lhs.0, rhs.0),
+            Self::Range { expr } => write!(f, "range({})", expr.0),
+            Self::Concat { lhs, rhs } => write!(f, "concat({}, {})", lhs.0, rhs.0),
             Self::External { func, args } => write!(
                 f,
                 "ext(`{}`, {})",
@@ -158,7 +183,7 @@ impl fmt::Display for Expr<'_> {
                     .join(", ")
             ),
             Self::Promote { r#type, expr } => write!(f, "promote[{}]({})", r#type.0, expr.0),
-            Self::Unique(e) => write!(f, "unique({})", e.0),
+            Self::Unique { expr } => write!(f, "unique({})", expr.0),
         }
     }
 }

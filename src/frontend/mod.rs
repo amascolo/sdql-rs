@@ -24,9 +24,9 @@ where
     recursive(|expr| {
         let inline_expr = recursive(|inline_expr| {
             let val = select! {
-                Token::Bool(x) => Expr::Bool(x),
-                Token::Num(n) => Expr::Float(n),
-                Token::Str(s) => Expr::String(s),
+                Token::Bool(x) => Expr::Bool{val: x},
+                Token::Num(n) => Expr::Float{val: n},
+                Token::Str(s) => Expr::String{val:s},
             }
             .labelled("value");
 
@@ -86,19 +86,20 @@ where
             let record = record_items
                 .clone()
                 .map(|v| {
-                    Expr::Record(
-                        v.into_iter()
+                    Expr::Record {
+                        vals: v
+                            .into_iter()
                             .map(|(name, val @ (_, span))| RecordValue {
                                 name: (name.into(), (span.start - 4..span.end - 4).into()), // FIXME
                                 val,
                             })
                             .collect(),
-                    )
+                    }
                 })
                 .delimited_by(just(Token::Op("<")), just(Token::Op(">")));
 
             let atom = val
-                .or(ident.map(Expr::Sym))
+                .or(ident.map(|val| Expr::Sym { val }))
                 .or(let_)
                 .or(dict)
                 .or(record)
