@@ -12,11 +12,13 @@ pub fn q6_rayon(sf: &str) -> Result<TypeQ6, Box<dyn Error>> {
 pub fn q6_query_rayon(lineitem: &Lineitem) -> TypeQ6 {
     (0../* size */ lineitem.16)
         .into_par_iter()
-        .filter(|&i| 0.05 <= /* discount */ lineitem.6[i])
-        .filter(|&i| /* discount */ lineitem.6[i] <= 0.07)
-        .filter(|&i| /* quantity */ lineitem.4[i] < 24f64)
-        .filter(|&i| 19940101 <= /* shipdate */ lineitem.10[i])
-        .filter(|&i| /* shipdate */ lineitem.10[i] < 19950101)
+        .filter(|&i| {
+            (0.05 <= /* discount */ lineitem.6[i])
+                && (/* discount */lineitem.6[i] <= 0.07)
+                && (/* quantity */lineitem.4[i] < 24f64)
+                && (19940101 <= /* shipdate */ lineitem.10[i])
+                && (/* shipdate */lineitem.10[i] < 19950101)
+        })
         .map(|i| /* extendedprice */ lineitem.5[i] * /* discount */ lineitem.6[i])
         .sum()
 }
