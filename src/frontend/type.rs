@@ -1,6 +1,14 @@
-use crate::frontend::expr::Field;
 use crate::frontend::lexer::DictHint;
+use derive_more::Display;
 use std::fmt;
+
+#[derive(Clone, Debug, Display, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Field<'src>(&'src str);
+impl<'src> From<&'src str> for Field<'src> {
+    fn from(s: &'src str) -> Self {
+        Field(s)
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Type<'src> {
@@ -25,6 +33,12 @@ pub struct RecordType<'src> {
     pub r#type: Type<'src>,
 }
 
+impl fmt::Display for RecordType<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}: {}", self.name, self.r#type)
+    }
+}
+
 impl fmt::Display for Type<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -42,7 +56,7 @@ impl fmt::Display for Type<'_> {
                     "<{}>",
                     fields
                         .iter()
-                        .map(|rt| format!("{}: {}", rt.name, rt.r#type))
+                        .map(|rt| format!("{rt}"))
                         .collect::<Vec<_>>()
                         .join(", ")
                 )

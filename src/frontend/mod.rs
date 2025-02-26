@@ -5,7 +5,7 @@ mod tests;
 mod r#type;
 
 use chumsky::{input::ValueInput, prelude::*};
-use expr::{BinaryOp, DictEntry, Expr, RecordValue, UnaryOp, Value};
+use expr::{BinaryOp, DictEntry, Expr, RecordValue, UnaryOp};
 use lexer::{DictHint, ScalarType, Span, Spanned, Token};
 use r#type::{RecordType, Type};
 
@@ -16,20 +16,6 @@ struct Error {
     msg: String,
 }
 
-impl Value<'_> {
-    #[allow(dead_code)]
-    fn num(self, span: Span) -> Result<f64, Error> {
-        if let Value::Float(x) = self {
-            Ok(x)
-        } else {
-            Err(Error {
-                span,
-                msg: format!("'{self}' is not a number"),
-            })
-        }
-    }
-}
-
 fn expr_parser<'src, I>()
 -> impl Parser<'src, I, Spanned<Expr<'src>>, extra::Err<Rich<'src, Token<'src>, Span>>> + Clone
 where
@@ -38,9 +24,9 @@ where
     recursive(|expr| {
         let inline_expr = recursive(|inline_expr| {
             let val = select! {
-                Token::Bool(x) => Expr::Value(Value::Bool(x)),
-                Token::Num(n) => Expr::Value(Value::Float(n)),
-                Token::Str(s) => Expr::Value(Value::String(s)),
+                Token::Bool(x) => Expr::Bool(x),
+                Token::Num(n) => Expr::Float(n),
+                Token::Str(s) => Expr::String(s),
             }
             .labelled("value");
 

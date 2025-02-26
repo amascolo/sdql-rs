@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use super::*;
-use expr::{BinaryOp, DictEntry, Expr, Value};
+use expr::{BinaryOp, DictEntry, Expr};
 use lexer::lexer;
 use r#type::Type;
 
@@ -33,25 +33,25 @@ fn check_expr(src: &str, exp: Expr) {
 
 #[test]
 fn constants() {
-    check_expr("true", Expr::Value(Value::Bool(true)));
-    check_expr("false", Expr::Value(Value::Bool(false)));
+    check_expr("true", Expr::Bool(true));
+    check_expr("false", Expr::Bool(false));
     check_expr(
         "!true",
         Expr::Unary {
             op: UnaryOp::Not,
-            expr: Box::new((Expr::Value(Value::Bool(true)), (1..5).into())),
+            expr: Box::new((Expr::Bool(true), (1..5).into())),
         },
     );
-    check_expr("52", Expr::Value(Value::Float(52f64)));
+    check_expr("52", Expr::Float(52f64));
     check_expr(
         "-52",
         Expr::Unary {
             op: UnaryOp::Neg,
-            expr: Box::new((Expr::Value(Value::Float(52.0)), (1..3).into())),
+            expr: Box::new((Expr::Float(52.0), (1..3).into())),
         },
     );
-    check_expr("52.1", Expr::Value(Value::Float(52.1f64)));
-    check_expr("\"foo\"", Expr::Value(Value::String("foo")));
+    check_expr("52.1", Expr::Float(52.1f64));
+    check_expr("\"foo\"", Expr::String("foo"));
 }
 
 #[test]
@@ -59,18 +59,18 @@ fn if_then_else() {
     check_expr(
         "if true then 0 else 1",
         Expr::If {
-            r#if: Box::new((Expr::Value(Value::Bool(true)), (3..7).into())),
-            then: Box::new((Expr::Value(Value::Float(0f64)), (13..14).into())),
-            r#else: Some(Box::new((Expr::Value(Value::Float(1f64)), (20..21).into()))),
+            r#if: Box::new((Expr::Bool(true), (3..7).into())),
+            then: Box::new((Expr::Float(0f64), (13..14).into())),
+            r#else: Some(Box::new((Expr::Float(1f64), (20..21).into()))),
         },
     );
 
     check_expr(
         "if (true) then (0) else (1)",
         Expr::If {
-            r#if: Box::new((Expr::Value(Value::Bool(true)), (4..8).into())),
-            then: Box::new((Expr::Value(Value::Float(0f64)), (16..17).into())),
-            r#else: Some(Box::new((Expr::Value(Value::Float(1f64)), (25..26).into()))),
+            r#if: Box::new((Expr::Bool(true), (4..8).into())),
+            then: Box::new((Expr::Float(0f64), (16..17).into())),
+            r#else: Some(Box::new((Expr::Float(1f64), (25..26).into()))),
         },
     );
 
@@ -80,12 +80,12 @@ fn if_then_else() {
             r#if: Box::new((
                 Expr::Unary {
                     op: UnaryOp::Not,
-                    expr: Box::new((Expr::Value(Value::Bool(true)), (5..9).into())),
+                    expr: Box::new((Expr::Bool(true), (5..9).into())),
                 },
                 (4..9).into(),
             )),
-            then: Box::new((Expr::Value(Value::Float(0f64)), (17..18).into())),
-            r#else: Some(Box::new((Expr::Value(Value::Float(1f64)), (26..27).into()))),
+            then: Box::new((Expr::Float(0f64), (17..18).into())),
+            r#else: Some(Box::new((Expr::Float(1f64), (26..27).into()))),
         },
     );
 }
@@ -96,8 +96,8 @@ fn let_bindings() {
         "let x = 1 in 2",
         Expr::Let {
             lhs: "x",
-            rhs: Box::new((Expr::Value(Value::Float(1.0)), (8..9).into())),
-            cont: Box::new((Expr::Value(Value::Float(2.0)), (13..14).into())),
+            rhs: Box::new((Expr::Float(1.0), (8..9).into())),
+            cont: Box::new((Expr::Float(2.0), (13..14).into())),
         },
     );
 
@@ -105,8 +105,8 @@ fn let_bindings() {
         "let    x  =    (1) in    2",
         Expr::Let {
             lhs: "x",
-            rhs: Box::new((Expr::Value(Value::Float(1.0)), (16..17).into())),
-            cont: Box::new((Expr::Value(Value::Float(2.0)), (25..26).into())),
+            rhs: Box::new((Expr::Float(1.0), (16..17).into())),
+            cont: Box::new((Expr::Float(2.0), (25..26).into())),
         },
     );
 
@@ -114,8 +114,8 @@ fn let_bindings() {
         "let x_1 = 1 in 2",
         Expr::Let {
             lhs: "x_1",
-            rhs: Box::new((Expr::Value(Value::Float(1.0)), (10..11).into())),
-            cont: Box::new((Expr::Value(Value::Float(2.0)), (15..16).into())),
+            rhs: Box::new((Expr::Float(1.0), (10..11).into())),
+            cont: Box::new((Expr::Float(2.0), (15..16).into())),
         },
     );
 
@@ -124,8 +124,8 @@ fn let_bindings() {
             2",
         Expr::Let {
             lhs: "X",
-            rhs: Box::new((Expr::Value(Value::Float(1.0)), (8..9).into())),
-            cont: Box::new((Expr::Value(Value::Float(2.0)), (25..26).into())),
+            rhs: Box::new((Expr::Float(1.0), (8..9).into())),
+            cont: Box::new((Expr::Float(2.0), (25..26).into())),
         },
     );
 }
@@ -135,49 +135,49 @@ fn arithmetic() {
     check_expr(
         "2 * 3",
         Expr::Binary {
-            lhs: Box::new((Expr::Value(Value::Float(2f64)), (0..1).into())),
+            lhs: Box::new((Expr::Float(2f64), (0..1).into())),
             op: BinaryOp::Mul,
-            rhs: Box::new((Expr::Value(Value::Float(3f64)), (4..5).into())),
+            rhs: Box::new((Expr::Float(3f64), (4..5).into())),
         },
     );
 
     check_expr(
         "2 + 3",
         Expr::Binary {
-            lhs: Box::new((Expr::Value(Value::Float(2f64)), (0..1).into())),
+            lhs: Box::new((Expr::Float(2f64), (0..1).into())),
             op: BinaryOp::Add,
-            rhs: Box::new((Expr::Value(Value::Float(3f64)), (4..5).into())),
+            rhs: Box::new((Expr::Float(3f64), (4..5).into())),
         },
     );
 
     check_expr(
         "2 / 3",
         Expr::Binary {
-            lhs: Box::new((Expr::Value(Value::Float(2f64)), (0..1).into())),
+            lhs: Box::new((Expr::Float(2f64), (0..1).into())),
             op: BinaryOp::Div,
-            rhs: Box::new((Expr::Value(Value::Float(3f64)), (4..5).into())),
+            rhs: Box::new((Expr::Float(3f64), (4..5).into())),
         },
     );
 
     check_expr(
         "2 - 3",
         Expr::Binary {
-            lhs: Box::new((Expr::Value(Value::Float(2f64)), (0..1).into())),
+            lhs: Box::new((Expr::Float(2f64), (0..1).into())),
             op: BinaryOp::Sub,
-            rhs: Box::new((Expr::Value(Value::Float(3f64)), (4..5).into())),
+            rhs: Box::new((Expr::Float(3f64), (4..5).into())),
         },
     );
 
     check_expr(
         "2 + 1 * 3",
         Expr::Binary {
-            lhs: Box::new((Expr::Value(Value::Float(2f64)), (0..1).into())),
+            lhs: Box::new((Expr::Float(2f64), (0..1).into())),
             op: BinaryOp::Add,
             rhs: Box::new((
                 Expr::Binary {
-                    lhs: Box::new((Expr::Value(Value::Float(1f64)), (4..5).into())),
+                    lhs: Box::new((Expr::Float(1f64), (4..5).into())),
                     op: BinaryOp::Mul,
-                    rhs: Box::new((Expr::Value(Value::Float(3f64)), (8..9).into())),
+                    rhs: Box::new((Expr::Float(3f64), (8..9).into())),
                 },
                 (4..9).into(),
             )),
@@ -189,14 +189,14 @@ fn arithmetic() {
         Expr::Binary {
             lhs: Box::new((
                 Expr::Binary {
-                    lhs: Box::new((Expr::Value(Value::Float(2f64)), (0..1).into())),
+                    lhs: Box::new((Expr::Float(2f64), (0..1).into())),
                     op: BinaryOp::Mul,
-                    rhs: Box::new((Expr::Value(Value::Float(1f64)), (4..5).into())),
+                    rhs: Box::new((Expr::Float(1f64), (4..5).into())),
                 },
                 (0..5).into(),
             )),
             op: BinaryOp::Add,
-            rhs: Box::new((Expr::Value(Value::Float(3f64)), (8..9).into())),
+            rhs: Box::new((Expr::Float(3f64), (8..9).into())),
         },
     );
 
@@ -205,36 +205,36 @@ fn arithmetic() {
         Expr::Binary {
             lhs: Box::new((
                 Expr::Binary {
-                    lhs: Box::new((Expr::Value(Value::Float(6f64)), (0..1).into())),
+                    lhs: Box::new((Expr::Float(6f64), (0..1).into())),
                     op: BinaryOp::Div,
-                    rhs: Box::new((Expr::Value(Value::Float(3f64)), (4..5).into())),
+                    rhs: Box::new((Expr::Float(3f64), (4..5).into())),
                 },
                 (0..5).into(),
             )),
             op: BinaryOp::Mul,
-            rhs: Box::new((Expr::Value(Value::Float(2f64)), (8..9).into())),
+            rhs: Box::new((Expr::Float(2f64), (8..9).into())),
         },
     );
 
     check_expr(
         "2 < 3",
         Expr::Binary {
-            lhs: Box::new((Expr::Value(Value::Float(2f64)), (0..1).into())),
+            lhs: Box::new((Expr::Float(2f64), (0..1).into())),
             op: BinaryOp::Less,
-            rhs: Box::new((Expr::Value(Value::Float(3f64)), (4..5).into())),
+            rhs: Box::new((Expr::Float(3f64), (4..5).into())),
         },
     );
 
     check_expr(
         "2 < 3 * 1",
         Expr::Binary {
-            lhs: Box::new((Expr::Value(Value::Float(2f64)), (0..1).into())),
+            lhs: Box::new((Expr::Float(2f64), (0..1).into())),
             op: BinaryOp::Less,
             rhs: Box::new((
                 Expr::Binary {
-                    lhs: Box::new((Expr::Value(Value::Float(3f64)), (4..5).into())),
+                    lhs: Box::new((Expr::Float(3f64), (4..5).into())),
                     op: BinaryOp::Mul,
-                    rhs: Box::new((Expr::Value(Value::Float(1f64)), (8..9).into())),
+                    rhs: Box::new((Expr::Float(1f64), (8..9).into())),
                 },
                 (4..9).into(),
             )),
@@ -244,13 +244,13 @@ fn arithmetic() {
     check_expr(
         "2 < (3 * 1)",
         Expr::Binary {
-            lhs: Box::new((Expr::Value(Value::Float(2f64)), (0..1).into())),
+            lhs: Box::new((Expr::Float(2f64), (0..1).into())),
             op: BinaryOp::Less,
             rhs: Box::new((
                 Expr::Binary {
-                    lhs: Box::new((Expr::Value(Value::Float(3f64)), (5..6).into())),
+                    lhs: Box::new((Expr::Float(3f64), (5..6).into())),
                     op: BinaryOp::Mul,
-                    rhs: Box::new((Expr::Value(Value::Float(1f64)), (9..10).into())),
+                    rhs: Box::new((Expr::Float(1f64), (9..10).into())),
                 },
                 (5..10).into(),
             )),
@@ -260,18 +260,18 @@ fn arithmetic() {
     check_expr(
         "true && false",
         Expr::Binary {
-            lhs: Box::new((Expr::Value(Value::Bool(true)), (0..4).into())),
+            lhs: Box::new((Expr::Bool(true), (0..4).into())),
             op: BinaryOp::And,
-            rhs: Box::new((Expr::Value(Value::Bool(false)), (8..13).into())),
+            rhs: Box::new((Expr::Bool(false), (8..13).into())),
         },
     );
 
     check_expr(
         "true || false",
         Expr::Binary {
-            lhs: Box::new((Expr::Value(Value::Bool(true)), (0..4).into())),
+            lhs: Box::new((Expr::Bool(true), (0..4).into())),
             op: BinaryOp::Or,
-            rhs: Box::new((Expr::Value(Value::Bool(false)), (8..13).into())),
+            rhs: Box::new((Expr::Bool(false), (8..13).into())),
         },
     );
 
@@ -280,27 +280,27 @@ fn arithmetic() {
         Expr::Binary {
             lhs: Box::new((
                 Expr::Binary {
-                    lhs: Box::new((Expr::Value(Value::Bool(true)), (0..4).into())),
+                    lhs: Box::new((Expr::Bool(true), (0..4).into())),
                     op: BinaryOp::And,
-                    rhs: Box::new((Expr::Value(Value::Bool(false)), (8..13).into())),
+                    rhs: Box::new((Expr::Bool(false), (8..13).into())),
                 },
                 (0..13).into(),
             )),
             op: BinaryOp::Or,
-            rhs: Box::new((Expr::Value(Value::Bool(true)), (17..21).into())),
+            rhs: Box::new((Expr::Bool(true), (17..21).into())),
         },
     );
 
     check_expr(
         "true || false && true",
         Expr::Binary {
-            lhs: Box::new((Expr::Value(Value::Bool(true)), (0..4).into())),
+            lhs: Box::new((Expr::Bool(true), (0..4).into())),
             op: BinaryOp::Or,
             rhs: Box::new((
                 Expr::Binary {
-                    lhs: Box::new((Expr::Value(Value::Bool(false)), (8..13).into())),
+                    lhs: Box::new((Expr::Bool(false), (8..13).into())),
                     op: BinaryOp::And,
-                    rhs: Box::new((Expr::Value(Value::Bool(true)), (17..21).into())),
+                    rhs: Box::new((Expr::Bool(true), (17..21).into())),
                 },
                 (8..21).into(),
             )),
@@ -385,11 +385,11 @@ fn records() {
         Expr::Record(vec![
             RecordValue {
                 name: ("a".into(), (1..2).into()),
-                val: (Expr::Value(Value::Float(1f64)), (5..6).into()),
+                val: (Expr::Float(1f64), (5..6).into()),
             },
             RecordValue {
                 name: ("b".into(), (8..9).into()),
-                val: (Expr::Value(Value::Float(2f64)), (12..13).into()),
+                val: (Expr::Float(2f64), (12..13).into()),
             },
         ]),
     );

@@ -2,13 +2,17 @@
 
 use super::lexer::{DictHint, Spanned};
 use super::r#type::Type;
-use derive_more::Display;
+use crate::frontend::r#type::Field;
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expr<'src> {
     Sym(&'src str),
-    Value(Value<'src>),
+    Bool(bool),
+    Float(f64),
+    Int(i32),
+    Long(i64),
+    String(&'src str),
     Record(Vec<RecordValue<'src>>),
     Dict {
         map: Vec<DictEntry<'src>>,
@@ -62,15 +66,6 @@ pub enum Expr<'src> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Value<'src> {
-    Bool(bool),
-    Float(f64),
-    Int(i32),
-    Long(i64),
-    String(&'src str),
-}
-
-#[derive(Clone, Debug, PartialEq)]
 pub struct RecordValue<'src> {
     pub name: Spanned<Field<'src>>,
     pub val: Spanned<Expr<'src>>,
@@ -104,26 +99,18 @@ pub enum BinaryOp {
     Or,
 }
 
-#[derive(Clone, Debug, Display, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct Field<'src>(&'src str);
-
-impl<'src> From<&'src str> for Field<'src> {
-    fn from(s: &'src str) -> Self {
-        Field(s)
-    }
-}
-
-impl fmt::Display for Value<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::String(x) => write!(f, "{x}"),
-            Self::Bool(x) => write!(f, "{x}"),
-            Self::Int(x) => write!(f, "{x}"),
-            Self::Long(x) => write!(f, "{x}"),
-            Self::Float(x) => write!(f, "{x}"),
-        }
-    }
-}
+// TODO
+// impl fmt::Display for Value<'_> {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         match self {
+//             Self::String(x) => write!(f, "{x}"),
+//             Self::Bool(x) => write!(f, "{x}"),
+//             Self::Int(x) => write!(f, "{x}"),
+//             Self::Long(x) => write!(f, "{x}"),
+//             Self::Float(x) => write!(f, "{x}"),
+//         }
+//     }
+// }
 
 impl fmt::Display for UnaryOp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
