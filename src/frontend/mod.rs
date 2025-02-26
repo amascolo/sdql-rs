@@ -6,8 +6,8 @@ mod r#type;
 
 use chumsky::{input::ValueInput, prelude::*};
 use expr::{BinaryOp, DictEntry, Expr, RecordValue, UnaryOp};
-use lexer::{DictHint, ScalarType, Span, Spanned, Token};
-use r#type::{RecordType, Type};
+use lexer::{ScalarType, Span, Spanned, Token};
+use r#type::{DictHint, RecordType, Type};
 
 #[allow(dead_code)]
 // #[derive(Debug)]

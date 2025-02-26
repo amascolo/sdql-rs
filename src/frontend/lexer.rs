@@ -1,3 +1,4 @@
+use crate::frontend::r#type::DictHint;
 use chumsky::prelude::*;
 use std::fmt;
 
@@ -23,14 +24,6 @@ pub(super) enum Token<'src> {
     DictHint(DictHint),
     Load,
     Type(ScalarType),
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub(crate) enum DictHint {
-    HashDict,
-    SortDict,
-    SmallVecDict,
-    Vec,
 }
 
 #[derive(Clone, Debug, PartialEq)]

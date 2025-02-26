@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 
-use super::lexer::{DictHint, Spanned};
-use super::r#type::Type;
-use crate::frontend::r#type::Field;
+use super::lexer::Spanned;
+use super::r#type::{DictHint, Field, Type};
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq)]
