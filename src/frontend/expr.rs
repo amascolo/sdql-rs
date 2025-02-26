@@ -84,7 +84,7 @@ pub enum Expr<'src> {
         args: Vec<Spanned<Self>>,
     },
     Promote {
-        r#type: Spanned<Type<'src>>, // TODO rename to promo
+        promo: Spanned<Type<'src>>,
         expr: Box<Spanned<Self>>,
     },
     Unique {
@@ -182,7 +182,7 @@ impl fmt::Display for Expr<'_> {
                     .collect::<Vec<_>>()
                     .join(", ")
             ),
-            Self::Promote { r#type, expr } => write!(f, "promote[{}]({})", r#type.0, expr.0),
+            Self::Promote { promo, expr } => write!(f, "promote[{}]({})", promo.0, expr.0),
             Self::Unique { expr } => write!(f, "unique({})", expr.0),
         }
     }
