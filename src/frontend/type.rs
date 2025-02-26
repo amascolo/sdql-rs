@@ -32,7 +32,9 @@ pub(crate) enum DictHint {
     Vec,
 }
 
-#[derive(Clone, Debug, Display, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Display)]
+#[display("{}", "_0")]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Field<'src>(&'src str);
 
 impl<'src> From<&'src str> for Field<'src> {
