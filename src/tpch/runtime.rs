@@ -6,7 +6,7 @@ const _: PhantomData<Date> = PhantomData;
 
 #[allow(dead_code)]
 // note: Month::try_from isn't const
-pub const fn month_from_int(m: u32) -> Month {
+pub(crate) const fn month_from_int(m: u32) -> Month {
     match m {
         1 => Month::January,
         2 => Month::February,
@@ -28,7 +28,7 @@ pub const fn month_from_int(m: u32) -> Month {
 macro_rules! const_date {
     ($yymmdd:literal) => {{
         const YEAR: i32 = ($yymmdd / 10000) as i32;
-        const MONTH: Month = month_from_int(($yymmdd / 100) % 100);
+        const MONTH: time::Month = crate::tpch::runtime::month_from_int(($yymmdd / 100) % 100);
         const DAY: u8 = ($yymmdd % 100) as u8;
 
         match Date::from_calendar_date(YEAR, MONTH, DAY) {

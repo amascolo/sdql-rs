@@ -52,6 +52,8 @@ fn constants() {
     );
     check_expr("52.1", Expr::Float(52.1f64));
     check_expr("\"foo\"", Expr::String("foo"));
+    // FIXME
+    // check_expr("date(20250525)", Expr::Date(crate::const_date!(20250525)));
 }
 
 #[test]

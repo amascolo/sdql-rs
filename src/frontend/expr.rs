@@ -3,11 +3,13 @@
 use super::lexer::Spanned;
 use super::r#type::{DictHint, Field, Type};
 use std::fmt;
+use time::Date;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expr<'src> {
     Sym(&'src str),
     Bool(bool),
+    Date(Date),
     Float(f64),
     Int(i32),
     Long(i64),
@@ -103,6 +105,7 @@ impl fmt::Display for Expr<'_> {
         match self {
             Self::Sym(x) => write!(f, "{x}"),
             Self::Bool(x) => write!(f, "{x}"),
+            Self::Date(x) => write!(f, "{x}"),
             Self::Float(x) => write!(f, "{x}"),
             Self::Int(x) => write!(f, "{x}"),
             Self::Long(x) => write!(f, "{x}"),
