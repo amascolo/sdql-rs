@@ -6,20 +6,20 @@ mod r#type;
 
 use chumsky::{input::ValueInput, prelude::*};
 use expr::{BinaryOp, DictEntry, Expr, RecordValue, UnaryOp};
-use lexer::{ScalarType, Span, Spanned, Token};
+use lexer::{ScalarType, Spanned, Token};
 use r#type::{DictHint, RecordType, Type};
 
 #[allow(dead_code)]
 // #[derive(Debug)]
 struct Error {
-    span: Span,
+    span: SimpleSpan,
     msg: String,
 }
 
 fn expr_parser<'src, I>()
--> impl Parser<'src, I, Spanned<Expr<'src>>, extra::Err<Rich<'src, Token<'src>, Span>>> + Clone
+-> impl Parser<'src, I, Spanned<Expr<'src>>, extra::Err<Rich<'src, Token<'src>, SimpleSpan>>> + Clone
 where
-    I: ValueInput<'src, Token = Token<'src>, Span = Span>,
+    I: ValueInput<'src, Token = Token<'src>, Span = SimpleSpan>,
 {
     recursive(|expr| {
         let inline_expr = recursive(|inline_expr| {

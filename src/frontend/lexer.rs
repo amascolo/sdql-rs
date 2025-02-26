@@ -2,8 +2,7 @@ use crate::frontend::r#type::DictHint;
 use chumsky::prelude::*;
 use std::fmt;
 
-pub type Span = SimpleSpan;
-pub type Spanned<T> = (T, Span);
+pub type Spanned<T> = (T, SimpleSpan);
 
 #[derive(Clone, Debug, PartialEq)]
 pub(super) enum Token<'src> {
@@ -74,7 +73,8 @@ impl fmt::Display for Token<'_> {
 }
 
 pub(super) fn lexer<'src>()
--> impl Parser<'src, &'src str, Vec<Spanned<Token<'src>>>, extra::Err<Rich<'src, char, Span>>> {
+-> impl Parser<'src, &'src str, Vec<Spanned<Token<'src>>>, extra::Err<Rich<'src, char, SimpleSpan>>>
+{
     let num = text::int(10)
         .then(just('.').then(text::digits(10)).or_not())
         .to_slice()
