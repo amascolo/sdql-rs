@@ -4,6 +4,7 @@ use std::fmt;
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Type<'src> {
     Bool,
+    Date,
     Int,
     Long,
     Real,
@@ -46,6 +47,7 @@ impl fmt::Display for Type<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::Bool => write!(f, "bool"),
+            Self::Date => write!(f, "date"),
             Self::Int => write!(f, "int"),
             Self::Long => write!(f, "long"),
             Self::Real => write!(f, "real"),

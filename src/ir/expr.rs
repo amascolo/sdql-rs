@@ -15,7 +15,7 @@ pub enum Expr<'src> {
     Date {
         val: Date,
     },
-    Float {
+    Real {
         val: f64,
     },
     Int {
@@ -106,13 +106,13 @@ pub struct DictEntry<'src> {
     pub val: Spanned<Expr<'src>>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum UnaryOp {
     Neg,
     Not,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum BinaryOp {
     Add,
     Sub,
@@ -134,7 +134,7 @@ impl fmt::Display for Expr<'_> {
             Self::Sym { val } => write!(f, "{val}"),
             Self::Bool { val } => write!(f, "{val}"),
             Self::Date { val } => write!(f, "{val}"),
-            Self::Float { val } => write!(f, "{val}"),
+            Self::Real { val } => write!(f, "{val}"),
             Self::Int { val } => write!(f, "{val}"),
             Self::Long { val } => write!(f, "{val}"),
             Self::String { val } => write!(f, "\"{val}\""),

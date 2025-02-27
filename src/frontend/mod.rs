@@ -23,7 +23,7 @@ where
         let inline_expr = recursive(|inline_expr| {
             let val = select! {
                 Token::Bool(x) => Expr::Bool{val: x},
-                Token::Num(n) => Expr::Float{val: n},
+                Token::Num(n) => Expr::Real{val: n},
                 Token::Str(s) => Expr::String{val:s},
             }
             .labelled("value");

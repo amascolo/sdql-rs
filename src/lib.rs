@@ -1,3 +1,5 @@
+#![feature(box_into_inner)]
+
 mod frontend;
 pub mod ir;
 pub mod tpch;
