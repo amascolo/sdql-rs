@@ -1,7 +1,7 @@
 use derive_more::Display;
 use std::fmt;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Type<'src> {
     Bool,
     Int,
@@ -18,13 +18,13 @@ pub enum Type<'src> {
     },
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct RecordType<'src> {
     pub name: Field<'src>,
     pub r#type: Type<'src>,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum DictHint {
     HashDict,
     SortDict,
@@ -32,9 +32,8 @@ pub enum DictHint {
     Vec,
 }
 
-#[derive(Display)]
+#[derive(Clone, Debug, Display, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[display("{}", "_0")]
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Field<'src>(&'src str);
 
 impl<'src> From<&'src str> for Field<'src> {

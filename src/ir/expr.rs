@@ -1,7 +1,6 @@
-#![allow(dead_code)]
-
 use crate::frontend::lexer::Spanned;
 use crate::ir::r#type::{DictHint, Field, Type};
+use derive_more::Display;
 use std::fmt;
 use time::Date;
 
@@ -80,7 +79,7 @@ pub enum Expr<'src> {
         rhs: Box<Spanned<Self>>,
     },
     External {
-        func: &'src str, // TODO enum
+        func: External,
         args: Vec<Spanned<Self>>,
     },
     Promote {
@@ -91,6 +90,9 @@ pub enum Expr<'src> {
         expr: Box<Spanned<Self>>,
     },
 }
+
+#[derive(Clone, Debug, Display, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum External {}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecordValue<'src> {
@@ -104,13 +106,13 @@ pub struct DictEntry<'src> {
     pub val: Spanned<Expr<'src>>,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum UnaryOp {
     Neg,
     Not,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum BinaryOp {
     Add,
     Sub,
