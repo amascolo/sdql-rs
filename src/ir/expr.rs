@@ -94,13 +94,15 @@ pub enum Expr<'src> {
 #[derive(Clone, Debug, Display, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum External {}
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq)]
+#[display("{name} = {val}")]
 pub struct RecordValue<'src, T> {
     pub name: Field<'src>,
     pub val: T,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq)]
+#[display("{key} -> {val}")]
 pub struct DictEntry<T> {
     pub key: T,
     pub val: T,
@@ -186,24 +188,6 @@ impl fmt::Display for Expr<'_> {
             Self::Promote { promo, expr } => write!(f, "promote[{promo}]({expr})"),
             Self::Unique { expr } => write!(f, "unique({expr})"),
         }
-    }
-}
-
-impl<T> fmt::Display for RecordValue<'_, T>
-where
-    T: fmt::Display,
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} = {}", self.name, self.val)
-    }
-}
-
-impl<T> fmt::Display for DictEntry<T>
-where
-    T: fmt::Display,
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} -> {}", self.key, self.val)
     }
 }
 

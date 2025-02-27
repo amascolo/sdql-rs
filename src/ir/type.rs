@@ -34,7 +34,7 @@ pub enum DictHint {
 }
 
 #[derive(Clone, Debug, Display, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[display("{}", "_0")]
+#[display("{_0}")]
 pub struct Field<'src>(&'src str);
 
 impl<'src> From<&'src str> for Field<'src> {

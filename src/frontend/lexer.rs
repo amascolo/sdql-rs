@@ -4,7 +4,7 @@ use derive_more::Display;
 use std::fmt;
 
 #[derive(Clone, Debug, Display, PartialEq)]
-#[display("{}", "_0")]
+#[display("{_0}")]
 pub struct Spanned<T>(pub T, pub SimpleSpan);
 impl<T> Spanned<T> {
     pub fn map<U, F>(self, f: F) -> Spanned<U>
