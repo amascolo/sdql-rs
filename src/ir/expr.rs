@@ -36,47 +36,47 @@ pub enum Expr<'src> {
     },
     Let {
         lhs: &'src str,
-        rhs: Box<Spanned<Self>>,
-        cont: Box<Spanned<Self>>,
+        rhs: Spanned<Box<Self>>,
+        cont: Spanned<Box<Self>>,
     },
     Unary {
         op: UnaryOp,
-        expr: Box<Spanned<Self>>,
+        expr: Spanned<Box<Self>>,
     },
     Binary {
-        lhs: Box<Spanned<Self>>,
+        lhs: Spanned<Box<Self>>,
         op: BinaryOp,
-        rhs: Box<Spanned<Self>>,
+        rhs: Spanned<Box<Self>>,
     },
     If {
-        r#if: Box<Spanned<Self>>,
-        then: Box<Spanned<Self>>,
-        r#else: Option<Box<Spanned<Self>>>,
+        r#if: Spanned<Box<Self>>,
+        then: Spanned<Box<Self>>,
+        r#else: Option<Spanned<Box<Self>>>,
     },
     Field {
-        expr: Box<Spanned<Self>>,
+        expr: Spanned<Box<Self>>,
         field: Field<'src>,
     },
     Get {
-        lhs: Box<Spanned<Self>>,
-        rhs: Box<Spanned<Self>>,
+        lhs: Spanned<Box<Self>>,
+        rhs: Spanned<Box<Self>>,
     },
     Load {
         r#type: Type<'src>,
         path: &'src str,
     },
     Sum {
-        key: Box<Spanned<Self>>,
-        val: Box<Spanned<Self>>,
-        head: Box<Spanned<Self>>,
-        body: Box<Spanned<Self>>,
+        key: Spanned<Box<Self>>,
+        val: Spanned<Box<Self>>,
+        head: Spanned<Box<Self>>,
+        body: Spanned<Box<Self>>,
     },
     Range {
-        expr: Box<Spanned<Self>>,
+        expr: Spanned<Box<Self>>,
     },
     Concat {
-        lhs: Box<Spanned<Self>>,
-        rhs: Box<Spanned<Self>>,
+        lhs: Spanned<Box<Self>>,
+        rhs: Spanned<Box<Self>>,
     },
     External {
         func: External,
@@ -84,10 +84,10 @@ pub enum Expr<'src> {
     },
     Promote {
         promo: Type<'src>,
-        expr: Box<Spanned<Self>>,
+        expr: Spanned<Box<Self>>,
     },
     Unique {
-        expr: Box<Spanned<Self>>,
+        expr: Spanned<Box<Self>>,
     },
 }
 

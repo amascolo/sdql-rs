@@ -43,47 +43,47 @@ pub enum TypedExpr<'src> {
     },
     Let {
         lhs: &'src str,
-        rhs: Box<Typed<'src, Spanned<Self>>>,
-        cont: Box<Typed<'src, Spanned<Self>>>,
+        rhs: Typed<'src, Spanned<Box<Self>>>,
+        cont: Typed<'src, Spanned<Box<Self>>>,
     },
     Unary {
         op: UnaryOp,
-        expr: Box<Typed<'src, Spanned<Self>>>,
+        expr: Typed<'src, Spanned<Box<Self>>>,
     },
     Binary {
-        lhs: Box<Typed<'src, Spanned<Self>>>,
+        lhs: Typed<'src, Spanned<Box<Self>>>,
         op: BinaryOp,
-        rhs: Box<Typed<'src, Spanned<Self>>>,
+        rhs: Typed<'src, Spanned<Box<Self>>>,
     },
     If {
-        r#if: Box<Typed<'src, Spanned<Self>>>,
-        then: Box<Typed<'src, Spanned<Self>>>,
-        r#else: Option<Box<Typed<'src, Spanned<Self>>>>,
+        r#if: Typed<'src, Spanned<Box<Self>>>,
+        then: Typed<'src, Spanned<Box<Self>>>,
+        r#else: Option<Typed<'src, Spanned<Box<Self>>>>,
     },
     Field {
-        expr: Box<Typed<'src, Spanned<Self>>>,
+        expr: Typed<'src, Spanned<Box<Self>>>,
         field: Field<'src>,
     },
     Get {
-        lhs: Box<Typed<'src, Spanned<Self>>>,
-        rhs: Box<Typed<'src, Spanned<Self>>>,
+        lhs: Typed<'src, Spanned<Box<Self>>>,
+        rhs: Typed<'src, Spanned<Box<Self>>>,
     },
     Load {
         r#type: Type<'src>,
         path: &'src str,
     },
     Sum {
-        key: Box<Typed<'src, Spanned<Self>>>,
-        val: Box<Typed<'src, Spanned<Self>>>,
-        head: Box<Typed<'src, Spanned<Self>>>,
-        body: Box<Typed<'src, Spanned<Self>>>,
+        key: Typed<'src, Spanned<Box<Self>>>,
+        val: Typed<'src, Spanned<Box<Self>>>,
+        head: Typed<'src, Spanned<Box<Self>>>,
+        body: Typed<'src, Spanned<Box<Self>>>,
     },
     Range {
-        expr: Box<Typed<'src, Spanned<Self>>>,
+        expr: Typed<'src, Spanned<Box<Self>>>,
     },
     Concat {
-        lhs: Box<Typed<'src, Spanned<Self>>>,
-        rhs: Box<Typed<'src, Spanned<Self>>>,
+        lhs: Typed<'src, Spanned<Box<Self>>>,
+        rhs: Typed<'src, Spanned<Box<Self>>>,
     },
     External {
         func: External,
@@ -91,10 +91,10 @@ pub enum TypedExpr<'src> {
     },
     Promote {
         promo: Type<'src>,
-        expr: Box<Typed<'src, Spanned<Self>>>,
+        expr: Typed<'src, Spanned<Box<Self>>>,
     },
     Unique {
-        expr: Box<Typed<'src, Spanned<Self>>>,
+        expr: Typed<'src, Spanned<Box<Self>>>,
     },
 }
 
@@ -134,39 +134,39 @@ pub fn infer<'src>(expr: &Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedE
         Expr::Dict { .. } => todo!(),
         Expr::Let { .. } => todo!(),
         Expr::Unary { op, expr } => {
-            let (unspanned, span) = Box::into_inner(expr.clone());
+            let (unspanned, span) = expr;
             let Typed { val: typed, r#type } = infer(&unspanned, ctx);
             let val = TypedExpr::Unary {
                 op: *op,
-                expr: Box::new(Typed {
-                    val: (typed, span),
+                expr: Typed {
+                    val: (Box::new(typed), span.clone()),
                     r#type: r#type.clone(),
-                }),
+                },
             };
             Typed { val, r#type }
         }
         Expr::Binary { lhs, op, rhs } => {
-            let (lhs_unspanned, lhs_span) = Box::into_inner(lhs.clone());
+            let (lhs_unspanned, lhs_span) = lhs;
             let Typed {
                 val: lhs_typed,
                 r#type: lhs_type,
             } = infer(&lhs_unspanned, ctx);
-            let (rhs_unspanned, rhs_span) = Box::into_inner(rhs.clone());
+            let (rhs_unspanned, rhs_span) = rhs;
             let Typed {
                 val: rhs_typed,
                 r#type: rhs_type,
             } = infer(&rhs_unspanned, ctx);
             Typed {
                 val: TypedExpr::Binary {
-                    lhs: Box::new(Typed {
-                        val: (lhs_typed, lhs_span),
+                    lhs: Typed {
+                        val: (Box::new(lhs_typed), lhs_span.clone()),
                         r#type: lhs_type.clone(),
-                    }),
+                    },
                     op: *op,
-                    rhs: Box::new(Typed {
-                        val: (rhs_typed, rhs_span),
+                    rhs: Typed {
+                        val: (Box::new(rhs_typed), rhs_span.clone()),
                         r#type: rhs_type.clone(),
-                    }),
+                    },
                 },
                 r#type: promote(&lhs_type, &rhs_type),
             }
@@ -181,35 +181,35 @@ pub fn infer<'src>(expr: &Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedE
             then,
             r#else: Some(r#else),
         } => {
-            let (if_unspanned, if_span) = Box::into_inner(r#if.clone());
+            let (if_unspanned, if_span) = r#if;
             let Typed {
                 val: if_typed,
                 r#type: if_type,
             } = infer(&if_unspanned, ctx);
-            let (then_unspanned, then_span) = Box::into_inner(then.clone());
+            let (then_unspanned, then_span) = then;
             let Typed {
                 val: then_typed,
                 r#type: then_type,
             } = infer(&then_unspanned, ctx);
-            let (else_unspanned, else_span) = Box::into_inner(r#else.clone());
+            let (else_unspanned, else_span) = r#else;
             let Typed {
                 val: else_typed,
                 r#type: else_type,
             } = infer(&else_unspanned, ctx);
             Typed {
                 val: TypedExpr::If {
-                    r#if: Box::new(Typed {
-                        val: (if_typed, if_span),
+                    r#if: Typed {
+                        val: (Box::new(if_typed), *if_span),
                         r#type: if_type,
-                    }),
-                    then: Box::new(Typed {
-                        val: (then_typed, then_span),
+                    },
+                    then: Typed {
+                        val: (Box::new(then_typed), *then_span),
                         r#type: then_type.clone(),
-                    }),
-                    r#else: Some(Box::new(Typed {
-                        val: (else_typed, else_span),
+                    },
+                    r#else: Some(Typed {
+                        val: (Box::new(else_typed), *else_span),
                         r#type: else_type.clone(),
-                    })),
+                    }),
                 },
                 r#type: promote(&then_type, &else_type),
             }
@@ -219,13 +219,13 @@ pub fn infer<'src>(expr: &Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedE
         Expr::Load { .. } => todo!(),
         Expr::Sum { .. } => todo!(),
         Expr::Range { expr } => {
-            let (unspanned, span) = Box::into_inner(expr.clone());
+            let (unspanned, span) = expr;
             let Typed { val: typed, r#type } = infer(&unspanned, ctx);
             let val = TypedExpr::Range {
-                expr: Box::new(Typed {
-                    val: (typed, span),
+                expr: Typed {
+                    val: (Box::new(typed), *span),
                     r#type,
-                }),
+                },
             };
             Typed {
                 val,
@@ -239,25 +239,25 @@ pub fn infer<'src>(expr: &Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedE
         Expr::Concat { .. } => todo!(),
         Expr::External { .. } => todo!(),
         Expr::Promote { promo, expr } => {
-            let (unspanned, span) = Box::into_inner(expr.clone());
+            let (unspanned, span) = expr;
             let Typed { val: typed, r#type } = infer(&unspanned, ctx);
             let val = TypedExpr::Promote {
                 promo: promo.clone(),
-                expr: Box::new(Typed {
-                    val: (typed, span),
+                expr: Typed {
+                    val: (Box::new(typed), *span),
                     r#type: r#type.clone(),
-                }),
+                },
             };
             Typed { val, r#type }
         }
         Expr::Unique { expr } => {
-            let (unspanned, span) = Box::into_inner(expr.clone());
+            let (unspanned, span) = expr;
             let Typed { val: typed, r#type } = infer(&unspanned, ctx);
             let val = TypedExpr::Unique {
-                expr: Box::new(Typed {
-                    val: (typed, span),
+                expr: Typed {
+                    val: (Box::new(typed), *span),
                     r#type: r#type.clone(),
-                }),
+                },
             };
             Typed { val, r#type }
         }

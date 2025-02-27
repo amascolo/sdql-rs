@@ -30,18 +30,19 @@ where
 
             let ident = select! { Token::Ident(ident) => ident }.labelled("identifier");
 
-            // A let expression
             let let_ = just(Token::Let)
                 .ignore_then(ident)
                 .then_ignore(just(Token::Op("=")))
                 .then(inline_expr)
                 .then_ignore(just(Token::In))
                 .then(expr.clone())
-                .map(|((name, val), body)| Expr::Let {
-                    lhs: name,
-                    rhs: Box::new(val),
-                    cont: Box::new(body),
-                });
+                .map(
+                    |((name, (val_expr, val_span)), (body_expr, body_span))| Expr::Let {
+                        lhs: name,
+                        rhs: (Box::new(val_expr), val_span),
+                        cont: (Box::new(body_expr), body_span),
+                    },
+                );
 
             let dict_items = expr
                 .clone()
@@ -109,11 +110,11 @@ where
 
             let neg = just(Token::Op("-"))
                 .repeated()
-                .foldr(atom, |_op, rhs @ (_, span)| {
+                .foldr(atom, |_op, (rhs, span)| {
                     (
                         Expr::Unary {
                             op: UnaryOp::Neg,
-                            expr: Box::new(rhs),
+                            expr: (Box::new(rhs), span),
                         },
                         (span.start - 1..span.end).into(),
                     )
@@ -122,11 +123,11 @@ where
             let field = neg
                 .clone()
                 .then(just(Token::Ctrl('.')).ignore_then(ident).or_not())
-                .map_with(|(expr, field), e| match field {
-                    None => expr,
+                .map_with(|((unspanned, span), field), e| match field {
+                    None => (unspanned.clone(), span),
                     Some(field) => (
                         Expr::Field {
-                            expr: Box::new(expr),
+                            expr: (Box::new(unspanned), span),
                             field: field.into(),
                         },
                         e.span(),
@@ -135,11 +136,11 @@ where
 
             let not = just(Token::Op("!"))
                 .repeated()
-                .foldr(field, |_op, rhs @ (_, span)| {
+                .foldr(field, |_op, (rhs, span)| {
                     (
                         Expr::Unary {
                             op: UnaryOp::Not,
-                            expr: Box::new(rhs),
+                            expr: (Box::new(rhs), span),
                         },
                         (span.start - 1..span.end).into(),
                     )
@@ -149,35 +150,37 @@ where
             let op = just(Token::Op("*"))
                 .to(BinaryOp::Mul)
                 .or(just(Token::Op("/")).to(BinaryOp::Div));
-            let product = not
-                .clone()
-                .foldl_with(op.then(not).repeated(), |a, (op, b), e| {
+            let product = not.clone().foldl_with(
+                op.then(not).repeated(),
+                |(lhs_expr, lhs_span), (op, (rhs_expr, rhs_span)), e| {
                     (
                         Expr::Binary {
-                            lhs: Box::new(a),
+                            lhs: (Box::new(lhs_expr), lhs_span),
                             op,
-                            rhs: Box::new(b),
+                            rhs: (Box::new(rhs_expr), rhs_span),
                         },
                         e.span(),
                     )
-                });
+                },
+            );
 
             // Sum ops (add and subtract) have equal precedence
             let op = just(Token::Op("+"))
                 .to(BinaryOp::Add)
                 .or(just(Token::Op("-")).to(BinaryOp::Sub));
-            let sum = product
-                .clone()
-                .foldl_with(op.then(product).repeated(), |a, (op, b), e| {
+            let sum = product.clone().foldl_with(
+                op.then(product).repeated(),
+                |(lhs_expr, lhs_span), (op, (rhs_expr, rhs_span)), e| {
                     (
                         Expr::Binary {
-                            lhs: Box::new(a),
+                            lhs: (Box::new(lhs_expr), lhs_span),
                             op,
-                            rhs: Box::new(b),
+                            rhs: (Box::new(rhs_expr), rhs_span),
                         },
                         e.span(),
                     )
-                });
+                },
+            );
 
             // Comparison ops (equal, not-equal, etc) have equal precedence
             let op = choice((
@@ -188,46 +191,49 @@ where
                 just(Token::Op("<")).to(BinaryOp::Less),
                 just(Token::Op(">")).to(BinaryOp::Great),
             ));
-            let compare = sum
-                .clone()
-                .foldl_with(op.then(sum).repeated(), |a, (op, b), e| {
+            let compare = sum.clone().foldl_with(
+                op.then(sum).repeated(),
+                |(lhs_expr, lhs_span), (op, (rhs_expr, rhs_span)), e| {
                     (
                         Expr::Binary {
-                            lhs: Box::new(a),
+                            lhs: (Box::new(lhs_expr), lhs_span),
                             op,
-                            rhs: Box::new(b),
+                            rhs: (Box::new(rhs_expr), rhs_span),
                         },
                         e.span(),
                     )
-                });
+                },
+            );
 
             let op = just(Token::Op("&&")).to(BinaryOp::And);
-            let and = compare
-                .clone()
-                .foldl_with(op.then(compare).repeated(), |a, (op, b), e| {
+            let and = compare.clone().foldl_with(
+                op.then(compare).repeated(),
+                |(lhs_expr, lhs_span), (op, (rhs_expr, rhs_span)), e| {
                     (
                         Expr::Binary {
-                            lhs: Box::new(a),
+                            lhs: (Box::new(lhs_expr), lhs_span),
                             op,
-                            rhs: Box::new(b),
+                            rhs: (Box::new(rhs_expr), rhs_span),
                         },
                         e.span(),
                     )
-                });
+                },
+            );
 
             let op = just(Token::Op("||")).to(BinaryOp::Or);
-            let or = and
-                .clone()
-                .foldl_with(op.then(and).repeated(), |a, (op, b), e| {
+            let or = and.clone().foldl_with(
+                op.then(and).repeated(),
+                |(lhs_expr, lhs_span), (op, (rhs_expr, rhs_span)), e| {
                     (
                         Expr::Binary {
-                            lhs: Box::new(a),
+                            lhs: (Box::new(lhs_expr), lhs_span),
                             op,
-                            rhs: Box::new(b),
+                            rhs: (Box::new(rhs_expr), rhs_span),
                         },
                         e.span(),
                     )
-                });
+                },
+            );
 
             or.labelled("expression").as_context()
         });
@@ -237,16 +243,19 @@ where
                 .ignore_then(expr.clone())
                 .then(just(Token::Then).ignore_then(expr.clone()))
                 .then(just(Token::Else).ignore_then(expr.clone().or(if_)).or_not())
-                .map_with(|((cond, a), b), e| {
-                    (
-                        Expr::If {
-                            r#if: Box::new(cond),
-                            then: Box::new(a),
-                            r#else: b.map(Box::new),
-                        },
-                        e.span(),
-                    )
-                })
+                .map_with(
+                    |(((cond_expr, cond_span), (then_expr, then_span)), r#else), e| {
+                        (
+                            Expr::If {
+                                r#if: (Box::new(cond_expr), cond_span),
+                                then: (Box::new(then_expr), then_span),
+                                r#else: r#else
+                                    .map(|(else_expr, else_span)| (Box::new(else_expr), else_span)),
+                            },
+                            e.span(),
+                        )
+                    },
+                )
         });
 
         let sum = just(Token::Sum)
@@ -259,17 +268,23 @@ where
                     .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
             )
             .then(inline_expr.clone())
-            .map_with(|(((key, val), head), body), e| {
-                (
-                    Expr::Sum {
-                        key: Box::new(key),
-                        val: Box::new(val),
-                        head: Box::new(head),
-                        body: Box::new(body),
-                    },
-                    e.span(),
-                )
-            });
+            .map_with(
+                |(
+                    (((key_expr, key_span), (val_expr, val_span)), (head_expr, head_span)),
+                    (body_expr, body_span),
+                ),
+                 e| {
+                    (
+                        Expr::Sum {
+                            key: (Box::new(key_expr), key_span),
+                            val: (Box::new(val_expr), val_span),
+                            head: (Box::new(head_expr), head_span),
+                            body: (Box::new(body_expr), body_span),
+                        },
+                        e.span(),
+                    )
+                },
+            );
 
         let str_select = select! { Token::Str(s) => s }.labelled("str");
 
