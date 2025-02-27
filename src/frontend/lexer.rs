@@ -1,8 +1,22 @@
 use crate::ir::r#type::DictHint;
 use chumsky::prelude::*;
+use derive_more::Display;
 use std::fmt;
 
-pub type Spanned<T> = (T, SimpleSpan);
+#[derive(Clone, Debug, Display, PartialEq)]
+#[display("{}", "_0")]
+pub struct Spanned<T>(pub T, pub SimpleSpan);
+impl<T> Spanned<T> {
+    pub fn map<U, F>(self, f: F) -> Spanned<U>
+    where
+        F: FnOnce(T) -> U,
+    {
+        Spanned(f(self.0), self.1)
+    }
+    pub fn boxed(self) -> Spanned<Box<T>> {
+        self.map(Box::new)
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub(super) enum Token<'src> {
@@ -149,7 +163,7 @@ pub(super) fn lexer<'src>()
         .padded();
 
     token
-        .map_with(|tok, e| (tok, e.span()))
+        .map_with(|tok, e| Spanned(tok, e.span()))
         .padded_by(comment.repeated())
         .padded()
         // If we encounter an error, skip and attempt to lex the next character as a token instead

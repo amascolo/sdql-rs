@@ -157,48 +157,47 @@ impl fmt::Display for Expr<'_> {
                     None => write!(f, "{{{map_str}}}"),
                 }
             }
-            Self::Let { lhs, rhs, cont } => write!(f, "let {} = {} in {}", lhs, rhs.0, cont.0),
-            Self::Unary { op, expr } => write!(f, "{}({})", op, expr.0),
-            Self::Binary { lhs, op, rhs } => write!(f, "{}({}, {})", op, lhs.0, rhs.0),
+            Self::Let { lhs, rhs, cont } => write!(f, "let {lhs} = {rhs} in {cont}"),
+            Self::Unary { op, expr } => write!(f, "{op}({expr})"),
+            Self::Binary { lhs, op, rhs } => write!(f, "{op}({lhs}, {rhs})"),
             Self::If { r#if, then, r#else } => match r#else {
-                Some(r#else) => write!(f, "if {} then {} else {}", r#if.0, then.0, r#else.0),
-                None => write!(f, "if {} then {}", r#if.0, then.0),
+                Some(r#else) => write!(f, "if {} then {then} else {}", r#if, r#else),
+                None => write!(f, "if {} then {then}", r#if),
             },
-            Self::Field { expr, field } => write!(f, "{}.{}", expr.0, field),
-            Self::Get { lhs, rhs } => write!(f, "{}({})", lhs.0, rhs.0),
-            Self::Load { r#type, path } => write!(f, "load[{}]({})", r#type, path),
+            Self::Field { expr, field } => write!(f, "{expr}.{field}"),
+            Self::Get { lhs, rhs } => write!(f, "{lhs}({rhs})"),
+            Self::Load { r#type, path } => write!(f, "load[{}]({path})", r#type),
             Self::Sum {
                 key,
                 val,
                 head,
                 body,
-            } => write!(f, "sum(<{}, {}> <- {}) {}", key.0, val.0, head.0, body.0),
-            Self::Range { expr } => write!(f, "range({})", expr.0),
-            Self::Concat { lhs, rhs } => write!(f, "concat({}, {})", lhs.0, rhs.0),
+            } => write!(f, "sum(<{key}, {val}> <- {head}) {body}"),
+            Self::Range { expr } => write!(f, "range({expr})"),
+            Self::Concat { lhs, rhs } => write!(f, "concat({lhs}, {rhs})"),
             Self::External { func, args } => write!(
                 f,
-                "ext(`{}`, {})",
-                func,
+                "ext(`{func}`, {})",
                 args.iter()
-                    .map(|a| a.0.to_string())
+                    .map(|a| a.to_string())
                     .collect::<Vec<_>>()
                     .join(", ")
             ),
-            Self::Promote { promo, expr } => write!(f, "promote[{}]({})", promo, expr.0),
-            Self::Unique { expr } => write!(f, "unique({})", expr.0),
+            Self::Promote { promo, expr } => write!(f, "promote[{promo}]({expr})"),
+            Self::Unique { expr } => write!(f, "unique({expr})"),
         }
     }
 }
 
 impl fmt::Display for RecordValue<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} = {}", self.name.0, self.val.0)
+        write!(f, "{} = {}", self.name, self.val)
     }
 }
 
 impl fmt::Display for DictEntry<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} -> {}", self.key.0, self.val.0)
+        write!(f, "{} -> {}", self.key, self.val)
     }
 }
 

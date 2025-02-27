@@ -134,24 +134,24 @@ pub fn infer<'src>(expr: &Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedE
         Expr::Dict { .. } => todo!(),
         Expr::Let { .. } => todo!(),
         Expr::Unary { op, expr } => {
-            let (unspanned, span) = expr;
+            let Spanned(unspanned, span) = expr;
             let Typed { val: typed, r#type } = infer(&unspanned, ctx);
             let val = TypedExpr::Unary {
                 op: *op,
                 expr: Typed {
-                    val: (Box::new(typed), span.clone()),
+                    val: Spanned(Box::new(typed), span.clone()),
                     r#type: r#type.clone(),
                 },
             };
             Typed { val, r#type }
         }
         Expr::Binary { lhs, op, rhs } => {
-            let (lhs_unspanned, lhs_span) = lhs;
+            let Spanned(lhs_unspanned, lhs_span) = lhs;
             let Typed {
                 val: lhs_typed,
                 r#type: lhs_type,
             } = infer(&lhs_unspanned, ctx);
-            let (rhs_unspanned, rhs_span) = rhs;
+            let Spanned(rhs_unspanned, rhs_span) = rhs;
             let Typed {
                 val: rhs_typed,
                 r#type: rhs_type,
@@ -159,12 +159,12 @@ pub fn infer<'src>(expr: &Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedE
             Typed {
                 val: TypedExpr::Binary {
                     lhs: Typed {
-                        val: (Box::new(lhs_typed), lhs_span.clone()),
+                        val: Spanned(Box::new(lhs_typed), lhs_span.clone()),
                         r#type: lhs_type.clone(),
                     },
                     op: *op,
                     rhs: Typed {
-                        val: (Box::new(rhs_typed), rhs_span.clone()),
+                        val: Spanned(Box::new(rhs_typed), rhs_span.clone()),
                         r#type: rhs_type.clone(),
                     },
                 },
@@ -181,17 +181,17 @@ pub fn infer<'src>(expr: &Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedE
             then,
             r#else: Some(r#else),
         } => {
-            let (if_unspanned, if_span) = r#if;
+            let Spanned(if_unspanned, if_span) = r#if;
             let Typed {
                 val: if_typed,
                 r#type: if_type,
             } = infer(&if_unspanned, ctx);
-            let (then_unspanned, then_span) = then;
+            let Spanned(then_unspanned, then_span) = then;
             let Typed {
                 val: then_typed,
                 r#type: then_type,
             } = infer(&then_unspanned, ctx);
-            let (else_unspanned, else_span) = r#else;
+            let Spanned(else_unspanned, else_span) = r#else;
             let Typed {
                 val: else_typed,
                 r#type: else_type,
@@ -199,15 +199,15 @@ pub fn infer<'src>(expr: &Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedE
             Typed {
                 val: TypedExpr::If {
                     r#if: Typed {
-                        val: (Box::new(if_typed), *if_span),
+                        val: Spanned(Box::new(if_typed), *if_span),
                         r#type: if_type,
                     },
                     then: Typed {
-                        val: (Box::new(then_typed), *then_span),
+                        val: Spanned(Box::new(then_typed), *then_span),
                         r#type: then_type.clone(),
                     },
                     r#else: Some(Typed {
-                        val: (Box::new(else_typed), *else_span),
+                        val: Spanned(Box::new(else_typed), *else_span),
                         r#type: else_type.clone(),
                     }),
                 },
@@ -219,11 +219,11 @@ pub fn infer<'src>(expr: &Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedE
         Expr::Load { .. } => todo!(),
         Expr::Sum { .. } => todo!(),
         Expr::Range { expr } => {
-            let (unspanned, span) = expr;
+            let Spanned(unspanned, span) = expr;
             let Typed { val: typed, r#type } = infer(&unspanned, ctx);
             let val = TypedExpr::Range {
                 expr: Typed {
-                    val: (Box::new(typed), *span),
+                    val: Spanned(Box::new(typed), *span),
                     r#type,
                 },
             };
@@ -239,23 +239,23 @@ pub fn infer<'src>(expr: &Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedE
         Expr::Concat { .. } => todo!(),
         Expr::External { .. } => todo!(),
         Expr::Promote { promo, expr } => {
-            let (unspanned, span) = expr;
+            let Spanned(unspanned, span) = expr;
             let Typed { val: typed, r#type } = infer(&unspanned, ctx);
             let val = TypedExpr::Promote {
                 promo: promo.clone(),
                 expr: Typed {
-                    val: (Box::new(typed), *span),
+                    val: Spanned(Box::new(typed), *span),
                     r#type: r#type.clone(),
                 },
             };
             Typed { val, r#type }
         }
         Expr::Unique { expr } => {
-            let (unspanned, span) = expr;
+            let Spanned(unspanned, span) = expr;
             let Typed { val: typed, r#type } = infer(&unspanned, ctx);
             let val = TypedExpr::Unique {
                 expr: Typed {
-                    val: (Box::new(typed), *span),
+                    val: Spanned(Box::new(typed), *span),
                     r#type: r#type.clone(),
                 },
             };
