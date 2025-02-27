@@ -387,11 +387,11 @@ fn records() {
         Expr::Record {
             vals: vec![
                 RecordValue {
-                    name: Spanned("a".into(), (1..2).into()),
+                    name: "a".into(),
                     val: Spanned(Expr::Real { val: 1f64 }, (5..6).into()),
                 },
                 RecordValue {
-                    name: Spanned("b".into(), (8..9).into()),
+                    name: "b".into(),
                     val: Spanned(Expr::Real { val: 2f64 }, (12..13).into()),
                 },
             ],

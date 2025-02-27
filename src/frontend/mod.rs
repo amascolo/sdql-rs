@@ -84,23 +84,14 @@ where
 
             let record = record_items
                 .clone()
-                .map(|v| {
-                    Expr::Record {
-                        vals: v
-                            .into_iter()
-                            .map(|(name, val)| {
-                                let Spanned(_, span) = val;
-                                RecordValue {
-                                    name: Spanned(
-                                        name.into(),
-                                        // FIXME hardcoded span
-                                        (span.start - 4..span.end - 4).into(),
-                                    ),
-                                    val,
-                                }
-                            })
-                            .collect(),
-                    }
+                .map(|v| Expr::Record {
+                    vals: v
+                        .into_iter()
+                        .map(|(name, val)| RecordValue {
+                            name: name.into(),
+                            val,
+                        })
+                        .collect(),
                 })
                 .delimited_by(just(Token::Op("<")), just(Token::Op(">")));
 

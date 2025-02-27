@@ -28,10 +28,10 @@ pub enum Expr<'src> {
         val: &'src str,
     },
     Record {
-        vals: Vec<RecordValue<'src>>,
+        vals: Vec<RecordValue<'src, Spanned<Self>>>,
     },
     Dict {
-        map: Vec<DictEntry<'src>>,
+        map: Vec<DictEntry<Spanned<Self>>>,
         hint: Option<DictHint>,
     },
     Let {
@@ -95,15 +95,15 @@ pub enum Expr<'src> {
 pub enum External {}
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct RecordValue<'src> {
-    pub name: Spanned<Field<'src>>,
-    pub val: Spanned<Expr<'src>>,
+pub struct RecordValue<'src, T> {
+    pub name: Field<'src>,
+    pub val: T,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct DictEntry<'src> {
-    pub key: Spanned<Expr<'src>>,
-    pub val: Spanned<Expr<'src>>,
+pub struct DictEntry<T> {
+    pub key: T,
+    pub val: T,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -189,13 +189,19 @@ impl fmt::Display for Expr<'_> {
     }
 }
 
-impl fmt::Display for RecordValue<'_> {
+impl<T> fmt::Display for RecordValue<'_, T>
+where
+    T: fmt::Display,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} = {}", self.name, self.val)
     }
 }
 
-impl fmt::Display for DictEntry<'_> {
+impl<T> fmt::Display for DictEntry<T>
+where
+    T: fmt::Display,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} -> {}", self.key, self.val)
     }

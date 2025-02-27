@@ -35,10 +35,10 @@ pub enum TypedExpr<'src> {
         val: &'src str,
     },
     Record {
-        vals: Vec<RecordValue<'src>>,
+        vals: Vec<RecordValue<'src, Typed<'src, Spanned<Self>>>>,
     },
     Dict {
-        map: Vec<DictEntry<'src>>,
+        map: Vec<DictEntry<Typed<'src, Spanned<Self>>>>,
         hint: Option<DictHint>,
     },
     Let {
