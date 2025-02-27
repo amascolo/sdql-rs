@@ -25,6 +25,8 @@ proc-macro2 = "1.0"
 prettyplease = "0.2"
 time = { version = "0.3.37", features = ["parsing"] }
 
+wrapped = { path = "wrapped" }
+
 [dev-dependencies]
 criterion = "0.5.1"
 
