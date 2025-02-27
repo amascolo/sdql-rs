@@ -19,7 +19,8 @@ pub enum Type<'src> {
     },
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Debug, Display, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[display("{name}: {}", "r#type")]
 pub struct RecordType<'src> {
     pub name: Field<'src>,
     pub r#type: Type<'src>,
@@ -71,12 +72,6 @@ impl fmt::Display for Type<'_> {
                 None => write!(f, "{{{key} -> {val}}}"),
             },
         }
-    }
-}
-
-impl fmt::Display for RecordType<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}: {}", self.name, self.r#type)
     }
 }
 
