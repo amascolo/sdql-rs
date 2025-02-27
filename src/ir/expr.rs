@@ -163,12 +163,12 @@ impl fmt::Display for Expr<'_> {
             Self::Unary { op, expr } => write!(f, "{op}({expr})"),
             Self::Binary { lhs, op, rhs } => write!(f, "{op}({lhs}, {rhs})"),
             Self::If { r#if, then, r#else } => match r#else {
-                Some(r#else) => write!(f, "if {} then {then} else {}", r#if, r#else),
-                None => write!(f, "if {} then {then}", r#if),
+                Some(r#else) => write!(f, "if {if} then {then} else {else}"),
+                None => write!(f, "if {if} then {then}"),
             },
             Self::Field { expr, field } => write!(f, "{expr}.{field}"),
             Self::Get { lhs, rhs } => write!(f, "{lhs}({rhs})"),
-            Self::Load { r#type, path } => write!(f, "load[{}]({path})", r#type),
+            Self::Load { r#type, path } => write!(f, "load[{type}]({path})"),
             Self::Sum {
                 key,
                 val,

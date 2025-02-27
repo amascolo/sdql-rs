@@ -20,7 +20,7 @@ pub enum Type<'src> {
 }
 
 #[derive(Clone, Debug, Display, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[display("{name}: {}", "r#type")]
+#[display("{name}: {type}")]
 pub struct RecordType<'src> {
     pub name: Field<'src>,
     pub r#type: Type<'src>,
