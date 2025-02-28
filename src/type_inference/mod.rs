@@ -130,7 +130,34 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
             val: TypedExpr::String { val },
             r#type: Type::String { max_len: None },
         },
-        Expr::Record { .. } => todo!(),
+        Expr::Record { vals } => {
+            let (record_types, record_vals): (Vec<_>, Vec<_>) = vals
+                .into_iter()
+                .map(|val| {
+                    let RecordValue {
+                        name,
+                        val: Spanned(expr, span),
+                    } = val;
+                    let Typed { val, r#type } = infer(expr, ctx);
+                    (
+                        RecordType {
+                            name: name.clone(),
+                            r#type: r#type.clone(),
+                        },
+                        RecordValue {
+                            name,
+                            val: Typed {
+                                val: Spanned(val, span),
+                                r#type,
+                            },
+                        },
+                    )
+                })
+                .unzip();
+            let r#type = Type::Record(record_types);
+            let val = TypedExpr::Record { vals: record_vals };
+            Typed { val, r#type }
+        }
         Expr::Dict { .. } => todo!(),
         Expr::Let { .. } => todo!(),
         Expr::Unary { op, expr } => {
@@ -215,43 +242,18 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
                 r#type: promote(then_type, else_type),
             }
         }
-        Expr::Field { expr, .. } => {
+        Expr::Field { expr, field } => {
             let Spanned(unspanned, _) = expr;
-            let Expr::Record { vals } = *unspanned else {
-                panic!()
-            };
-            let r#type = Type::Record(
-                vals.clone()
+            let Typed { val, r#type } = infer(*unspanned, ctx);
+            let Type::Record(vals) = r#type else { panic!() };
+            Typed {
+                val,
+                r#type: vals
                     .into_iter()
-                    .map(|val| {
-                        let RecordValue {
-                            name,
-                            val: Spanned(expr, _),
-                        } = val;
-                        let Typed { r#type, .. } = infer(expr, ctx);
-                        RecordType { name, r#type }
-                    })
-                    .collect(),
-            );
-            let vals = vals
-                .into_iter()
-                .map(|val| {
-                    let RecordValue {
-                        name,
-                        val: Spanned(expr, span),
-                    } = val;
-                    let Typed { val, r#type } = infer(expr, ctx);
-                    RecordValue {
-                        name,
-                        val: Typed {
-                            val: Spanned(val, span),
-                            r#type,
-                        },
-                    }
-                })
-                .collect();
-            let val = TypedExpr::Record { vals };
-            Typed { val, r#type }
+                    .find(|rt| rt.name == field)
+                    .map(|rt| rt.r#type)
+                    .unwrap(),
+            }
         }
         Expr::Get { .. } => todo!(),
         Expr::Load { r#type, path } => Typed {
