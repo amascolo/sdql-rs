@@ -188,16 +188,18 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
             }
         }
         Expr::Field { expr, field } => {
-            let Spanned(unspanned, _) = expr;
-            let Typed { val, r#type } = infer(*unspanned, ctx);
-            let Type::Record(vals) = r#type else { panic!() };
+            let expr = infer_spanned(expr, ctx);
+            let Type::Record(vals) = &expr.r#type else {
+                panic!()
+            };
             Typed {
-                val,
                 r#type: vals
-                    .into_iter()
+                    .iter()
                     .find(|rt| rt.name == field)
+                    .cloned()
                     .map(|rt| rt.r#type)
                     .unwrap(),
+                val: TypedExpr::Field { expr, field },
             }
         }
         Expr::Get { lhs, rhs } => {
