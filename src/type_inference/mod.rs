@@ -131,32 +131,29 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
             r#type: Type::String { max_len: None },
         },
         Expr::Record { vals } => {
-            let (record_types, record_vals): (Vec<_>, Vec<_>) = vals
+            let (record_types, record_vals) = vals
                 .into_iter()
                 .map(|val| {
-                    let RecordValue {
-                        name,
-                        val: Spanned(expr, span),
-                    } = val;
-                    let Typed { val, r#type } = infer(expr, ctx);
+                    let RecordValue { name, val } = val;
+                    let Spanned(unspanned, span) = val;
+                    let Typed { val, r#type } = infer(unspanned, ctx);
+                    let val = Typed {
+                        val: Spanned(val, span),
+                        r#type,
+                    };
                     (
                         RecordType {
                             name: name.clone(),
-                            r#type: r#type.clone(),
+                            r#type: val.r#type.clone(),
                         },
-                        RecordValue {
-                            name,
-                            val: Typed {
-                                val: Spanned(val, span),
-                                r#type,
-                            },
-                        },
+                        RecordValue { name, val },
                     )
                 })
                 .unzip();
-            let r#type = Type::Record(record_types);
-            let val = TypedExpr::Record { vals: record_vals };
-            Typed { val, r#type }
+            Typed {
+                val: TypedExpr::Record { vals: record_vals },
+                r#type: Type::Record(record_types),
+            }
         }
         Expr::Dict { .. } => todo!(),
         Expr::Let { .. } => todo!(),
@@ -266,10 +263,8 @@ fn infer_spanned<'src>(
 ) -> Typed<'src, Spanned<Box<TypedExpr<'src>>>> {
     let Spanned(unspanned, span) = expr;
     let Typed { val, r#type } = infer(*unspanned, ctx);
-    Typed {
-        val: Spanned(val, span).boxed(),
-        r#type,
-    }
+    let val = Spanned(val, span).boxed();
+    Typed { val, r#type }
 }
 
 fn promote<'src>(t1: Type<'src>, t2: Type<'src>) -> Type<'src> {
