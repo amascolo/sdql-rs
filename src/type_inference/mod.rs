@@ -10,6 +10,17 @@ pub struct Typed<'src, T> {
     val: T,
     r#type: Type<'src>,
 }
+impl<'src, T> Typed<'src, T> {
+    pub fn map<U, F>(self, f: F) -> Typed<'src, U>
+    where
+        F: FnOnce(T) -> U,
+    {
+        Typed {
+            val: f(self.val),
+            r#type: self.r#type,
+        }
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TypedExpr<'src> {
@@ -135,12 +146,8 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
                 .into_iter()
                 .map(|val| {
                     let RecordValue { name, val } = val;
-                    let Spanned(unspanned, span) = val;
-                    let Typed { val, r#type } = infer(unspanned, ctx);
-                    let val = Typed {
-                        val: Spanned(val, span),
-                        r#type,
-                    };
+                    let val = infer_spanned(val.boxed(), ctx);
+                    let val = val.map(Spanned::unboxed);
                     (
                         RecordType {
                             name: name.clone(),

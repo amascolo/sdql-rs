@@ -16,6 +16,12 @@ impl<T> Spanned<T> {
     pub fn boxed(self) -> Spanned<Box<T>> {
         self.map(Box::new)
     }
+    pub fn unboxed<U>(self) -> Spanned<U>
+    where
+        T: Into<Box<U>>,
+    {
+        self.map(|boxed| *boxed.into())
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
