@@ -199,47 +199,46 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
                 r#type: promote(lhs_type, rhs_type),
             }
         }
-        Expr::If {
-            r#if: _,
-            then: _,
-            r#else: None,
-        } => todo!(),
-        Expr::If {
-            r#if,
-            then,
-            r#else: Some(r#else),
-        } => {
+        Expr::If { r#if, then, r#else } => {
             let Spanned(if_unspanned, if_span) = r#if;
             let Typed {
                 val: if_typed,
                 r#type: if_type,
             } = infer(*if_unspanned, ctx);
+            let r#if = Typed {
+                val: Spanned(if_typed, if_span).boxed(),
+                r#type: if_type,
+            };
+
             let Spanned(then_unspanned, then_span) = then;
             let Typed {
                 val: then_typed,
                 r#type: then_type,
             } = infer(*then_unspanned, ctx);
-            let Spanned(else_unspanned, else_span) = r#else;
-            let Typed {
-                val: else_typed,
-                r#type: else_type,
-            } = infer(*else_unspanned, ctx);
+            let then = Typed {
+                val: Spanned(then_typed, then_span).boxed(),
+                r#type: then_type,
+            };
+
+            let r#else = r#else.map(|r#else| {
+                let Spanned(else_unspanned, else_span) = r#else;
+                let Typed {
+                    val: else_typed,
+                    r#type: else_type,
+                } = infer(*else_unspanned, ctx);
+                Typed {
+                    val: Spanned(else_typed, else_span).boxed(),
+                    r#type: else_type,
+                }
+            });
+
+            let r#type = r#else
+                .as_ref()
+                .map(|r#else| promote(then.r#type.clone(), r#else.r#type.clone()))
+                .unwrap_or_else(|| then.r#type.clone());
             Typed {
-                val: TypedExpr::If {
-                    r#if: Typed {
-                        val: Spanned(Box::new(if_typed), if_span),
-                        r#type: if_type,
-                    },
-                    then: Typed {
-                        val: Spanned(Box::new(then_typed), then_span),
-                        r#type: then_type.clone(),
-                    },
-                    r#else: Some(Typed {
-                        val: Spanned(Box::new(else_typed), else_span),
-                        r#type: else_type.clone(),
-                    }),
-                },
-                r#type: promote(then_type, else_type),
+                val: TypedExpr::If { r#if, then, r#else },
+                r#type,
             }
         }
         Expr::Field { expr, field } => {
