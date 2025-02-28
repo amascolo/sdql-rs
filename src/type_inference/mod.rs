@@ -255,7 +255,42 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
                     .unwrap(),
             }
         }
-        Expr::Get { .. } => todo!(),
+        Expr::Get { lhs, rhs } => {
+            let Spanned(lhs_unspanned, lhs_span) = lhs;
+            let Typed {
+                val: lhs_typed,
+                r#type: lhs_type,
+            } = infer(*lhs_unspanned, ctx);
+            let Spanned(rhs_unspanned, rhs_span) = rhs;
+            let Typed {
+                val: rhs_typed,
+                r#type: rhs_type,
+            } = infer(*rhs_unspanned, ctx);
+            let r#type = match (&lhs_type, &rhs_type) {
+                (Type::Record(vals), Type::Int | Type::Long) => {
+                    let n = match lhs_typed {
+                        TypedExpr::Int { val } => val.try_into().unwrap(),
+                        TypedExpr::Long { val } => val.try_into().unwrap(),
+                        _ => unimplemented!(),
+                    };
+                    vals.iter().map(|rt| &rt.r#type).nth(n).unwrap()
+                }
+                (Type::Dict { key, val, .. }, _) if rhs_type == **key => val,
+                _ => panic!(),
+            }
+            .clone();
+            let val = TypedExpr::Get {
+                lhs: Typed {
+                    val: Spanned(Box::new(lhs_typed), lhs_span),
+                    r#type: lhs_type,
+                },
+                rhs: Typed {
+                    val: Spanned(Box::new(rhs_typed), rhs_span),
+                    r#type: rhs_type,
+                },
+            };
+            Typed { val, r#type }
+        }
         Expr::Load { r#type, path } => Typed {
             val: TypedExpr::Load {
                 r#type: r#type.clone(),
