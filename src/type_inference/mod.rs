@@ -146,8 +146,7 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
                 .into_iter()
                 .map(|val| {
                     let RecordValue { name, val } = val;
-                    let val = infer_spanned(val.boxed(), ctx);
-                    let val = val.map(Spanned::unboxed);
+                    let val = infer_spanned(val.boxed(), ctx).map(Spanned::unboxed);
                     (
                         RecordType {
                             name: name.clone(),
@@ -162,7 +161,28 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
                 r#type: Type::Record(record_types),
             }
         }
-        Expr::Dict { .. } => todo!(),
+        Expr::Dict { map, hint } => {
+            let map: Vec<_> = map
+                .into_iter()
+                .map(|DictEntry { key, val }| DictEntry {
+                    key: infer_spanned(key.boxed(), ctx).map(Spanned::unboxed),
+                    val: infer_spanned(val.boxed(), ctx).map(Spanned::unboxed),
+                })
+                .collect();
+            let (key_type, val_type) = map
+                .iter()
+                .map(|DictEntry { key, val }| (key.r#type.clone(), val.r#type.clone()))
+                .reduce(|(k1, v1), (k2, v2)| (promote(k1, k2), promote(v1, v2)))
+                .unwrap();
+            Typed {
+                r#type: Type::Dict {
+                    key: Box::new(key_type),
+                    val: Box::new(val_type),
+                    hint: hint.clone(),
+                },
+                val: TypedExpr::Dict { map, hint },
+            }
+        }
         Expr::Let { .. } => todo!(),
         Expr::Unary { op, expr } => {
             let expr = infer_spanned(expr, ctx);
