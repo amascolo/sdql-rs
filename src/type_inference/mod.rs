@@ -163,7 +163,7 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
         Expr::Unary { op, expr } => {
             let Spanned(unspanned, span) = expr;
             let Typed { val: typed, r#type } = infer(*unspanned, ctx);
-            let val = Spanned(Box::new(typed), span);
+            let val = Spanned(typed, span).boxed();
             let expr = Typed {
                 val,
                 r#type: r#type.clone(),
@@ -187,12 +187,12 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
             Typed {
                 val: TypedExpr::Binary {
                     lhs: Typed {
-                        val: Spanned(Box::new(lhs_typed), lhs_span),
+                        val: Spanned(lhs_typed, lhs_span).boxed(),
                         r#type: lhs_type.clone(),
                     },
                     op,
                     rhs: Typed {
-                        val: Spanned(Box::new(rhs_typed), rhs_span),
+                        val: Spanned(rhs_typed, rhs_span).boxed(),
                         r#type: rhs_type.clone(),
                     },
                 },
@@ -280,11 +280,11 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
             .clone();
             let val = TypedExpr::Get {
                 lhs: Typed {
-                    val: Spanned(Box::new(lhs_typed), lhs_span),
+                    val: Spanned(lhs_typed, lhs_span).boxed(),
                     r#type: lhs_type,
                 },
                 rhs: Typed {
-                    val: Spanned(Box::new(rhs_typed), rhs_span),
+                    val: Spanned(rhs_typed, rhs_span).boxed(),
                     r#type: rhs_type,
                 },
             };
@@ -303,7 +303,7 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
             let Typed { val: typed, r#type } = infer(*unspanned, ctx);
             let val = TypedExpr::Range {
                 expr: Typed {
-                    val: Spanned(Box::new(typed), span),
+                    val: Spanned(typed, span).boxed(),
                     r#type,
                 },
             };
@@ -324,7 +324,7 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
             let val = TypedExpr::Promote {
                 promo,
                 expr: Typed {
-                    val: Spanned(Box::new(typed), span),
+                    val: Spanned(typed, span).boxed(),
                     r#type: r#type.clone(),
                 },
             };
@@ -335,7 +335,7 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
             let Typed { val: typed, r#type } = infer(*unspanned, ctx);
             let val = TypedExpr::Unique {
                 expr: Typed {
-                    val: Spanned(Box::new(typed), span),
+                    val: Spanned(typed, span).boxed(),
                     r#type: r#type.clone(),
                 },
             };
