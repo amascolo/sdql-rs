@@ -201,40 +201,24 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
             }
         }
         Expr::Get { lhs, rhs } => {
-            let Spanned(lhs_unspanned, lhs_span) = lhs;
-            let Typed {
-                val: lhs_typed,
-                r#type: lhs_type,
-            } = infer(*lhs_unspanned, ctx);
-            let Spanned(rhs_unspanned, rhs_span) = rhs;
-            let Typed {
-                val: rhs_typed,
-                r#type: rhs_type,
-            } = infer(*rhs_unspanned, ctx);
-            let r#type = match (&lhs_type, &rhs_type) {
-                (Type::Record(vals), Type::Int | Type::Long) => {
-                    let n = match lhs_typed {
-                        TypedExpr::Int { val } => val.try_into().unwrap(),
-                        TypedExpr::Long { val } => val.try_into().unwrap(),
-                        _ => unimplemented!(),
-                    };
-                    vals.iter().map(|rt| &rt.r#type).nth(n).unwrap()
+            let lhs = infer_spanned(lhs, ctx);
+            let rhs = infer_spanned(rhs, ctx);
+            Typed {
+                r#type: match (&lhs.r#type, &rhs.r#type) {
+                    (Type::Record(vals), Type::Int | Type::Long) => {
+                        let n = match *lhs.val.0 {
+                            TypedExpr::Int { val } => val.try_into().unwrap(),
+                            TypedExpr::Long { val } => val.try_into().unwrap(),
+                            _ => unimplemented!(),
+                        };
+                        vals.iter().map(|rt| &rt.r#type).nth(n).unwrap()
+                    }
+                    (Type::Dict { key, val, .. }, _) if rhs.r#type == **key => val,
+                    _ => panic!(),
                 }
-                (Type::Dict { key, val, .. }, _) if rhs_type == **key => val,
-                _ => panic!(),
+                .clone(),
+                val: TypedExpr::Get { lhs, rhs },
             }
-            .clone();
-            let val = TypedExpr::Get {
-                lhs: Typed {
-                    val: Spanned(lhs_typed, lhs_span).boxed(),
-                    r#type: lhs_type,
-                },
-                rhs: Typed {
-                    val: Spanned(rhs_typed, rhs_span).boxed(),
-                    r#type: rhs_type,
-                },
-            };
-            Typed { val, r#type }
         }
         Expr::Load { r#type, path } => Typed {
             val: TypedExpr::Load {
