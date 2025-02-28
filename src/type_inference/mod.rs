@@ -136,14 +136,15 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
         Expr::Unary { op, expr } => {
             let Spanned(unspanned, span) = expr;
             let Typed { val: typed, r#type } = infer(*unspanned, ctx);
-            let val = TypedExpr::Unary {
-                op,
-                expr: Typed {
-                    val: Spanned(Box::new(typed), span),
-                    r#type: r#type.clone(),
-                },
+            let val = Spanned(Box::new(typed), span);
+            let expr = Typed {
+                val,
+                r#type: r#type.clone(),
             };
-            Typed { val, r#type }
+            Typed {
+                val: TypedExpr::Unary { op, expr },
+                r#type,
+            }
         }
         Expr::Binary { lhs, op, rhs } => {
             let Spanned(lhs_unspanned, lhs_span) = lhs;
