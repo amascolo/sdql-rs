@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::frontend::lexer::Spanned;
 use crate::ir::expr::{BinaryOp, DictEntry, Expr, External, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, Field, RecordType, Type};
@@ -22,6 +20,7 @@ impl<'src, T> Typed<'src, T> {
     }
 }
 
+#[allow(dead_code)] // TODO remove after using External
 #[derive(Clone, Debug, PartialEq)]
 pub enum TypedExpr<'src> {
     Sym {
@@ -111,7 +110,13 @@ pub enum TypedExpr<'src> {
 
 type Ctx<'src> = im_rc::HashMap<&'src str, Type<'src>>;
 
-pub fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>> {
+impl<'src> From<Expr<'src>> for Typed<'src, TypedExpr<'src>> {
+    fn from(expr: Expr<'src>) -> Self {
+        infer(expr, &Ctx::new())
+    }
+}
+
+fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>> {
     match expr {
         Expr::Sym { val } => Typed {
             val: TypedExpr::Sym { val },

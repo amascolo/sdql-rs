@@ -3,7 +3,7 @@
 #![feature(let_chains)]
 
 mod frontend;
+mod inference;
 pub mod ir;
 pub mod tpch;
-mod type_inference;
 pub mod utils;
