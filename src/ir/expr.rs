@@ -31,7 +31,7 @@ pub enum Expr<'src> {
         vals: Vec<RecordValue<'src, Spanned<Self>>>,
     },
     Dict {
-        map: Vec<DictEntry<Spanned<Self>>>,
+        map: Vec<DictEntry<Spanned<Self>, Spanned<Self>>>,
         hint: Option<DictHint>,
     },
     Let {
@@ -103,9 +103,9 @@ pub struct RecordValue<'src, T> {
 
 #[derive(Clone, Debug, Display, PartialEq)]
 #[display("{key} -> {val}")]
-pub struct DictEntry<T> {
+pub struct DictEntry<T, U> {
     pub key: T,
-    pub val: T,
+    pub val: U,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -128,6 +128,22 @@ pub enum BinaryOp {
     GreatEq,
     And,
     Or,
+}
+
+impl<'src> Expr<'src> {
+    #[allow(non_snake_case)]
+    fn Set(vals: Vec<Spanned<Self>>) -> Self {
+        Self::Dict {
+            map: vals
+                .into_iter()
+                .map(|key @ Spanned(_, span)| DictEntry {
+                    key,
+                    val: Spanned(Expr::Bool { val: true }, (span.end..span.end).into()),
+                })
+                .collect::<Vec<_>>(),
+            hint: None,
+        }
+    }
 }
 
 impl fmt::Display for Expr<'_> {

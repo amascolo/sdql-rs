@@ -48,7 +48,7 @@ pub enum TypedExpr<'src> {
         vals: Vec<RecordValue<'src, Typed<'src, Spanned<Self>>>>,
     },
     Dict {
-        map: Vec<DictEntry<Typed<'src, Spanned<Self>>>>,
+        map: Vec<DictEntry<Typed<'src, Spanned<Self>>, Typed<'src, Spanned<Self>>>>,
         hint: Option<DictHint>,
     },
     Let {

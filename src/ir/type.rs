@@ -82,7 +82,7 @@ impl<'src> From<&'src str> for Field<'src> {
 impl<'src> Type<'src> {
     #[allow(non_snake_case)]
     pub fn Set(r#type: Type<'src>) -> Self {
-        Type::Dict {
+        Self::Dict {
             key: Box::new(r#type),
             val: Box::new(Type::Bool),
             hint: None,
