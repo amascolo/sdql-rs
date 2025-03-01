@@ -266,11 +266,7 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'
             let expr = infer_spanned(expr, ctx);
             Typed {
                 val: TypedExpr::Range { expr },
-                r#type: Type::Dict {
-                    key: Box::new(Type::Int),
-                    val: Box::new(Type::Bool),
-                    hint: None,
-                },
+                r#type: Type::Set(Type::Int),
             }
         }
         Expr::Concat { lhs, rhs } => {
