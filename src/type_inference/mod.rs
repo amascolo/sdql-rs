@@ -273,7 +273,25 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'
                 },
             }
         }
-        Expr::Concat { .. } => todo!(),
+        Expr::Concat { lhs, rhs } => {
+            let lhs = infer_spanned(lhs, ctx);
+            let rhs = infer_spanned(rhs, ctx);
+            Typed {
+                r#type: Type::Record(RecordType::concat(
+                    if let Type::Record(lhs) = &lhs.r#type {
+                        lhs.clone()
+                    } else {
+                        panic!()
+                    },
+                    if let Type::Record(rhs) = &rhs.r#type {
+                        rhs.clone()
+                    } else {
+                        panic!()
+                    },
+                )),
+                val: TypedExpr::Concat { lhs, rhs },
+            }
+        }
         Expr::External { .. } => todo!(),
         Expr::Promote { promo, expr } => {
             let expr = infer_spanned(expr, ctx);

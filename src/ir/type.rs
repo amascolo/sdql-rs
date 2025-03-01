@@ -1,4 +1,5 @@
 use derive_more::Display;
+use std::collections::HashMap;
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -24,6 +25,40 @@ pub enum Type<'src> {
 pub struct RecordType<'src> {
     pub name: Field<'src>,
     pub r#type: Type<'src>,
+}
+impl<'src> RecordType<'src> {
+    pub fn concat(
+        mut lhs: Vec<RecordType<'src>>,
+        rhs: Vec<RecordType<'src>>,
+    ) -> Vec<RecordType<'src>> {
+        let fs1: HashMap<Field, Type> = lhs
+            .iter()
+            .map(|RecordType { name, r#type }| (name.clone(), r#type.clone()))
+            .collect();
+        let mut fs2: HashMap<Field, Type> = rhs
+            .iter()
+            .map(|RecordType { name, r#type }| (name.clone(), r#type.clone()))
+            .collect();
+
+        let common: HashMap<_, _> = fs1
+            .into_iter()
+            .filter_map(|(field, r#type)| {
+                fs2.remove(&field)
+                    .map(|type_rhs| (field, (r#type, type_rhs)))
+            })
+            .collect();
+        drop(fs2);
+
+        common.iter().for_each(|(name, (t1, t2))| {
+            assert_eq!(t1, t2, "concat with different types for the field '{name}'")
+        });
+
+        lhs.extend(
+            rhs.into_iter()
+                .filter(|RecordType { name, .. }| !common.contains_key(name)),
+        );
+        lhs
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
