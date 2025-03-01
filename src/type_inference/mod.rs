@@ -111,7 +111,7 @@ pub enum TypedExpr<'src> {
 
 type Ctx<'src> = im_rc::HashMap<&'src str, Type<'src>>;
 
-pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedExpr<'src>> {
+pub fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>> {
     match expr {
         Expr::Sym { val } => Typed {
             val: TypedExpr::Sym { val },
@@ -183,7 +183,15 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
                 val: TypedExpr::Dict { map, hint },
             }
         }
-        Expr::Let { .. } => todo!(),
+        Expr::Let { lhs, rhs, cont } => {
+            let rhs = infer_spanned(rhs, ctx);
+            let new_ctx = ctx.update(lhs, rhs.r#type.clone());
+            let cont = infer_spanned(cont, &new_ctx);
+            Typed {
+                r#type: cont.r#type.clone(),
+                val: TypedExpr::Let { lhs, rhs, cont },
+            }
+        }
         Expr::Unary { op, expr } => {
             let expr = infer_spanned(expr, ctx);
             Typed {
@@ -286,7 +294,7 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &mut Ctx<'src>) -> Typed<'src, TypedEx
 
 fn infer_spanned<'src>(
     expr: Spanned<Box<Expr<'src>>>,
-    ctx: &mut Ctx<'src>,
+    ctx: &Ctx<'src>,
 ) -> Typed<'src, Spanned<Box<TypedExpr<'src>>>> {
     let Spanned(unspanned, span) = expr;
     let Typed { val, r#type } = infer(*unspanned, ctx);
