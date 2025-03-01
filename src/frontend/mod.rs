@@ -251,11 +251,13 @@ where
                 })
         });
 
+        let ident = select! { Token::Ident(ident) => ident }.labelled("identifier");
+
         let sum = just(Token::Sum)
             .ignore_then(
-                inline_expr
+                ident
                     .clone()
-                    .then(just(Token::Ctrl(',')).ignore_then(inline_expr.clone()))
+                    .then(just(Token::Ctrl(',')).ignore_then(ident))
                     .delimited_by(just(Token::Op("<")), just(Token::Op(">")))
                     .then(just(Token::Arrow("<-")).ignore_then(inline_expr.clone()))
                     .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
@@ -264,8 +266,8 @@ where
             .map_with(|(((key, val), head), body), e| {
                 Spanned(
                     Expr::Sum {
-                        key: key.boxed(),
-                        val: val.boxed(),
+                        key,
+                        val,
                         head: head.boxed(),
                         body: body.boxed(),
                     },
@@ -282,8 +284,6 @@ where
                 just(Token::Type(ScalarType::Int)).to(Type::Int),
                 just(Token::Type(ScalarType::Long)).to(Type::Long),
             ));
-
-            let ident = select! { Token::Ident(ident) => ident }.labelled("identifier"); // TODO
 
             let record_type = ident
                 .then_ignore(just(Token::Ctrl(':')))

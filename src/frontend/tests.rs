@@ -436,8 +436,8 @@ fn sum() {
     check_expr(
         "sum(<k,v> <- X) v",
         Expr::Sum {
-            key: Spanned(Box::new(Expr::Sym { val: "k" }), (5..6).into()),
-            val: Spanned(Box::new(Expr::Sym { val: "v" }), (7..8).into()),
+            key: &"k",
+            val: &"v",
             head: Spanned(Box::new(Expr::Sym { val: "X" }), (13..14).into()),
             body: Spanned(Box::new(Expr::Sym { val: "v" }), (16..17).into()),
         },
@@ -446,8 +446,8 @@ fn sum() {
     check_expr(
         "sum(<k,v> <- X) {k -> v}",
         Expr::Sum {
-            key: Spanned(Box::new(Expr::Sym { val: "k" }), (5..6).into()),
-            val: Spanned(Box::new(Expr::Sym { val: "v" }), (7..8).into()),
+            key: &"k",
+            val: &"v",
             head: Spanned(Box::new(Expr::Sym { val: "X" }), (13..14).into()),
             body: Spanned(
                 Box::new(Expr::Dict {

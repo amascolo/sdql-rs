@@ -66,8 +66,8 @@ pub enum Expr<'src> {
         path: &'src str,
     },
     Sum {
-        key: Spanned<Box<Self>>,
-        val: Spanned<Box<Self>>,
+        key: &'src str,
+        val: &'src str,
         head: Spanned<Box<Self>>,
         body: Spanned<Box<Self>>,
     },

@@ -84,8 +84,8 @@ pub enum TypedExpr<'src> {
         path: &'src str,
     },
     Sum {
-        key: Typed<'src, Spanned<Box<Self>>>,
-        val: Typed<'src, Spanned<Box<Self>>>,
+        key: &'src str,
+        val: &'src str,
         head: Typed<'src, Spanned<Box<Self>>>,
         body: Typed<'src, Spanned<Box<Self>>>,
     },
@@ -267,27 +267,23 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'
             head,
             body,
         } => {
-            todo!()
-            // FIXME Expr::Sum should have &str key, val
-            // let key = infer_spanned(key, ctx);
-            // let val = infer_spanned(val, ctx);
-            // let head = infer_spanned(head, ctx);
-            // let local_ctx = match &head.r#type {
-            //     Type::Dict {
-            //         key: kt, val: vt, ..
-            //     } => ctx.update(key, *kt.clone()).update(val, *vt.clone()),
-            //     _ => panic!(),
-            // };
-            // let body = infer_spanned(body, &local_ctx);
-            // Typed {
-            //     r#type: body.r#type.clone(),
-            //     val: TypedExpr::Sum {
-            //         key,
-            //         val,
-            //         head,
-            //         body,
-            //     },
-            // }
+            let head = infer_spanned(head, ctx);
+            let local_ctx = match &head.r#type {
+                Type::Dict {
+                    key: kt, val: vt, ..
+                } => ctx.update(key, *kt.clone()).update(val, *vt.clone()),
+                _ => panic!(),
+            };
+            let body = infer_spanned(body, &local_ctx);
+            Typed {
+                r#type: body.r#type.clone(),
+                val: TypedExpr::Sum {
+                    key,
+                    val,
+                    head,
+                    body,
+                },
+            }
         }
         Expr::Range { expr } => {
             let expr = infer_spanned(expr, ctx);
