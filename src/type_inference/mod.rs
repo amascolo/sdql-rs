@@ -292,7 +292,7 @@ pub fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'
                 val: TypedExpr::Concat { lhs, rhs },
             }
         }
-        Expr::External { .. } => todo!(),
+        Expr::External { func, args: _ } => match func {},
         Expr::Promote { promo, expr } => {
             let expr = infer_spanned(expr, ctx);
             Typed {
