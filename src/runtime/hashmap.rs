@@ -1,6 +1,6 @@
 use derive_more::Display;
 use hashbrown::hash_map::rayon::IntoParIter;
-use rayon::iter::IntoParallelIterator;
+use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelIterator};
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 
@@ -76,6 +76,15 @@ where
     }
 }
 
+impl<K, V> FromIterator<(K, V)> for HashMap<K, V>
+where
+    K: Eq + Hash,
+{
+    fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> Self {
+        HashMap(iter.into_iter().collect())
+    }
+}
+
 impl<K, V> IntoParallelIterator for HashMap<K, V>
 where
     K: Eq + Hash + Send,
@@ -86,6 +95,16 @@ where
 
     fn into_par_iter(self) -> Self::Iter {
         self.0.into_par_iter()
+    }
+}
+
+impl<K, V> FromParallelIterator<(K, V)> for HashMap<K, V>
+where
+    K: Eq + Hash + Send,
+    V: Send,
+{
+    fn from_par_iter<T: IntoParallelIterator<Item = (K, V)>>(iter: T) -> Self {
+        HashMap(iter.into_par_iter().collect())
     }
 }
 
