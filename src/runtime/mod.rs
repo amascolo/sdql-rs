@@ -2,6 +2,6 @@ mod date;
 mod hashmap;
 mod record;
 
-pub use date::Date;
+pub use date::{month_from_int, Date};
 pub use hashmap::HashMap;
 pub use record::Record;
