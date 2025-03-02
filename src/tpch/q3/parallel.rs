@@ -27,6 +27,14 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
             }
             acc
         });
+    // TODO this is way faster (for parallel, not for sequential) - we can do it since key is unique
+    // .map(|i| {
+    //     (
+    //         /* custkey */ customer.0[i],
+    //         /* custkey */ customer.0[i],
+    //     )
+    // })
+    //     .collect();
 
     let o_h: HashMap<i32, Record<(Date, i32)>> = (0../* size */ orders.9)
         .into_par_iter()
@@ -45,6 +53,17 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
             }
             acc
         });
+    // TODO this is way faster (for parallel, not for sequential) - we can do it since key is unique
+    // .map(|i| {
+    //     (
+    //         /* orderkey */ orders.0[i],
+    //         Record::new((
+    //             /* orderdate */ orders.4[i],
+    //             /* shippriority */ orders.7[i],
+    //         )),
+    //     )
+    // })
+    // .collect();
 
     let l_h: HashMap<Record<(i32, Date, i32)>, OrderedFloat<f64>> = (0../* size */ lineitem.16)
         .into_par_iter()
