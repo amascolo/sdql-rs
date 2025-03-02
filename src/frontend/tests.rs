@@ -43,6 +43,7 @@ fn constants() {
         },
     );
     check_expr("52", Expr::Int { val: 52 });
+    check_expr("@long 52", Expr::Long { val: 52 });
     check_expr(
         "-52",
         Expr::Unary {
@@ -52,8 +53,12 @@ fn constants() {
     );
     check_expr("52.1", Expr::Real { val: 52.1f64 });
     check_expr("\"foo\"", Expr::String { val: "foo" });
-    // FIXME
-    // check_expr("date(20250525)", Expr::Date(crate::const_date!(20250525)));
+    check_expr(
+        "date(20250525)",
+        Expr::Date {
+            val: crate::date!(20250525),
+        },
+    );
 }
 
 #[test]

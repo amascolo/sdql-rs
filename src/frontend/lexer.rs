@@ -56,20 +56,6 @@ pub(super) enum ScalarType {
     String,
 }
 
-impl fmt::Display for ScalarType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ScalarType::Bool => "bool",
-            ScalarType::Date => "date",
-            ScalarType::Int => "int",
-            ScalarType::Long => "long",
-            ScalarType::Real => "real",
-            ScalarType::String => "string",
-        }
-        .fmt(f)
-    }
-}
-
 impl fmt::Display for Token<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -95,6 +81,20 @@ impl fmt::Display for Token<'_> {
             Token::Load => write!(f, "load"),
             Token::Type(t) => write!(f, "{t}"),
         }
+    }
+}
+
+impl fmt::Display for ScalarType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ScalarType::Bool => "bool",
+            ScalarType::Date => "date",
+            ScalarType::Int => "int",
+            ScalarType::Long => "long",
+            ScalarType::Real => "real",
+            ScalarType::String => "string",
+        }
+        .fmt(f)
     }
 }
 

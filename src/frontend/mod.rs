@@ -4,11 +4,12 @@ mod tests;
 
 use crate::ir::expr::{BinaryOp, DictEntry, Expr, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, RecordType, Type};
+use crate::runtime::Date;
 use chumsky::{input::ValueInput, prelude::*};
 use lexer::{ScalarType, Spanned, Token};
+use time::format_description::well_known::Iso8601;
 
 #[allow(dead_code)]
-// #[derive(Debug)]
 struct Error {
     span: SimpleSpan,
     msg: String,
@@ -23,11 +24,26 @@ where
         let inline_expr = recursive(|inline_expr| {
             let val = select! {
                 Token::Bool(val) => Expr::Bool { val },
-                Token::Integer(val) => Expr::Int { val: val.try_into().unwrap() }, // TODO date/long
+                Token::Integer(val) => Expr::Int { val: val.try_into().unwrap() },
                 Token::Real(val) => Expr::Real { val },
                 Token::Str(val) => Expr::String { val },
             }
             .labelled("value");
+
+            let date = just(Token::Type(ScalarType::Date))
+                .ignore_then(
+                    select! { Token::Integer(n) => n }
+                        .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+                )
+                .map(|val| Expr::Date {
+                    // TODO tokens should be &str only - avoid String allocation here
+                    val: Date::new(time::Date::parse(&val.to_string(), &Iso8601::DEFAULT).unwrap()),
+                });
+
+            let long = just(Token::At)
+                .then(just(Token::Type(ScalarType::Long)))
+                .ignore_then(select! { Token::Integer(n) => n })
+                .map(|val| Expr::Long { val });
 
             let ident = select! { Token::Ident(ident) => ident }.labelled("identifier");
 
@@ -107,6 +123,8 @@ where
                 .delimited_by(just(Token::Op("<")), just(Token::Op(">")));
 
             let atom = val
+                .or(long)
+                .or(date)
                 .or(ident.map(|val| Expr::Sym { val }))
                 .or(let_)
                 .or(dict)

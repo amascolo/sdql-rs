@@ -40,7 +40,7 @@ macro_rules! date {
         const DAY: u8 = ($yymmdd % 100) as u8;
 
         match time::Date::from_calendar_date(YEAR, MONTH, DAY) {
-            Ok(date) => Date::new(date),
+            Ok(date) => crate::runtime::Date::new(date),
             _ => unreachable!(),
         }
     }};

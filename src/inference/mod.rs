@@ -1,7 +1,7 @@
 use crate::frontend::lexer::Spanned;
 use crate::ir::expr::{BinaryOp, DictEntry, Expr, External, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, Field, RecordType, Type};
-use time::Date;
+use crate::runtime::Date;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Typed<'src, T> {
