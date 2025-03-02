@@ -26,6 +26,12 @@ impl_is_tuple!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11);
 impl_is_tuple!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12);
 
 macro_rules! impl_add_assign {
+    () => {
+        impl AddAssign for Record<()> {
+            fn add_assign(&mut self, _rhs: Self) {}
+        }
+    };
+
     ($($T:ident),*; $($idx:tt),*) => {
         impl<$($T),*> AddAssign for Record<($($T,)*)>
         where
@@ -38,6 +44,7 @@ macro_rules! impl_add_assign {
     };
 }
 
+impl_add_assign!();
 impl_add_assign!(T1; 0);
 impl_add_assign!(T1, T2; 0, 1);
 impl_add_assign!(T1, T2, T3; 0, 1, 2);
@@ -50,46 +57,6 @@ impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8, T9; 0, 1, 2, 3, 4, 5, 6, 7, 8);
 impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
 impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
-
-// TODO make like this
-// impl_add_assign!();
-// impl_add_assign!(T1);
-// impl_add_assign!(T1, T2);
-// impl_add_assign!(T1, T2, T3);
-// impl_add_assign!(T1, T2, T3, T4);
-// impl_add_assign!(T1, T2, T3, T4, T5);
-// impl_add_assign!(T1, T2, T3, T4, T5, T6);
-// impl_add_assign!(T1, T2, T3, T4, T5, T6, T7);
-// impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8);
-// impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8, T9);
-// impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10);
-// impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11);
-// impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12);
-
-impl AddAssign for Record<()> {
-    fn add_assign(&mut self, _rhs: Self) {}
-}
-
-// TODO remove
-// impl<T1> AddAssign for Record<(T1,)>
-// where
-//     T1: AddAssign,
-// {
-//     fn add_assign(&mut self, rhs: Self) {
-//         self.0.0 += rhs.0.0;
-//     }
-// }
-//
-// impl<T1, T2> AddAssign for Record<(T1, T2)>
-// where
-//     T1: AddAssign,
-//     T2: AddAssign,
-// {
-//     fn add_assign(&mut self, rhs: Self) {
-//         self.0.0 += rhs.0.0;
-//         self.0.1 += rhs.0.1;
-//     }
-// }
 
 #[cfg(test)]
 mod tests {
