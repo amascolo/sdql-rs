@@ -22,9 +22,10 @@ where
     recursive(|expr| {
         let inline_expr = recursive(|inline_expr| {
             let val = select! {
-                Token::Bool(x) => Expr::Bool{val: x},
-                Token::Num(n) => Expr::Real{val: n},
-                Token::Str(s) => Expr::String{val:s},
+                Token::Bool(val) => Expr::Bool { val },
+                Token::Integer(val) => Expr::Int { val: val.try_into().unwrap() }, // TODO date/long
+                Token::Real(val) => Expr::Real { val },
+                Token::Str(val) => Expr::String { val },
             }
             .labelled("value");
 

@@ -27,7 +27,8 @@ impl<T> Spanned<T> {
 #[derive(Clone, Debug, PartialEq)]
 pub(super) enum Token<'src> {
     Bool(bool),
-    Num(f64),
+    Integer(i64),
+    Real(f64),
     Str(&'src str),
     Op(&'src str),
     Ctrl(char),
@@ -73,7 +74,8 @@ impl fmt::Display for Token<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Token::Bool(x) => write!(f, "{x}"),
-            Token::Num(n) => write!(f, "{n}"),
+            Token::Integer(n) => write!(f, "{n}"),
+            Token::Real(x) => write!(f, "{x}"),
             Token::Str(s) => write!(f, "\"{s}\""),
             Token::Op(s) => write!(f, "{s}"),
             Token::Ctrl(c) => write!(f, "{c}"),
@@ -99,12 +101,18 @@ impl fmt::Display for Token<'_> {
 pub(super) fn lexer<'src>()
 -> impl Parser<'src, &'src str, Vec<Spanned<Token<'src>>>, extra::Err<Rich<'src, char, SimpleSpan>>>
 {
-    let num = text::int(10)
-        .then(just('.').then(text::digits(10)).or_not())
+    let real = text::int(10)
+        .then(just('.').then(text::digits(10)))
         .to_slice()
         .from_str()
         .unwrapped()
-        .map(Token::Num);
+        .map(Token::Real);
+
+    let integer = text::int(10)
+        .to_slice()
+        .from_str()
+        .unwrapped()
+        .map(Token::Integer);
 
     let str_ = just('"')
         .ignore_then(none_of('"').repeated().to_slice())
@@ -158,7 +166,8 @@ pub(super) fn lexer<'src>()
         _ => Token::Ident(ident),
     });
 
-    let token = num
+    let token = real
+        .or(integer)
         .or(str_)
         .or(arrows)
         .or(op)

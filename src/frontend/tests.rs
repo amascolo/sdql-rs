@@ -42,12 +42,12 @@ fn constants() {
             expr: Spanned(Box::new(Expr::Bool { val: true }), (1..5).into()),
         },
     );
-    check_expr("52", Expr::Real { val: 52f64 });
+    check_expr("52", Expr::Int { val: 52 });
     check_expr(
         "-52",
         Expr::Unary {
             op: UnaryOp::Neg,
-            expr: Spanned(Box::new(Expr::Real { val: 52.0 }), (1..3).into()),
+            expr: Spanned(Box::new(Expr::Int { val: 52 }), (1..3).into()),
         },
     );
     check_expr("52.1", Expr::Real { val: 52.1f64 });
@@ -62,8 +62,8 @@ fn if_then_else() {
         "if true then 0 else 1",
         Expr::If {
             r#if: Spanned(Box::new(Expr::Bool { val: true }), (3..7).into()),
-            then: Spanned(Box::new(Expr::Real { val: 0f64 }), (13..14).into()),
-            r#else: Some(Spanned(Box::new(Expr::Real { val: 1f64 }), (20..21).into())),
+            then: Spanned(Box::new(Expr::Int { val: 0 }), (13..14).into()),
+            r#else: Some(Spanned(Box::new(Expr::Int { val: 1 }), (20..21).into())),
         },
     );
 
@@ -71,8 +71,8 @@ fn if_then_else() {
         "if (true) then (0) else (1)",
         Expr::If {
             r#if: Spanned(Box::new(Expr::Bool { val: true }), (4..8).into()),
-            then: Spanned(Box::new(Expr::Real { val: 0f64 }), (16..17).into()),
-            r#else: Some(Spanned(Box::new(Expr::Real { val: 1f64 }), (25..26).into())),
+            then: Spanned(Box::new(Expr::Int { val: 0 }), (16..17).into()),
+            r#else: Some(Spanned(Box::new(Expr::Int { val: 1 }), (25..26).into())),
         },
     );
 
@@ -86,8 +86,8 @@ fn if_then_else() {
                 }),
                 (4..9).into(),
             ),
-            then: Spanned(Box::new(Expr::Real { val: 0f64 }), (17..18).into()),
-            r#else: Some(Spanned(Box::new(Expr::Real { val: 1f64 }), (26..27).into())),
+            then: Spanned(Box::new(Expr::Int { val: 0 }), (17..18).into()),
+            r#else: Some(Spanned(Box::new(Expr::Int { val: 1 }), (26..27).into())),
         },
     );
 }
@@ -98,8 +98,8 @@ fn let_bindings() {
         "let x = 1 in 2",
         Expr::Let {
             lhs: "x",
-            rhs: Spanned(Box::new(Expr::Real { val: 1.0 }), (8..9).into()),
-            cont: Spanned(Box::new(Expr::Real { val: 2.0 }), (13..14).into()),
+            rhs: Spanned(Box::new(Expr::Int { val: 1 }), (8..9).into()),
+            cont: Spanned(Box::new(Expr::Int { val: 2 }), (13..14).into()),
         },
     );
 
@@ -107,8 +107,8 @@ fn let_bindings() {
         "let    x  =    (1) in    2",
         Expr::Let {
             lhs: "x",
-            rhs: Spanned(Box::new(Expr::Real { val: 1.0 }), (16..17).into()),
-            cont: Spanned(Box::new(Expr::Real { val: 2.0 }), (25..26).into()),
+            rhs: Spanned(Box::new(Expr::Int { val: 1 }), (16..17).into()),
+            cont: Spanned(Box::new(Expr::Int { val: 2 }), (25..26).into()),
         },
     );
 
@@ -116,8 +116,8 @@ fn let_bindings() {
         "let x_1 = 1 in 2",
         Expr::Let {
             lhs: "x_1",
-            rhs: Spanned(Box::new(Expr::Real { val: 1.0 }), (10..11).into()),
-            cont: Spanned(Box::new(Expr::Real { val: 2.0 }), (15..16).into()),
+            rhs: Spanned(Box::new(Expr::Int { val: 1 }), (10..11).into()),
+            cont: Spanned(Box::new(Expr::Int { val: 2 }), (15..16).into()),
         },
     );
 
@@ -126,8 +126,8 @@ fn let_bindings() {
             2",
         Expr::Let {
             lhs: "X",
-            rhs: Spanned(Box::new(Expr::Real { val: 1.0 }), (8..9).into()),
-            cont: Spanned(Box::new(Expr::Real { val: 2.0 }), (25..26).into()),
+            rhs: Spanned(Box::new(Expr::Int { val: 1 }), (8..9).into()),
+            cont: Spanned(Box::new(Expr::Int { val: 2 }), (25..26).into()),
         },
     );
 }
@@ -137,49 +137,49 @@ fn arithmetic() {
     check_expr(
         "2 * 3",
         Expr::Binary {
-            lhs: Spanned(Box::new(Expr::Real { val: 2f64 }), (0..1).into()),
+            lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Mul,
-            rhs: Spanned(Box::new(Expr::Real { val: 3f64 }), (4..5).into()),
+            rhs: Spanned(Box::new(Expr::Int { val: 3 }), (4..5).into()),
         },
     );
 
     check_expr(
         "2 + 3",
         Expr::Binary {
-            lhs: Spanned(Box::new(Expr::Real { val: 2f64 }), (0..1).into()),
+            lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Add,
-            rhs: Spanned(Box::new(Expr::Real { val: 3f64 }), (4..5).into()),
+            rhs: Spanned(Box::new(Expr::Int { val: 3 }), (4..5).into()),
         },
     );
 
     check_expr(
         "2 / 3",
         Expr::Binary {
-            lhs: Spanned(Box::new(Expr::Real { val: 2f64 }), (0..1).into()),
+            lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Div,
-            rhs: Spanned(Box::new(Expr::Real { val: 3f64 }), (4..5).into()),
+            rhs: Spanned(Box::new(Expr::Int { val: 3 }), (4..5).into()),
         },
     );
 
     check_expr(
         "2 - 3",
         Expr::Binary {
-            lhs: Spanned(Box::new(Expr::Real { val: 2f64 }), (0..1).into()),
+            lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Sub,
-            rhs: Spanned(Box::new(Expr::Real { val: 3f64 }), (4..5).into()),
+            rhs: Spanned(Box::new(Expr::Int { val: 3 }), (4..5).into()),
         },
     );
 
     check_expr(
         "2 + 1 * 3",
         Expr::Binary {
-            lhs: Spanned(Box::new(Expr::Real { val: 2f64 }), (0..1).into()),
+            lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Add,
             rhs: Spanned(
                 Box::new(Expr::Binary {
-                    lhs: Spanned(Box::new(Expr::Real { val: 1f64 }), (4..5).into()),
+                    lhs: Spanned(Box::new(Expr::Int { val: 1 }), (4..5).into()),
                     op: BinaryOp::Mul,
-                    rhs: Spanned(Box::new(Expr::Real { val: 3f64 }), (8..9).into()),
+                    rhs: Spanned(Box::new(Expr::Int { val: 3 }), (8..9).into()),
                 }),
                 (4..9).into(),
             ),
@@ -191,14 +191,14 @@ fn arithmetic() {
         Expr::Binary {
             lhs: Spanned(
                 Box::new(Expr::Binary {
-                    lhs: Spanned(Box::new(Expr::Real { val: 2f64 }), (0..1).into()),
+                    lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
                     op: BinaryOp::Mul,
-                    rhs: Spanned(Box::new(Expr::Real { val: 1f64 }), (4..5).into()),
+                    rhs: Spanned(Box::new(Expr::Int { val: 1 }), (4..5).into()),
                 }),
                 (0..5).into(),
             ),
             op: BinaryOp::Add,
-            rhs: Spanned(Box::new(Expr::Real { val: 3f64 }), (8..9).into()),
+            rhs: Spanned(Box::new(Expr::Int { val: 3 }), (8..9).into()),
         },
     );
 
@@ -207,36 +207,36 @@ fn arithmetic() {
         Expr::Binary {
             lhs: Spanned(
                 Box::new(Expr::Binary {
-                    lhs: Spanned(Box::new(Expr::Real { val: 6f64 }), (0..1).into()),
+                    lhs: Spanned(Box::new(Expr::Int { val: 6 }), (0..1).into()),
                     op: BinaryOp::Div,
-                    rhs: Spanned(Box::new(Expr::Real { val: 3f64 }), (4..5).into()),
+                    rhs: Spanned(Box::new(Expr::Int { val: 3 }), (4..5).into()),
                 }),
                 (0..5).into(),
             ),
             op: BinaryOp::Mul,
-            rhs: Spanned(Box::new(Expr::Real { val: 2f64 }), (8..9).into()),
+            rhs: Spanned(Box::new(Expr::Int { val: 2 }), (8..9).into()),
         },
     );
 
     check_expr(
         "2 < 3",
         Expr::Binary {
-            lhs: Spanned(Box::new(Expr::Real { val: 2f64 }), (0..1).into()),
+            lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Less,
-            rhs: Spanned(Box::new(Expr::Real { val: 3f64 }), (4..5).into()),
+            rhs: Spanned(Box::new(Expr::Int { val: 3 }), (4..5).into()),
         },
     );
 
     check_expr(
         "2 < 3 * 1",
         Expr::Binary {
-            lhs: Spanned(Box::new(Expr::Real { val: 2f64 }), (0..1).into()),
+            lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Less,
             rhs: Spanned(
                 Box::new(Expr::Binary {
-                    lhs: Spanned(Box::new(Expr::Real { val: 3f64 }), (4..5).into()),
+                    lhs: Spanned(Box::new(Expr::Int { val: 3 }), (4..5).into()),
                     op: BinaryOp::Mul,
-                    rhs: Spanned(Box::new(Expr::Real { val: 1f64 }), (8..9).into()),
+                    rhs: Spanned(Box::new(Expr::Int { val: 1 }), (8..9).into()),
                 }),
                 (4..9).into(),
             ),
@@ -246,13 +246,13 @@ fn arithmetic() {
     check_expr(
         "2 < (3 * 1)",
         Expr::Binary {
-            lhs: Spanned(Box::new(Expr::Real { val: 2f64 }), (0..1).into()),
+            lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Less,
             rhs: Spanned(
                 Box::new(Expr::Binary {
-                    lhs: Spanned(Box::new(Expr::Real { val: 3f64 }), (5..6).into()),
+                    lhs: Spanned(Box::new(Expr::Int { val: 3 }), (5..6).into()),
                     op: BinaryOp::Mul,
-                    rhs: Spanned(Box::new(Expr::Real { val: 1f64 }), (9..10).into()),
+                    rhs: Spanned(Box::new(Expr::Int { val: 1 }), (9..10).into()),
                 }),
                 (5..10).into(),
             ),
@@ -386,7 +386,7 @@ fn sets() {
 
     check_expr(
         "{1}",
-        Expr::Set(vec![Spanned(Expr::Real { val: 1f64 }, (1..2).into())]),
+        Expr::Set(vec![Spanned(Expr::Int { val: 1 }, (1..2).into())]),
     );
 
     check_expr(
@@ -397,8 +397,8 @@ fn sets() {
     check_expr(
         "{0, 1}",
         Expr::Set(vec![
-            Spanned(Expr::Real { val: 0f64 }, (1..2).into()),
-            Spanned(Expr::Real { val: 1f64 }, (4..5).into()),
+            Spanned(Expr::Int { val: 0 }, (1..2).into()),
+            Spanned(Expr::Int { val: 1 }, (4..5).into()),
         ]),
     );
 
@@ -419,11 +419,11 @@ fn records() {
             vals: vec![
                 RecordValue {
                     name: "a".into(),
-                    val: Spanned(Expr::Real { val: 1f64 }, (5..6).into()),
+                    val: Spanned(Expr::Int { val: 1 }, (5..6).into()),
                 },
                 RecordValue {
                     name: "b".into(),
-                    val: Spanned(Expr::Real { val: 2f64 }, (12..13).into()),
+                    val: Spanned(Expr::Int { val: 2 }, (12..13).into()),
                 },
             ],
         },
