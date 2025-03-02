@@ -47,19 +47,23 @@ pub(super) enum Token<'src> {
 
 #[derive(Clone, Debug, PartialEq)]
 pub(super) enum ScalarType {
-    String,
     Bool,
+    Date,
     Int,
     Long,
+    Real,
+    String,
 }
 
 impl fmt::Display for ScalarType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ScalarType::String => "string",
             ScalarType::Bool => "bool",
+            ScalarType::Date => "date",
             ScalarType::Int => "int",
             ScalarType::Long => "long",
+            ScalarType::Real => "real",
+            ScalarType::String => "string",
         }
         .fmt(f)
     }
@@ -110,15 +114,14 @@ pub(super) fn lexer<'src>()
     let arrows = just("<-").or(just("->")).map(Token::Arrow);
     let at = just("@").map(|_| Token::At);
 
-    let type_ = just("string")
-        .or(just("bool").or(just("int").or(just("long"))))
-        .map(|s| match s {
-            "string" => Token::Type(ScalarType::String),
-            "bool" => Token::Type(ScalarType::Bool),
-            "int" => Token::Type(ScalarType::Int),
-            "long" => Token::Type(ScalarType::Long),
-            _ => unreachable!(),
-        });
+    let type_ = choice((
+        just("bool").to(Token::Type(ScalarType::Bool)),
+        just("date").to(Token::Type(ScalarType::Date)),
+        just("int").to(Token::Type(ScalarType::Int)),
+        just("long").to(Token::Type(ScalarType::Long)),
+        just("real").to(Token::Type(ScalarType::Real)),
+        just("string").to(Token::Type(ScalarType::String)),
+    ));
 
     let op = just("==")
         .or(just("!="))
