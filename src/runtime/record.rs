@@ -1,9 +1,20 @@
 use derive_more::Display;
-use std::ops::AddAssign;
+use std::ops::{AddAssign, Deref};
 
 #[derive(Clone, Debug, Display, PartialEq)]
 #[display("{_0:?}")]
 pub struct Record<T: IsTuple>(T);
+
+impl<T> Deref for Record<T>
+where
+    T: IsTuple,
+{
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 pub trait IsTuple {}
 macro_rules! impl_is_tuple {
