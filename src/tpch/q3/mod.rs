@@ -9,7 +9,7 @@ pub mod sequential;
 
 type TypeQ3 = HashMap<Record<(i32, Date, i32, OrderedFloat<f64>)>, i32>;
 
-const _19950315: Date = crate::const_date!(19950315);
+const _19950315: Date = crate::date!(19950315);
 
 pub fn format_q3_result(result: &TypeQ3) -> String {
     result

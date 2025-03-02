@@ -26,14 +26,14 @@ pub(crate) const fn month_from_int(m: u32) -> Month {
 }
 
 #[macro_export]
-macro_rules! const_date {
+macro_rules! date {
     ($yymmdd:literal) => {{
         const YEAR: i32 = ($yymmdd / 10000) as i32;
         const MONTH: time::Month = crate::tpch::runtime::month_from_int(($yymmdd / 100) % 100);
         const DAY: u8 = ($yymmdd % 100) as u8;
 
         match time::Date::from_calendar_date(YEAR, MONTH, DAY) {
-            Ok(date) => Date(date),
+            Ok(date) => Date::new(date),
             _ => unreachable!(),
         }
     }};

@@ -58,7 +58,9 @@ pub fn read_orders(path: &str) -> Result<Orders, Box<dyn Error>> {
         custkey.push(record.get(1).unwrap().parse()?);
         orderstatus.push(record.get(2).unwrap().to_string());
         totalprice.push(record.get(3).unwrap().parse()?);
-        orderdate.push(Date::parse(record.get(4).unwrap(), &Iso8601::DEFAULT).unwrap());
+        orderdate.push(Date::new(
+            time::Date::parse(record.get(4).unwrap(), &Iso8601::DEFAULT).unwrap(),
+        ));
         orderpriority.push(record.get(5).unwrap().to_string());
         clerk.push(record.get(6).unwrap().to_string());
         shippriority.push(record.get(7).unwrap().parse()?);
@@ -114,9 +116,15 @@ pub fn read_lineitems(path: &str) -> Result<Lineitem, Box<dyn Error>> {
         tax.push(record.get(7).unwrap().parse()?);
         returnflag.push(record.get(8).unwrap().to_string());
         linestatus.push(record.get(9).unwrap().to_string());
-        shipdate.push(Date::parse(record.get(10).unwrap(), &Iso8601::DEFAULT).unwrap());
-        commitdate.push(Date::parse(record.get(11).unwrap(), &Iso8601::DEFAULT).unwrap());
-        receiptdate.push(Date::parse(record.get(12).unwrap(), &Iso8601::DEFAULT).unwrap());
+        shipdate.push(Date::new(
+            time::Date::parse(record.get(10).unwrap(), &Iso8601::DEFAULT).unwrap(),
+        ));
+        commitdate.push(Date::new(
+            time::Date::parse(record.get(11).unwrap(), &Iso8601::DEFAULT).unwrap(),
+        ));
+        receiptdate.push(Date::new(
+            time::Date::parse(record.get(12).unwrap(), &Iso8601::DEFAULT).unwrap(),
+        ));
         shipinstruct.push(record.get(13).unwrap().to_string());
         shipmode.push(record.get(14).unwrap().to_string());
         comment.push(record.get(15).unwrap().to_string());
