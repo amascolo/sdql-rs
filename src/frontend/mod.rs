@@ -75,6 +75,16 @@ where
                     }),
                 });
 
+            let set_items = expr
+                .clone()
+                .separated_by(just(Token::Ctrl(',')))
+                .allow_trailing()
+                .collect::<Vec<_>>();
+
+            let set = set_items
+                .delimited_by(just(Token::Ctrl('{')), just(Token::Ctrl('}')))
+                .map(Expr::Set);
+
             let record_items = ident
                 .then_ignore(just(Token::Op("=")))
                 .then(expr.clone())
@@ -99,6 +109,7 @@ where
                 .or(ident.map(|val| Expr::Sym { val }))
                 .or(let_)
                 .or(dict)
+                .or(set)
                 .or(record)
                 .map_with(|expr, e| Spanned(expr, e.span()))
                 .or(expr

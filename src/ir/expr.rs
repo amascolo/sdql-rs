@@ -130,10 +130,9 @@ pub enum BinaryOp {
     Or,
 }
 
-#[allow(dead_code)] // TODO remove after adding support for set literal {} in grammar
 impl<'src> Expr<'src> {
     #[allow(non_snake_case)]
-    fn Set(vals: Vec<Spanned<Self>>) -> Self {
+    pub fn Set(vals: Vec<Spanned<Self>>) -> Self {
         Self::Dict {
             map: vals
                 .into_iter()

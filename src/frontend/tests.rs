@@ -381,6 +381,37 @@ fn dicts() {
 }
 
 #[test]
+fn sets() {
+    check_expr("{}", Expr::Set(vec![]));
+
+    check_expr(
+        "{1}",
+        Expr::Set(vec![Spanned(Expr::Real { val: 1f64 }, (1..2).into())]),
+    );
+
+    check_expr(
+        "{x}",
+        Expr::Set(vec![Spanned(Expr::Sym { val: "x" }, (1..2).into())]),
+    );
+
+    check_expr(
+        "{0, 1}",
+        Expr::Set(vec![
+            Spanned(Expr::Real { val: 0f64 }, (1..2).into()),
+            Spanned(Expr::Real { val: 1f64 }, (4..5).into()),
+        ]),
+    );
+
+    check_expr(
+        "{x, y}",
+        Expr::Set(vec![
+            Spanned(Expr::Sym { val: "x" }, (1..2).into()),
+            Spanned(Expr::Sym { val: "y" }, (4..5).into()),
+        ]),
+    );
+}
+
+#[test]
 fn records() {
     check_expr(
         "<a = 1, b = 2>",
