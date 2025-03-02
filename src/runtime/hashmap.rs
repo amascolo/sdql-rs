@@ -43,8 +43,6 @@ where
     }
 }
 
-// TODO can implement instead Index<K> and IndexMut<K> by constraining K: Copy
-
 impl<K, V> Index<&K> for HashMap<K, V>
 where
     K: Eq + Hash,
