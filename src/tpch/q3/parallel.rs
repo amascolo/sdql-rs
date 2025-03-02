@@ -1,8 +1,7 @@
-use super::TypeQ3;
-use super::_19950315;
+use super::{TypeQ3, _19950315};
+use crate::runtime::{Date, HashMap, Record};
 use crate::tpch::read::{read_customers, read_lineitems, read_orders};
 use crate::tpch::types::{Customer, Lineitem, Orders};
-use hashbrown::HashMap;
 use ordered_float::OrderedFloat;
 use rayon::prelude::*;
 use std::error::Error;
@@ -15,59 +14,58 @@ pub fn q3_rayon(sf: &str) -> Result<TypeQ3, Box<dyn Error>> {
 }
 
 pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ3 {
-    let c_h: HashMap<_, _> = (0../* size */ customer.8)
+    let c_h: HashMap<i32, i32> = (0../* size */ customer.8)
         .into_par_iter()
         .filter(|&i| /* mktsegment */ customer.6[i] == "BUILDING")
-        .map(|i| {
-            (
-                /* custkey */ customer.0[i],
-                /* custkey */ customer.0[i],
-            )
+        .fold(HashMap::new, |mut acc, i| {
+            acc[/* custkey */ &customer.0[i]] += /* custkey */ customer.0[i];
+            acc
         })
-        .collect();
+        .reduce(HashMap::new, |mut acc, partial| {
+            for (key, val) in partial {
+                acc[&key] += val;
+            }
+            acc
+        });
 
-    let o_h: HashMap<_, _> = (0../* size */ orders.9)
+    let o_h: HashMap<i32, Record<(Date, i32)>> = (0../* size */ orders.9)
         .into_par_iter()
         .filter(|&i| c_h.contains_key(&/* custkey */ orders.1[i]))
         .filter(|&i| /* orderdate */ orders.4[i] < _19950315)
-        .map(|i| {
-            (
-                /* orderkey */ orders.0[i],
-                (
-                    /* orderdate */ orders.4[i],
-                    /* shippriority */ orders.7[i],
-                ),
-            )
+        .fold(HashMap::new, |mut acc, i| {
+            acc[&/* orderkey */ orders.0[i]] += Record::new((
+                /* orderdate */ orders.4[i],
+                /* shippriority */ orders.7[i],
+            ));
+            acc
         })
-        .collect();
+        .reduce(HashMap::new, |mut acc, partial| {
+            for (key, val) in partial {
+                acc[&key] += val;
+            }
+            acc
+        });
 
-    let l_h = (0../* size */ lineitem.16)
+    let l_h: HashMap<Record<(i32, Date, i32)>, OrderedFloat<f64>> = (0../* size */ lineitem.16)
         .into_par_iter()
         .filter(|&i| /* shipdate */ lineitem.10[i] > _19950315)
         .filter(|&i| o_h.contains_key(&/* orderkey */ lineitem.0[i]))
-        .fold(
-            HashMap::new,
-            |mut acc, i| {
-                *acc.entry((
+        .fold(HashMap::new, |mut acc, i| {
+            acc[&Record::new((
                     /* orderkey */ lineitem.0[i],
                     o_h[&/* orderkey */ lineitem.0[i]].0,
                     o_h[&/* orderkey */ lineitem.0[i]].1,
-                ))
-                .or_default() += /* extendedprice */ lineitem.5[i] * (1.0 - /* discount */ lineitem.6[i]);
-                acc
-            },
-        )
-        .reduce(
-            HashMap::new,
-            |mut acc, partial| {
-                for (key, value) in partial {
-                    *acc.entry(key).or_default() += value;
-                }
-                acc
-            },
-        );
+                ))] += /* extendedprice */ lineitem.5[i] * (1.0 - /* discount */ lineitem.6[i]);
+            acc
+        })
+        .reduce(HashMap::new, |mut acc, partial| {
+            for (key, val) in partial {
+                acc[&key] += val;
+            }
+            acc
+        });
 
     l_h.into_par_iter()
-        .map(|(key, val)| ((key.0, key.1, key.2, OrderedFloat(val)), 1))
+        .map(|(key, val)| (Record::new((key.0, key.1, key.2, val)), 1))
         .collect()
 }

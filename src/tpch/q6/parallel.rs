@@ -1,5 +1,4 @@
-use super::TypeQ6;
-use super::{_19940101, _19950101};
+use super::{TypeQ6, _19940101, _19950101};
 use crate::tpch::read::read_lineitems;
 use crate::tpch::types::Lineitem;
 use rayon::prelude::*;

@@ -1,5 +1,6 @@
+use crate::runtime::Date;
 use std::marker::PhantomData;
-use time::{Date, Month};
+use time::Month;
 
 // so IDE doesn't remove import
 const _: PhantomData<Date> = PhantomData;
@@ -31,8 +32,8 @@ macro_rules! const_date {
         const MONTH: time::Month = crate::tpch::runtime::month_from_int(($yymmdd / 100) % 100);
         const DAY: u8 = ($yymmdd % 100) as u8;
 
-        match Date::from_calendar_date(YEAR, MONTH, DAY) {
-            Ok(date) => date,
+        match time::Date::from_calendar_date(YEAR, MONTH, DAY) {
+            Ok(date) => Date(date),
             _ => unreachable!(),
         }
     }};

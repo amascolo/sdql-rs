@@ -1,4 +1,6 @@
 use derive_more::Display;
+use hashbrown::hash_map::rayon::IntoParIter;
+use rayon::iter::IntoParallelIterator;
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 
@@ -41,6 +43,8 @@ where
     }
 }
 
+// TODO can implement instead Index<K> and IndexMut<K> by constraining K: Copy
+
 impl<K, V> Index<&K> for HashMap<K, V>
 where
     K: Eq + Hash,
@@ -59,6 +63,31 @@ where
 {
     fn index_mut(&mut self, key: &K) -> &mut Self::Output {
         self.entry(*key).or_default()
+    }
+}
+
+impl<K, V> IntoIterator for HashMap<K, V>
+where
+    K: Eq + Hash,
+{
+    type Item = (K, V);
+    type IntoIter = hashbrown::hash_map::IntoIter<K, V>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
+impl<K, V> IntoParallelIterator for HashMap<K, V>
+where
+    K: Eq + Hash + Send,
+    V: Send,
+{
+    type Iter = IntoParIter<K, V>;
+    type Item = (K, V);
+
+    fn into_par_iter(self) -> Self::Iter {
+        self.0.into_par_iter()
     }
 }
 

@@ -1,9 +1,20 @@
 use derive_more::Display;
 use std::ops::{AddAssign, Deref};
 
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Copy, Debug, Display, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[display("{_0:?}")]
 pub struct Record<T: IsTuple>(T);
+
+impl<T> Record<T>
+where
+    T: IsTuple,
+{
+    pub fn new(value: T) -> Self {
+        Record(value)
+    }
+}
+
+impl<T: IsTuple> Record<T> {}
 
 impl<T> Deref for Record<T>
 where
