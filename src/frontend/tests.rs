@@ -467,6 +467,26 @@ fn fields() {
     );
 }
 
+// FIXME
+// #[test]
+// fn gets() {
+//     check_expr(
+//         "x(y)",
+//         Expr::Get {
+//             lhs: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
+//             rhs: Spanned(Box::new(Expr::Sym { val: "y" }), (2..3).into()),
+//         },
+//     );
+//
+//     //     sdql"x(y)" should be(Get(Sym("x"), Sym("y")))
+//     //     sdql"x(y)(z)" should be(Get(Get(Sym("x"), Sym("y")), Sym("z")))
+//     //     sdql"x(   y)" should be(Get(Sym("x"), Sym("y")))
+//     //     sdql"x(y)  " should be(Get(Sym("x"), Sym("y")))
+//     //     sdql"x(1)" should be(Get(Sym("x"), Const(1)))
+//     //     sdql"< foo = 1  >(1)" should be(Get(RecNode(Seq("foo" -> Const(1.0))), Const(1)))
+//     todo!()
+// }
+
 #[test]
 fn sum() {
     check_expr(

@@ -136,21 +136,7 @@ where
                     .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))))
                 .boxed();
 
-            let neg = just(Token::Op("-")).repeated().foldr(atom, |_op, rhs| {
-                let Spanned(_, span) = rhs;
-                {
-                    Spanned(
-                        Expr::Unary {
-                            op: UnaryOp::Neg,
-                            expr: rhs.boxed(),
-                        },
-                        // FIXME hardcoded span
-                        (span.start - 1..span.end).into(),
-                    )
-                }
-            });
-
-            let field = neg
+            let field = atom
                 .clone()
                 .then(just(Token::Ctrl('.')).ignore_then(ident).or_not())
                 .map_with(|(expr, field), e| match field {
@@ -164,7 +150,37 @@ where
                     ),
                 });
 
-            let not = just(Token::Op("!")).repeated().foldr(field, |_op, rhs| {
+            // TODO
+            // let get = field
+            //     .clone()
+            //     .then(
+            //         expr.clone()
+            //             .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+            //     )
+            //     .map_with(|(lhs, rhs), e| {
+            //         Spanned(
+            //             Expr::Get {
+            //                 lhs: lhs.boxed(),
+            //                 rhs: rhs.boxed(),
+            //             },
+            //             e.span(),
+            //         )
+            //     });
+
+            let neg = just(Token::Op("-")).repeated().foldr(field, |_op, rhs| {
+                let Spanned(_, span) = rhs;
+                {
+                    Spanned(
+                        Expr::Unary {
+                            op: UnaryOp::Neg,
+                            expr: rhs.boxed(),
+                        },
+                        (span.start - 1..span.end).into(),
+                    )
+                }
+            });
+
+            let not = just(Token::Op("!")).repeated().foldr(neg, |_op, rhs| {
                 let Spanned(_, span) = rhs;
                 Spanned(
                     Expr::Unary {
