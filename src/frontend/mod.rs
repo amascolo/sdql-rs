@@ -334,10 +334,10 @@ where
                     .clone()
                     .then(just(Token::Ctrl(',')).ignore_then(ident))
                     .delimited_by(just(Token::Op("<")), just(Token::Op(">")))
-                    .then(just(Token::Arrow("<-")).ignore_then(inline_expr.clone()))
+                    .then(just(Token::Arrow("<-")).ignore_then(expr.clone()))
                     .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
             )
-            .then(inline_expr.clone())
+            .then(expr.clone())
             .map_with(|(((key, val), head), body), e| {
                 Spanned(
                     Expr::Sum {
