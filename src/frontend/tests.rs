@@ -52,8 +52,20 @@ fn constants() {
         },
     );
     check_expr("52.1", Expr::Real { val: 52.1f64 });
-    check_expr("\"foo\"", Expr::String { val: "foo" });
-    check_expr("@varchar(3) \"foo\"", Expr::String { val: "foo" }); // FIXME
+    check_expr(
+        "\"foo\"",
+        Expr::String {
+            val: "foo",
+            max_len: None,
+        },
+    );
+    check_expr(
+        "@varchar(3) \"foo\"",
+        Expr::String {
+            val: "foo",
+            max_len: Some(3),
+        },
+    );
     check_expr(
         "date(20250525)",
         Expr::Date {

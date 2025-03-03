@@ -26,6 +26,7 @@ pub enum Expr<'src> {
     },
     String {
         val: &'src str,
+        max_len: Option<i64>,
     },
     Record {
         vals: Vec<RecordValue<'src, Spanned<Self>>>,
@@ -155,7 +156,11 @@ impl fmt::Display for Expr<'_> {
             Self::Real { val } => write!(f, "{val}"),
             Self::Int { val } => write!(f, "{val}"),
             Self::Long { val } => write!(f, "{val}"),
-            Self::String { val } => write!(f, "\"{val}\""),
+            Self::String { val, max_len: None } => write!(f, "\"{val}\""),
+            Self::String {
+                val,
+                max_len: Some(max_len),
+            } => write!(f, "@varchar({max_len}) \"{val}\""),
             Self::Record { vals } => write!(
                 f,
                 "<{}>",

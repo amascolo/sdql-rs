@@ -43,6 +43,7 @@ pub enum TypedExpr<'src> {
     },
     String {
         val: &'src str,
+        max_len: Option<i64>,
     },
     Record {
         vals: Vec<RecordValue<'src, Typed<'src, Spanned<Self>>>>,
@@ -142,9 +143,9 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
             val: TypedExpr::Real { val },
             r#type: Type::Real,
         },
-        Expr::String { val } => Typed {
-            val: TypedExpr::String { val },
-            r#type: Type::String { max_len: None },
+        Expr::String { val, max_len } => Typed {
+            val: TypedExpr::String { val, max_len },
+            r#type: Type::String { max_len },
         },
         Expr::Record { vals } => {
             let (record_types, record_vals) = vals

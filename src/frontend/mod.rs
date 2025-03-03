@@ -46,7 +46,7 @@ where
                 Token::Bool(val) => Expr::Bool { val },
                 Token::Integer(val) => Expr::Int { val: val.try_into().unwrap() },
                 Token::Real(val) => Expr::Real { val },
-                Token::Str(val) => Expr::String { val },
+                Token::Str(val) => Expr::String { val, max_len: None },
             }
             .labelled("value");
 
@@ -58,7 +58,10 @@ where
             let varchar = varchar_annotation
                 .clone()
                 .then(select! { Token::Str(s) => s })
-                .map(|(_n, val)| Expr::String { val }); // TODO store n
+                .map(|(n, val)| Expr::String {
+                    val,
+                    max_len: Some(n),
+                });
 
             let date = just(Token::Type(ScalarType::Date))
                 .ignore_then(
