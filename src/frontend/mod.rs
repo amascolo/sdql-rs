@@ -42,7 +42,59 @@ where
             )
             .boxed();
 
-        let inline_expr = recursive(|inline_expr| {
+        let type_ = recursive(|type_| {
+            let varchar = varchar_annotation
+                .clone()
+                .map(|n| Type::String { max_len: Some(n) });
+
+            let scalar = choice((
+                varchar,
+                just(Token::Type(ScalarType::String)).to(Type::String { max_len: None }),
+                just(Token::Type(ScalarType::Bool)).to(Type::Bool),
+                just(Token::Type(ScalarType::Date)).to(Type::Date),
+                just(Token::Type(ScalarType::Int)).to(Type::Int),
+                just(Token::Type(ScalarType::Long)).to(Type::Long),
+                just(Token::Type(ScalarType::Real)).to(Type::Real),
+            ));
+
+            let record_type = select! { Token::Ident(ident) => ident }
+                .then_ignore(just(Token::Ctrl(':')))
+                .then(type_.clone())
+                .separated_by(just(Token::Ctrl(',')))
+                .allow_trailing()
+                .collect::<Vec<_>>()
+                .delimited_by(just(Token::Op("<")), just(Token::Op(">")))
+                .map(|v| {
+                    Type::Record(
+                        v.into_iter()
+                            .map(|(name, r#type)| RecordType {
+                                name: name.into(),
+                                r#type,
+                            })
+                            .collect(),
+                    )
+                });
+
+            let dict_type = hint
+                .clone()
+                .or_not()
+                .then(
+                    type_
+                        .clone()
+                        .then_ignore(just(Token::Arrow("->")))
+                        .then(type_.clone())
+                        .delimited_by(just(Token::Ctrl('{')), just(Token::Ctrl('}'))),
+                )
+                .map(|(hint, (key, val))| Type::Dict {
+                    key: Box::new(key),
+                    val: Box::new(val),
+                    hint,
+                });
+
+            scalar.or(record_type).or(dict_type)
+        });
+
+        let inline_expr = recursive(|_inline_expr| {
             let val = select! {
                 Token::Bool(val) => Expr::Bool { val },
                 Token::Integer(val) => Expr::Int { val: val.try_into().unwrap() },
@@ -56,13 +108,13 @@ where
                 .ignore_then(select! { Token::Integer(n) => n })
                 .map(|val| Expr::Long { val });
 
-            let varchar = varchar_annotation
-                .clone()
-                .then(select! { Token::Str(s) => s })
-                .map(|(n, val)| Expr::String {
-                    val,
-                    max_len: Some(n),
-                });
+            let varchar =
+                varchar_annotation
+                    .then(select! { Token::Str(s) => s })
+                    .map(|(n, val)| Expr::String {
+                        val,
+                        max_len: Some(n),
+                    });
 
             let date = just(Token::Type(ScalarType::Date))
                 .ignore_then(
@@ -74,21 +126,7 @@ where
                     val: Date::new(time::Date::parse(&val.to_string(), &Iso8601::DEFAULT).unwrap()),
                 });
 
-            let ident = select! { Token::Ident(ident) => ident }.labelled("identifier");
-
-            let let_ = just(Token::Let)
-                .ignore_then(ident)
-                .then_ignore(just(Token::Op("=")))
-                .then(inline_expr)
-                .then_ignore(just(Token::In))
-                .then(expr.clone())
-                .map(
-                    |((name, val), body): ((_, Spanned<Expr>), Spanned<Expr>)| Expr::Let {
-                        lhs: name,
-                        rhs: val.boxed(),
-                        cont: body.boxed(),
-                    },
-                );
+            let sym = select! { Token::Ident(ident) => ident }.map(|val| Expr::Sym { val });
 
             let dict_items = expr
                 .clone()
@@ -99,7 +137,6 @@ where
                 .collect::<Vec<_>>();
 
             let dict = hint
-                .clone()
                 .or_not()
                 .then(dict_items.delimited_by(just(Token::Ctrl('{')), just(Token::Ctrl('}'))))
                 .map(|(hint, v)| Expr::Dict {
@@ -120,7 +157,7 @@ where
                 .delimited_by(just(Token::Ctrl('{')), just(Token::Ctrl('}')))
                 .map(Expr::Set);
 
-            let record_items = ident
+            let record_items = select! { Token::Ident(ident) => ident }
                 .then_ignore(just(Token::Op("=")))
                 .then(expr.clone())
                 .separated_by(just(Token::Ctrl(',')))
@@ -140,15 +177,23 @@ where
                 })
                 .delimited_by(just(Token::Op("<")), just(Token::Op(">")));
 
+            let load = just(Token::Load)
+                .ignore_then(type_.delimited_by(just(Token::Ctrl('[')), just(Token::Ctrl(']'))))
+                .then(
+                    select! { Token::Str(s) => s }
+                        .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+                )
+                .map(|(r#type, path)| Expr::Load { r#type, path });
+
             let atom = val
                 .or(long)
                 .or(varchar)
                 .or(date)
-                .or(ident.map(|val| Expr::Sym { val }))
-                .or(let_)
+                .or(sym)
                 .or(dict)
                 .or(set)
                 .or(record)
+                .or(load)
                 .map_with(|expr, e| Spanned(expr, e.span()))
                 .or(expr
                     .clone()
@@ -158,7 +203,9 @@ where
             let field = atom
                 .clone()
                 .foldl_with(
-                    just(Token::Ctrl('.')).ignore_then(ident).repeated(),
+                    just(Token::Ctrl('.'))
+                        .ignore_then(select! { Token::Ident(ident) => ident })
+                        .repeated(),
                     |expr, field, e| {
                         Spanned(
                             Expr::Field {
@@ -326,13 +373,14 @@ where
                 })
         });
 
-        let ident = select! { Token::Ident(ident) => ident }.labelled("identifier");
-
         let sum = just(Token::Sum)
             .ignore_then(
-                ident
+                select! { Token::Ident(ident) => ident }
                     .clone()
-                    .then(just(Token::Ctrl(',')).ignore_then(ident))
+                    .then(
+                        just(Token::Ctrl(','))
+                            .ignore_then(select! { Token::Ident(ident) => ident }),
+                    )
                     .delimited_by(just(Token::Op("<")), just(Token::Op(">")))
                     .then(just(Token::Arrow("<-")).ignore_then(expr.clone()))
                     .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
@@ -350,62 +398,23 @@ where
                 )
             });
 
-        let str_select = select! { Token::Str(s) => s }.labelled("str");
-
-        let type_ = recursive(|type_| {
-            let varchar = varchar_annotation.map(|n| Type::String { max_len: Some(n) });
-
-            let scalar = choice((
-                varchar,
-                just(Token::Type(ScalarType::String)).to(Type::String { max_len: None }),
-                just(Token::Type(ScalarType::Bool)).to(Type::Bool),
-                just(Token::Type(ScalarType::Date)).to(Type::Date),
-                just(Token::Type(ScalarType::Int)).to(Type::Int),
-                just(Token::Type(ScalarType::Long)).to(Type::Long),
-                just(Token::Type(ScalarType::Real)).to(Type::Real),
-            ));
-
-            let record_type = ident
-                .then_ignore(just(Token::Ctrl(':')))
-                .then(type_.clone())
-                .separated_by(just(Token::Ctrl(',')))
-                .allow_trailing()
-                .collect::<Vec<_>>()
-                .delimited_by(just(Token::Op("<")), just(Token::Op(">")))
-                .map(|v| {
-                    Type::Record(
-                        v.into_iter()
-                            .map(|(name, r#type)| RecordType {
-                                name: name.into(),
-                                r#type,
-                            })
-                            .collect(),
-                    )
-                });
-
-            let dict_type = hint
-                .or_not()
-                .then(
-                    type_
-                        .clone()
-                        .then_ignore(just(Token::Arrow("->")))
-                        .then(type_.clone())
-                        .delimited_by(just(Token::Ctrl('{')), just(Token::Ctrl('}'))),
+        let let_ = just(Token::Let)
+            .ignore_then(select! { Token::Ident(ident) => ident })
+            .then_ignore(just(Token::Op("=")))
+            .then(inline_expr.clone())
+            .then_ignore(just(Token::In).or_not())
+            .then(expr.clone())
+            .map_with(|((name, val), body), e| {
+                Spanned(
+                    Expr::Let {
+                        lhs: name,
+                        rhs: val.boxed(),
+                        cont: body.boxed(),
+                    },
+                    e.span(),
                 )
-                .map(|(hint, (key, val))| Type::Dict {
-                    key: Box::new(key),
-                    val: Box::new(val),
-                    hint,
-                });
+            });
 
-            scalar.or(record_type).or(dict_type)
-        });
-
-        let load = just(Token::Load)
-            .ignore_then(type_.delimited_by(just(Token::Ctrl('[')), just(Token::Ctrl(']'))))
-            .then(str_select.delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))))
-            .map_with(|(r#type, path), e| Spanned(Expr::Load { r#type, path }, e.span()));
-
-        inline_expr.or(if_).or(sum).or(load)
+        inline_expr.or(if_).or(sum).or(let_)
     })
 }
