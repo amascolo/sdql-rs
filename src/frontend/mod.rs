@@ -136,58 +136,70 @@ where
                     .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))))
                 .boxed();
 
-            let field = atom.clone().foldl_with(
-                just(Token::Ctrl('.')).ignore_then(ident).repeated(),
-                |expr, field, e| {
-                    Spanned(
-                        Expr::Field {
-                            expr: expr.boxed(),
-                            field: field.into(),
-                        },
-                        e.span(),
-                    )
-                },
-            );
+            let field = atom
+                .clone()
+                .foldl_with(
+                    just(Token::Ctrl('.')).ignore_then(ident).repeated(),
+                    |expr, field, e| {
+                        Spanned(
+                            Expr::Field {
+                                expr: expr.boxed(),
+                                field: field.into(),
+                            },
+                            e.span(),
+                        )
+                    },
+                )
+                .boxed();
 
-            let get = field.clone().foldl_with(
-                field
-                    .clone()
-                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')')))
-                    .repeated(),
-                |lhs, rhs, e| {
-                    Spanned(
-                        Expr::Get {
-                            lhs: lhs.boxed(),
-                            rhs: rhs.boxed(),
-                        },
-                        e.span(),
-                    )
-                },
-            );
+            let get = field
+                .clone()
+                .foldl_with(
+                    field
+                        .clone()
+                        .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')')))
+                        .repeated(),
+                    |lhs, rhs, e| {
+                        Spanned(
+                            Expr::Get {
+                                lhs: lhs.boxed(),
+                                rhs: rhs.boxed(),
+                            },
+                            e.span(),
+                        )
+                    },
+                )
+                .boxed();
 
-            let neg = just(Token::Op("-")).repeated().foldr(get, |_op, rhs| {
-                let Spanned(_, span) = rhs;
-                {
+            let neg = just(Token::Op("-"))
+                .repeated()
+                .foldr(get, |_op, rhs| {
+                    let Spanned(_, span) = rhs;
+                    {
+                        Spanned(
+                            Expr::Unary {
+                                op: UnaryOp::Neg,
+                                expr: rhs.boxed(),
+                            },
+                            (span.start - 1..span.end).into(),
+                        )
+                    }
+                })
+                .boxed();
+
+            let not = just(Token::Op("!"))
+                .repeated()
+                .foldr(neg, |_op, rhs| {
+                    let Spanned(_, span) = rhs;
                     Spanned(
                         Expr::Unary {
-                            op: UnaryOp::Neg,
+                            op: UnaryOp::Not,
                             expr: rhs.boxed(),
                         },
                         (span.start - 1..span.end).into(),
                     )
-                }
-            });
-
-            let not = just(Token::Op("!")).repeated().foldr(neg, |_op, rhs| {
-                let Spanned(_, span) = rhs;
-                Spanned(
-                    Expr::Unary {
-                        op: UnaryOp::Not,
-                        expr: rhs.boxed(),
-                    },
-                    (span.start - 1..span.end).into(),
-                )
-            });
+                })
+                .boxed();
 
             // Product ops (multiply and divide) have equal precedence
             let op = just(Token::Op("*"))
