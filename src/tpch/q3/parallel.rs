@@ -21,7 +21,8 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
             acc[/* custkey */ &customer.0[i]] += /* custkey */ customer.0[i];
             acc
         })
-        .reduce(HashMap::new, HashMap::sum);
+        .reduce_with(HashMap::sum)
+        .unwrap_or_default();
     // TODO this is way faster (for parallel, not for sequential) - we can do it since key is unique
     // .map(|i| {
     //     (
@@ -42,7 +43,8 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
             ));
             acc
         })
-        .reduce(HashMap::new, HashMap::sum);
+        .reduce_with(HashMap::sum)
+        .unwrap_or_default();
     // TODO this is way faster (for parallel, not for sequential) - we can do it since key is unique
     // .map(|i| {
     //     (
@@ -67,7 +69,8 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
                 ))] += /* extendedprice */ lineitem.5[i] * (1.0 - /* discount */ lineitem.6[i]);
             acc
         })
-        .reduce(HashMap::new, HashMap::sum);
+        .reduce_with(HashMap::sum)
+        .unwrap_or_default();
 
     l_h.into_par_iter()
         .map(|(key, val)| (Record::new((key.0, key.1, key.2, val)), 1))
