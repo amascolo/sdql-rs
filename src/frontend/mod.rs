@@ -150,24 +150,26 @@ where
                     ),
                 });
 
-            // TODO
-            // let get = field
-            //     .clone()
-            //     .then(
-            //         expr.clone()
-            //             .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
-            //     )
-            //     .map_with(|(lhs, rhs), e| {
-            //         Spanned(
-            //             Expr::Get {
-            //                 lhs: lhs.boxed(),
-            //                 rhs: rhs.boxed(),
-            //             },
-            //             e.span(),
-            //         )
-            //     });
+            let get = field
+                .clone()
+                .then(
+                    field
+                        .clone()
+                        .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')')))
+                        .or_not(),
+                )
+                .map_with(|(lhs, rhs), e| match rhs {
+                    None => lhs,
+                    Some(rhs) => Spanned(
+                        Expr::Get {
+                            lhs: lhs.boxed(),
+                            rhs: rhs.boxed(),
+                        },
+                        e.span(),
+                    ),
+                });
 
-            let neg = just(Token::Op("-")).repeated().foldr(field, |_op, rhs| {
+            let neg = just(Token::Op("-")).repeated().foldr(get, |_op, rhs| {
                 let Spanned(_, span) = rhs;
                 {
                     Spanned(

@@ -438,10 +438,10 @@ fn records() {
 #[test]
 fn fields() {
     check_expr(
-        "x.name",
+        "x.foo",
         Expr::Field {
             expr: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
-            field: "name".into(),
+            field: "foo".into(),
         },
     );
 
@@ -465,27 +465,93 @@ fn fields() {
             ),
         },
     );
+
+    check_expr(
+        "< first = 1 >.first",
+        Expr::Field {
+            expr: Spanned(
+                Box::new(Expr::Record {
+                    vals: vec![RecordValue {
+                        name: "first".into(),
+                        val: Spanned(Expr::Int { val: 1 }, (10..11).into()),
+                    }],
+                }),
+                (0..13).into(),
+            ),
+            field: "first".into(),
+        },
+    );
+
+    // FIXME (works with brackets)
+    // check_expr(
+    //     "x.foo.doo",
+    //     Expr::Field {
+    //         expr: Spanned(
+    //             Box::new(Expr::Field {
+    //                 expr: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
+    //                 field: "foo".into(),
+    //             }),
+    //             (0..5).into(),
+    //         ),
+    //         field: "doo".into(),
+    //     },
+    // );
 }
 
-// FIXME
-// #[test]
-// fn gets() {
-//     check_expr(
-//         "x(y)",
-//         Expr::Get {
-//             lhs: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
-//             rhs: Spanned(Box::new(Expr::Sym { val: "y" }), (2..3).into()),
-//         },
-//     );
-//
-//     //     sdql"x(y)" should be(Get(Sym("x"), Sym("y")))
-//     //     sdql"x(y)(z)" should be(Get(Get(Sym("x"), Sym("y")), Sym("z")))
-//     //     sdql"x(   y)" should be(Get(Sym("x"), Sym("y")))
-//     //     sdql"x(y)  " should be(Get(Sym("x"), Sym("y")))
-//     //     sdql"x(1)" should be(Get(Sym("x"), Const(1)))
-//     //     sdql"< foo = 1  >(1)" should be(Get(RecNode(Seq("foo" -> Const(1.0))), Const(1)))
-//     todo!()
-// }
+#[test]
+fn gets() {
+    check_expr(
+        "x(1)",
+        Expr::Get {
+            lhs: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
+            rhs: Spanned(Box::new(Expr::Int { val: 1 }), (2..3).into()),
+        },
+    );
+
+    check_expr(
+        "x(y)",
+        Expr::Get {
+            lhs: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
+            rhs: Spanned(Box::new(Expr::Sym { val: "y" }), (2..3).into()),
+        },
+    );
+
+    // FIXME
+    // check_expr(
+    //     "x(y)(z)",
+    //     Expr::Get {
+    //         lhs: Spanned(
+    //             Box::new(Expr::Get {
+    //                 lhs: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
+    //                 rhs: Spanned(Box::new(Expr::Sym { val: "y" }), (2..3).into()),
+    //             }),
+    //             (0..4).into(),
+    //         ),
+    //         rhs: Spanned(Box::new(Expr::Sym { val: "z" }), (5..6).into()),
+    //     },
+    // );
+
+    // FIXME
+    // check_expr(
+    //     "< first = 1 >(1)",
+    //     Expr::Get {
+    //         lhs: Spanned(
+    //             Box::new(Expr::Record {
+    //                 vals: vec![RecordValue {
+    //                     name: "first".into(),
+    //                     val: Spanned(Expr::Int { val: 1 }, (10..11).into()),
+    //                 }],
+    //             }),
+    //             (0..13).into(),
+    //         ),
+    //         rhs: Spanned(Box::new(Expr::Int { val: 1 }), (16..17).into()),
+    //     },
+    // );
+
+    // TODO get on dict literal
+
+    // TODO get on set literal
+}
 
 #[test]
 fn sum() {
