@@ -44,6 +44,10 @@ pub(super) enum Token<'src> {
     DictHint(DictHint),
     Load,
     Type(ScalarType),
+    Concat,
+    External,
+    Promote,
+    Unique,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -81,6 +85,10 @@ impl fmt::Display for Token<'_> {
             Token::DictHint(DictHint::Vec) => write!(f, "vec"),
             Token::Load => write!(f, "load"),
             Token::Type(t) => write!(f, "{t}"),
+            Token::Concat => write!(f, "concat"),
+            Token::External => write!(f, "external"),
+            Token::Promote => write!(f, "promote"),
+            Token::Unique => write!(f, "unique"),
         }
     }
 }
@@ -166,6 +174,10 @@ pub(super) fn lexer<'src>()
         "smallvecdict" => Token::DictHint(DictHint::SmallVecDict),
         "vec" => Token::DictHint(DictHint::Vec),
         "load" => Token::Load,
+        "concat" => Token::Concat,
+        "external" => Token::External,
+        "promote" => Token::Promote,
+        "unique" => Token::Unique,
         _ => Token::Ident(ident),
     });
 

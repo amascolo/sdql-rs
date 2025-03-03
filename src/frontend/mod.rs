@@ -177,7 +177,11 @@ where
                 .delimited_by(just(Token::Op("<")), just(Token::Op(">")));
 
             let load = just(Token::Load)
-                .ignore_then(type_.delimited_by(just(Token::Ctrl('[')), just(Token::Ctrl(']'))))
+                .ignore_then(
+                    type_
+                        .clone()
+                        .delimited_by(just(Token::Ctrl('[')), just(Token::Ctrl(']'))),
+                )
                 .then(
                     select! { Token::Str(s) => s }
                         .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
@@ -413,6 +417,55 @@ where
                 )
             });
 
-        inline_expr.or(if_).or(sum).or(let_)
+        let concat = just(Token::Concat)
+            .ignore_then(
+                expr.clone()
+                    .then(just(Token::Ctrl(',')).ignore_then(expr.clone()))
+                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+            )
+            .map_with(|(lhs, rhs), e| {
+                Spanned(
+                    Expr::Concat {
+                        lhs: lhs.boxed(),
+                        rhs: rhs.boxed(),
+                    },
+                    e.span(),
+                )
+            });
+
+        let unique = just(Token::Unique)
+            .ignore_then(
+                expr.clone()
+                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+            )
+            .map_with(|expr, e| Spanned(Expr::Unique { expr: expr.boxed() }, e.span()));
+
+        // let external = todo!();
+
+        let promote = just(Token::Promote)
+            .ignore_then(type_.delimited_by(just(Token::Ctrl('[')), just(Token::Ctrl(']'))))
+            .then(
+                expr.clone()
+                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+            )
+            .map_with(|(promo, expr), e| {
+                Spanned(
+                    Expr::Promote {
+                        promo,
+                        expr: expr.boxed(),
+                    },
+                    e.span(),
+                )
+            });
+
+        inline_expr
+            .or(if_)
+            .or(sum)
+            .or(let_)
+            .or(concat)
+            // .or(external) // TODO
+            .or(promote)
+            .or(unique)
+            .boxed()
     })
 }

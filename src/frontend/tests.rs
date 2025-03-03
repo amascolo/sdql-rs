@@ -615,6 +615,43 @@ fn load() {
 }
 
 #[test]
+fn concat() {
+    check_expr(
+        "concat(k,v)",
+        Expr::Concat {
+            lhs: Spanned(Expr::Sym { val: "k" }, (7..8).into()).boxed(),
+            rhs: Spanned(Expr::Sym { val: "v" }, (9..10).into()).boxed(),
+        },
+    )
+}
+
+// #[test]
+// fn external() {
+//     todo!()
+// }
+
+#[test]
+fn promote() {
+    check_expr(
+        "promote[real](1)",
+        Expr::Promote {
+            promo: Type::Real,
+            expr: Spanned(Expr::Int { val: 1 }, (14..15).into()).boxed(),
+        },
+    )
+}
+
+#[test]
+fn unique() {
+    check_expr(
+        "unique(x)",
+        Expr::Unique {
+            expr: Spanned(Box::new(Expr::Sym { val: "x" }), (7..8).into()),
+        },
+    );
+}
+
+#[test]
 fn sum_nested_if() {
     no_check_expr(
         "sum(<i,_> <- range(lineitem.size))
