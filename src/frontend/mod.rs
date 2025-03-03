@@ -136,19 +136,18 @@ where
                     .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))))
                 .boxed();
 
-            let field = atom
-                .clone()
-                .then(just(Token::Ctrl('.')).ignore_then(ident).or_not())
-                .map_with(|(expr, field), e| match field {
-                    None => expr,
-                    Some(field) => Spanned(
+            let field = atom.clone().foldl_with(
+                just(Token::Ctrl('.')).ignore_then(ident).repeated(),
+                |expr, field, e| {
+                    Spanned(
                         Expr::Field {
                             expr: expr.boxed(),
                             field: field.into(),
                         },
                         e.span(),
-                    ),
-                });
+                    )
+                },
+            );
 
             let get = field
                 .clone()

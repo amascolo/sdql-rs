@@ -482,20 +482,19 @@ fn fields() {
         },
     );
 
-    // FIXME (works with brackets)
-    // check_expr(
-    //     "x.foo.doo",
-    //     Expr::Field {
-    //         expr: Spanned(
-    //             Box::new(Expr::Field {
-    //                 expr: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
-    //                 field: "foo".into(),
-    //             }),
-    //             (0..5).into(),
-    //         ),
-    //         field: "doo".into(),
-    //     },
-    // );
+    check_expr(
+        "x.foo.doo",
+        Expr::Field {
+            expr: Spanned(
+                Box::new(Expr::Field {
+                    expr: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
+                    field: "foo".into(),
+                }),
+                (0..5).into(),
+            ),
+            field: "doo".into(),
+        },
+    );
 }
 
 #[test]
