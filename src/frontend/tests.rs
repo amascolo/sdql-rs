@@ -467,6 +467,20 @@ fn fields() {
     );
 
     check_expr(
+        "x.foo.doo",
+        Expr::Field {
+            expr: Spanned(
+                Box::new(Expr::Field {
+                    expr: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
+                    field: "foo".into(),
+                }),
+                (0..5).into(),
+            ),
+            field: "doo".into(),
+        },
+    );
+
+    check_expr(
         "< first = 1 >.first",
         Expr::Field {
             expr: Spanned(
@@ -479,20 +493,6 @@ fn fields() {
                 (0..13).into(),
             ),
             field: "first".into(),
-        },
-    );
-
-    check_expr(
-        "x.foo.doo",
-        Expr::Field {
-            expr: Spanned(
-                Box::new(Expr::Field {
-                    expr: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
-                    field: "foo".into(),
-                }),
-                (0..5).into(),
-            ),
-            field: "doo".into(),
         },
     );
 }
@@ -515,20 +515,19 @@ fn gets() {
         },
     );
 
-    // FIXME
-    // check_expr(
-    //     "x(y)(z)",
-    //     Expr::Get {
-    //         lhs: Spanned(
-    //             Box::new(Expr::Get {
-    //                 lhs: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
-    //                 rhs: Spanned(Box::new(Expr::Sym { val: "y" }), (2..3).into()),
-    //             }),
-    //             (0..4).into(),
-    //         ),
-    //         rhs: Spanned(Box::new(Expr::Sym { val: "z" }), (5..6).into()),
-    //     },
-    // );
+    check_expr(
+        "x(y)(z)",
+        Expr::Get {
+            lhs: Spanned(
+                Box::new(Expr::Get {
+                    lhs: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
+                    rhs: Spanned(Box::new(Expr::Sym { val: "y" }), (2..3).into()),
+                }),
+                (0..4).into(),
+            ),
+            rhs: Spanned(Box::new(Expr::Sym { val: "z" }), (5..6).into()),
+        },
+    );
 
     // FIXME
     // check_expr(
