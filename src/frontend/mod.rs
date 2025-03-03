@@ -34,8 +34,7 @@ where
             })
             .boxed();
 
-        let varchar_annotation = just(Token::At)
-            .then(just(Token::Type(ScalarType::VarChar)))
+        let varchar_type = just(Token::Type(ScalarType::VarChar))
             .ignore_then(
                 select! { Token::Integer(n) => n }
                     .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
@@ -43,7 +42,7 @@ where
             .boxed();
 
         let type_ = recursive(|type_| {
-            let varchar = varchar_annotation
+            let varchar = varchar_type
                 .clone()
                 .map(|n| Type::String { max_len: Some(n) });
 
@@ -108,13 +107,13 @@ where
                 .ignore_then(select! { Token::Integer(n) => n })
                 .map(|val| Expr::Long { val });
 
-            let varchar =
-                varchar_annotation
-                    .then(select! { Token::Str(s) => s })
-                    .map(|(n, val)| Expr::String {
-                        val,
-                        max_len: Some(n),
-                    });
+            let varchar = just(Token::At)
+                .ignore_then(varchar_type)
+                .then(select! { Token::Str(s) => s })
+                .map(|(n, val)| Expr::String {
+                    val,
+                    max_len: Some(n),
+                });
 
             let date = just(Token::Type(ScalarType::Date))
                 .ignore_then(
