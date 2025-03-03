@@ -400,7 +400,7 @@ where
         let let_ = just(Token::Let)
             .ignore_then(select! { Token::Ident(ident) => ident })
             .then_ignore(just(Token::Op("=")))
-            .then(inline_expr.clone())
+            .then(expr.clone())
             .then_ignore(just(Token::In).or_not())
             .then(expr.clone())
             .map_with(|((name, val), body), e| {
