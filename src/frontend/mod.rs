@@ -220,8 +220,7 @@ where
             let get = field
                 .clone()
                 .foldl_with(
-                    field
-                        .clone()
+                    expr.clone()
                         .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')')))
                         .repeated(),
                     |lhs, rhs, e| {

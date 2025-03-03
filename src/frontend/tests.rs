@@ -613,3 +613,53 @@ fn load() {
         },
     );
 }
+
+#[test]
+fn sum_nested_if() {
+    no_check_expr(
+        "sum(<i,_> <- range(lineitem.size))
+           if(true) then
+               i
+           else
+               i",
+    )
+}
+
+fn no_check_expr(src: &str) {
+    let (tokens, _errs) = lexer().parse(src).into_output_errors();
+
+    let tokens = tokens.unwrap();
+    let tokens_for_debug = tokens.clone();
+
+    let tokens = tokens
+        .as_slice()
+        .map((src.len()..src.len()).into(), |Spanned(t, s)| (t, s));
+    let (ast, parse_errs) = expr_parser()
+        .map_with(|ast, e| (ast, e.span()))
+        .parse(tokens)
+        .into_output_errors();
+
+    if !parse_errs.is_empty() {
+        for Spanned(t, _span) in &tokens_for_debug {
+            println!("{t}");
+        }
+        dbg!(&_errs);
+        assert!(_errs.is_empty());
+        dbg!(&parse_errs);
+    }
+
+    let (Spanned(expr, _), _) = ast.unwrap();
+    println!("{expr}");
+}
+
+#[test]
+fn tpch_q3() {
+    let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
+    no_check_expr(prog);
+}
+
+#[test]
+fn tpch_q6() {
+    let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q6.sdql"));
+    no_check_expr(prog);
+}
