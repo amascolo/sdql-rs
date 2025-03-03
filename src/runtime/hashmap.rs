@@ -2,7 +2,7 @@ use derive_more::Display;
 use hashbrown::hash_map::rayon::IntoParIter;
 use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelIterator};
 use std::hash::Hash;
-use std::ops::{Deref, DerefMut, Index, IndexMut};
+use std::ops::{AddAssign, Deref, DerefMut, Index, IndexMut};
 
 #[derive(Clone, Debug, Display, PartialEq)]
 #[display("{_0}")]
@@ -20,6 +20,29 @@ where
 
     pub fn with_capacity(capacity: usize) -> Self {
         HashMap(hashbrown::HashMap::with_capacity(capacity))
+    }
+}
+
+impl<K, V> HashMap<K, V>
+where
+    K: Copy + Eq + Hash,
+    V: AddAssign + Default,
+{
+    pub fn sum(mut self, other: Self) -> Self {
+        self += other;
+        self
+    }
+}
+
+impl<K, V> AddAssign for HashMap<K, V>
+where
+    K: Copy + Eq + Hash,
+    V: AddAssign + Default,
+{
+    fn add_assign(&mut self, other: Self) {
+        for (key, val) in other {
+            self[&key] += val;
+        }
     }
 }
 
