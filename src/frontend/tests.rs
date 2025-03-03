@@ -2,7 +2,7 @@
 
 use super::*;
 use crate::ir::expr::{BinaryOp, DictEntry, Expr};
-use crate::ir::r#type::{DictHint, Type};
+use crate::ir::r#type::DictHint;
 use lexer::lexer;
 
 fn check_expr(src: &str, exp: Expr) {
@@ -53,6 +53,7 @@ fn constants() {
     );
     check_expr("52.1", Expr::Real { val: 52.1f64 });
     check_expr("\"foo\"", Expr::String { val: "foo" });
+    check_expr("@varchar(3) \"foo\"", Expr::String { val: "foo" }); // FIXME
     check_expr(
         "date(20250525)",
         Expr::Date {
@@ -586,14 +587,14 @@ fn sum() {
 #[test]
 fn load() {
     check_expr(
-        "load[<foobar: {string -> bool}>](\"foo.csv\")",
+        "load[<foobar: @vec {int -> real}>](\"foo.csv\")",
         Expr::Load {
             r#type: Type::Record(vec![RecordType {
                 name: "foobar".into(),
                 r#type: Type::Dict {
-                    key: Box::new(Type::String { max_len: None }),
-                    val: Box::new(Type::Bool),
-                    hint: None,
+                    key: Box::new(Type::Int),
+                    val: Box::new(Type::Real),
+                    hint: Some(DictHint::Vec),
                 },
             }]),
             path: "foo.csv",

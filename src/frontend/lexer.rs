@@ -54,6 +54,7 @@ pub(super) enum ScalarType {
     Long,
     Real,
     String,
+    VarChar,
 }
 
 impl fmt::Display for Token<'_> {
@@ -93,6 +94,7 @@ impl fmt::Display for ScalarType {
             ScalarType::Long => "long",
             ScalarType::Real => "real",
             ScalarType::String => "string",
+            ScalarType::VarChar => "varchar",
         }
         .fmt(f)
     }
@@ -129,6 +131,7 @@ pub(super) fn lexer<'src>()
         just("long").to(Token::Type(ScalarType::Long)),
         just("real").to(Token::Type(ScalarType::Real)),
         just("string").to(Token::Type(ScalarType::String)),
+        just("varchar").to(Token::Type(ScalarType::VarChar)),
     ));
 
     let op = just("==")

@@ -10,7 +10,7 @@ pub enum Type<'src> {
     Long,
     Real,
     String {
-        max_len: Option<i32>,
+        max_len: Option<i64>,
     },
     Record(Vec<RecordType<'src>>),
     Dict {
