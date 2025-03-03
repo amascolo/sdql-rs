@@ -39,7 +39,8 @@ where
             .ignore_then(
                 select! { Token::Integer(n) => n }
                     .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
-            );
+            )
+            .boxed();
 
         let inline_expr = recursive(|inline_expr| {
             let val = select! {
