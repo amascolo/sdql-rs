@@ -5,8 +5,8 @@ use crate::runtime::Date;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Typed<'src, T> {
-    val: T,
-    r#type: Type<'src>,
+    pub val: T,
+    pub r#type: Type<'src>,
 }
 impl<'src, T> Typed<'src, T> {
     pub fn map<U, F>(self, f: F) -> Typed<'src, U>
