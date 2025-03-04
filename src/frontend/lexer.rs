@@ -25,7 +25,7 @@ impl<T> Spanned<T> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub(super) enum Token<'src> {
+pub enum Token<'src> {
     Bool(bool),
     Integer(i64),
     Real(f64),
@@ -51,7 +51,7 @@ pub(super) enum Token<'src> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub(super) enum ScalarType {
+pub enum ScalarType {
     Bool,
     Date,
     Int,

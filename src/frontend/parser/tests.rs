@@ -3,7 +3,7 @@ use crate::ir::expr::{BinaryOp, DictEntry, Expr};
 use crate::ir::r#type::DictHint;
 
 fn check_expr(src: &str, expr: Expr) {
-    assert_eq!(Expr::from(src), expr);
+    assert_eq!(Expr::try_from(src).unwrap(), expr);
 }
 
 #[test]
@@ -629,11 +629,11 @@ fn unique() {
 #[test]
 fn tpch_q3() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
-    let _: Expr = prog.into();
+    let _: Expr = prog.try_into().unwrap();
 }
 
 #[test]
 fn tpch_q6() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q6.sdql"));
-    let _: Expr = prog.into();
+    let _: Expr = prog.try_into().unwrap();
 }
