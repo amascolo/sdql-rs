@@ -383,6 +383,6 @@ fn promote<'src>(t1: Type<'src>, t2: Type<'src>) -> Type<'src> {
             val: Box::new(promote(*val, *v)),
             hint,
         },
-        _ => panic!(),
+        (t1, t2) => panic!("can't promote: \"{t1}\" \"{t2}\""),
     }
 }

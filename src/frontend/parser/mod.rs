@@ -182,6 +182,13 @@ where
                 )
                 .map(|(r#type, path)| Expr::Load { r#type, path });
 
+            let range = just(Token::Range)
+                .ignore_then(
+                    expr.clone()
+                        .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+                )
+                .map(|expr| Expr::Range { expr: expr.boxed() });
+
             let atom = val
                 .or(long)
                 .or(varchar)
@@ -191,6 +198,7 @@ where
                 .or(set)
                 .or(record)
                 .or(load)
+                .or(range)
                 .map_with(|expr, e| Spanned(expr, e.span()))
                 .or(expr
                     .clone()
