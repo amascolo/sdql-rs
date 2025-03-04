@@ -5,7 +5,7 @@ use crate::inference::{Typed, TypedExpr};
 use im_rc;
 use im_rc::vector;
 
-pub type ExprFMF<'src> = FilterMapFold<'src, Typed<'src, Spanned<Box<TypedExpr<'src>>>>>;
+pub type ExprFMF<'src> = FilterMapFold<'src, Typed<'src, Spanned<TypedExpr<'src>>>>;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum FilterMapFold<'src, T> {
@@ -29,15 +29,15 @@ pub enum OpFMF {
     Fold,
 }
 
-impl<'src> From<Typed<'src, Spanned<Box<TypedExpr<'src>>>>> for ExprFMF<'src> {
-    fn from(expr: Typed<'src, Spanned<Box<TypedExpr<'src>>>>) -> Self {
+impl<'src> From<Typed<'src, Spanned<TypedExpr<'src>>>> for ExprFMF<'src> {
+    fn from(expr: Typed<'src, Spanned<TypedExpr<'src>>>) -> Self {
         from(expr, &Ctx::new())
     }
 }
 
 type Ctx<'src> = im_rc::Vector<&'src str>;
 
-fn from<'src>(expr: Typed<'src, Spanned<Box<TypedExpr<'src>>>>, ctx: &Ctx<'src>) -> ExprFMF<'src> {
+fn from<'src>(expr: Typed<'src, Spanned<TypedExpr<'src>>>, ctx: &Ctx<'src>) -> ExprFMF<'src> {
     let Typed { val, r#type } = expr;
     let Spanned(unspanned, span) = val.unboxed();
     match unspanned {
@@ -52,11 +52,11 @@ fn from<'src>(expr: Typed<'src, Spanned<Box<TypedExpr<'src>>>>, ctx: &Ctx<'src>)
             body,
         } if matches!(*range, TypedExpr::Range { .. }) => {
             let range = Typed {
-                val: Spanned(range, span),
+                val: Spanned(range, span).unboxed(),
                 r#type,
             };
             let ctx = ctx + &vector![key];
-            let cont = Box::new(from(body, &ctx));
+            let cont = Box::new(from(body.map(Spanned::unboxed), &ctx));
             ExprFMF::Range { range, cont }
         }
         TypedExpr::If {
@@ -64,7 +64,7 @@ fn from<'src>(expr: Typed<'src, Spanned<Box<TypedExpr<'src>>>>, ctx: &Ctx<'src>)
             then: _,
             r#else: Some(_),
         } => {
-            let val = Spanned(unspanned, span).boxed();
+            let val = Spanned(unspanned, span);
             let expr = Typed { val, r#type };
             ExprFMF::FMF {
                 op: OpFMF::Map,
@@ -79,21 +79,21 @@ fn from<'src>(expr: Typed<'src, Spanned<Box<TypedExpr<'src>>>>, ctx: &Ctx<'src>)
             r#else: None,
         } => ExprFMF::FMF {
             op: OpFMF::Filter,
-            inner: r#if,
-            cont: Some(Box::new(from(then, &ctx))),
+            inner: r#if.map(Spanned::unboxed),
+            cont: Some(Box::new(from(then.map(Spanned::unboxed), &ctx))),
             args: ctx.clone(),
         },
         TypedExpr::Let { lhs, rhs, cont } => {
             let ctx = ctx + &vector![lhs];
             ExprFMF::FMF {
                 op: OpFMF::Map,
-                inner: rhs,
-                cont: Some(Box::new(from(cont, &ctx))),
+                inner: rhs.map(Spanned::unboxed),
+                cont: Some(Box::new(from(cont.map(Spanned::unboxed), &ctx))),
                 args: ctx,
             }
         }
         _ => {
-            let val = Spanned(unspanned, span).boxed();
+            let val = Spanned(unspanned, span);
             let expr = Typed { val, r#type };
             ExprFMF::Expr(expr)
         }

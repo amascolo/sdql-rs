@@ -131,7 +131,10 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
     match expr {
         Expr::Sym { val } => Typed {
             val: TypedExpr::Sym { val },
-            r#type: ctx.get(val).cloned().unwrap(),
+            r#type: ctx
+                .get(val)
+                .cloned()
+                .expect(&format!("\"{val}\" not found")),
         },
         Expr::Bool { val } => Typed {
             val: TypedExpr::Bool { val },
