@@ -8,7 +8,7 @@ use lexer::{lexer, Spanned, Token};
 use parser::expr_parser;
 
 #[macro_export]
-macro_rules! parse {
+macro_rules! sdql {
     ($src:expr) => {{
         let src: &str = $src;
         crate::ir::expr::Expr::try_from(src).unwrap()

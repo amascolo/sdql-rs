@@ -1,49 +1,45 @@
 use super::*;
 use crate::ir::expr::{BinaryOp, DictEntry, Expr};
 use crate::ir::r#type::DictHint;
-use crate::parse;
-
-fn check_expr(src: &str, expr: Expr) {
-    assert_eq!(parse!(src), expr);
-}
+use crate::sdql;
 
 #[test]
 fn constants() {
-    check_expr("true", Expr::Bool { val: true });
-    check_expr("false", Expr::Bool { val: false });
-    check_expr(
-        "!true",
+    assert_eq!(sdql!("true"), Expr::Bool { val: true });
+    assert_eq!(sdql!("false"), Expr::Bool { val: false });
+    assert_eq!(
+        sdql!("!true"),
         Expr::Unary {
             op: UnaryOp::Not,
             expr: Spanned(Box::new(Expr::Bool { val: true }), (1..5).into()),
         },
     );
-    check_expr("52", Expr::Int { val: 52 });
-    check_expr("@long 52", Expr::Long { val: 52 });
-    check_expr(
-        "-52",
+    assert_eq!(sdql!("52"), Expr::Int { val: 52 });
+    assert_eq!(sdql!("@long 52"), Expr::Long { val: 52 });
+    assert_eq!(
+        sdql!("-52"),
         Expr::Unary {
             op: UnaryOp::Neg,
             expr: Spanned(Box::new(Expr::Int { val: 52 }), (1..3).into()),
         },
     );
-    check_expr("52.1", Expr::Real { val: 52.1f64 });
-    check_expr(
-        "\"foo\"",
+    assert_eq!(sdql!("52.1"), Expr::Real { val: 52.1f64 });
+    assert_eq!(
+        sdql!("\"foo\""),
         Expr::String {
             val: "foo",
             max_len: None,
         },
     );
-    check_expr(
-        "@varchar(3) \"foo\"",
+    assert_eq!(
+        sdql!("@varchar(3) \"foo\""),
         Expr::String {
             val: "foo",
             max_len: Some(3),
         },
     );
-    check_expr(
-        "date(20250525)",
+    assert_eq!(
+        sdql!("date(20250525)"),
         Expr::Date {
             val: crate::date!(20250525),
         },
@@ -52,8 +48,8 @@ fn constants() {
 
 #[test]
 fn if_then_else() {
-    check_expr(
-        "if true then 0 else 1",
+    assert_eq!(
+        sdql!("if true then 0 else 1"),
         Expr::If {
             r#if: Spanned(Box::new(Expr::Bool { val: true }), (3..7).into()),
             then: Spanned(Box::new(Expr::Int { val: 0 }), (13..14).into()),
@@ -61,8 +57,8 @@ fn if_then_else() {
         },
     );
 
-    check_expr(
-        "if (true) then (0) else (1)",
+    assert_eq!(
+        sdql!("if (true) then (0) else (1)"),
         Expr::If {
             r#if: Spanned(Box::new(Expr::Bool { val: true }), (4..8).into()),
             then: Spanned(Box::new(Expr::Int { val: 0 }), (16..17).into()),
@@ -70,8 +66,8 @@ fn if_then_else() {
         },
     );
 
-    check_expr(
-        "if (!true) then (0) else (1)",
+    assert_eq!(
+        sdql!("if (!true) then (0) else (1)"),
         Expr::If {
             r#if: Spanned(
                 Box::new(Expr::Unary {
@@ -88,8 +84,8 @@ fn if_then_else() {
 
 #[test]
 fn let_bindings() {
-    check_expr(
-        "let x = 1 in 2",
+    assert_eq!(
+        sdql!("let x = 1 in 2"),
         Expr::Let {
             lhs: "x",
             rhs: Spanned(Box::new(Expr::Int { val: 1 }), (8..9).into()),
@@ -97,8 +93,8 @@ fn let_bindings() {
         },
     );
 
-    check_expr(
-        "let    x  =    (1) in    2",
+    assert_eq!(
+        sdql!("let    x  =    (1) in    2"),
         Expr::Let {
             lhs: "x",
             rhs: Spanned(Box::new(Expr::Int { val: 1 }), (16..17).into()),
@@ -106,8 +102,8 @@ fn let_bindings() {
         },
     );
 
-    check_expr(
-        "let x_1 = 1 in 2",
+    assert_eq!(
+        sdql!("let x_1 = 1 in 2"),
         Expr::Let {
             lhs: "x_1",
             rhs: Spanned(Box::new(Expr::Int { val: 1 }), (10..11).into()),
@@ -115,9 +111,11 @@ fn let_bindings() {
         },
     );
 
-    check_expr(
-        "let X = 1 in
-            2",
+    assert_eq!(
+        sdql!(
+            "let X = 1 in
+            2"
+        ),
         Expr::Let {
             lhs: "X",
             rhs: Spanned(Box::new(Expr::Int { val: 1 }), (8..9).into()),
@@ -128,8 +126,8 @@ fn let_bindings() {
 
 #[test]
 fn arithmetic() {
-    check_expr(
-        "2 * 3",
+    assert_eq!(
+        sdql!("2 * 3"),
         Expr::Binary {
             lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Mul,
@@ -137,8 +135,8 @@ fn arithmetic() {
         },
     );
 
-    check_expr(
-        "2 + 3",
+    assert_eq!(
+        sdql!("2 + 3"),
         Expr::Binary {
             lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Add,
@@ -146,8 +144,8 @@ fn arithmetic() {
         },
     );
 
-    check_expr(
-        "2 / 3",
+    assert_eq!(
+        sdql!("2 / 3"),
         Expr::Binary {
             lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Div,
@@ -155,8 +153,8 @@ fn arithmetic() {
         },
     );
 
-    check_expr(
-        "2 - 3",
+    assert_eq!(
+        sdql!("2 - 3"),
         Expr::Binary {
             lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Sub,
@@ -164,8 +162,8 @@ fn arithmetic() {
         },
     );
 
-    check_expr(
-        "2 + 1 * 3",
+    assert_eq!(
+        sdql!("2 + 1 * 3"),
         Expr::Binary {
             lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Add,
@@ -180,8 +178,8 @@ fn arithmetic() {
         },
     );
 
-    check_expr(
-        "2 * 1 + 3",
+    assert_eq!(
+        sdql!("2 * 1 + 3"),
         Expr::Binary {
             lhs: Spanned(
                 Box::new(Expr::Binary {
@@ -196,8 +194,8 @@ fn arithmetic() {
         },
     );
 
-    check_expr(
-        "6 / 3 * 2",
+    assert_eq!(
+        sdql!("6 / 3 * 2"),
         Expr::Binary {
             lhs: Spanned(
                 Box::new(Expr::Binary {
@@ -212,8 +210,8 @@ fn arithmetic() {
         },
     );
 
-    check_expr(
-        "2 < 3",
+    assert_eq!(
+        sdql!("2 < 3"),
         Expr::Binary {
             lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Less,
@@ -221,8 +219,8 @@ fn arithmetic() {
         },
     );
 
-    check_expr(
-        "2 < 3 * 1",
+    assert_eq!(
+        sdql!("2 < 3 * 1"),
         Expr::Binary {
             lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Less,
@@ -237,8 +235,8 @@ fn arithmetic() {
         },
     );
 
-    check_expr(
-        "2 < (3 * 1)",
+    assert_eq!(
+        sdql!("2 < (3 * 1)"),
         Expr::Binary {
             lhs: Spanned(Box::new(Expr::Int { val: 2 }), (0..1).into()),
             op: BinaryOp::Less,
@@ -253,8 +251,8 @@ fn arithmetic() {
         },
     );
 
-    check_expr(
-        "true && false",
+    assert_eq!(
+        sdql!("true && false"),
         Expr::Binary {
             lhs: Spanned(Box::new(Expr::Bool { val: true }), (0..4).into()),
             op: BinaryOp::And,
@@ -262,8 +260,8 @@ fn arithmetic() {
         },
     );
 
-    check_expr(
-        "true || false",
+    assert_eq!(
+        sdql!("true || false"),
         Expr::Binary {
             lhs: Spanned(Box::new(Expr::Bool { val: true }), (0..4).into()),
             op: BinaryOp::Or,
@@ -271,8 +269,8 @@ fn arithmetic() {
         },
     );
 
-    check_expr(
-        "true && false || true",
+    assert_eq!(
+        sdql!("true && false || true"),
         Expr::Binary {
             lhs: Spanned(
                 Box::new(Expr::Binary {
@@ -287,8 +285,8 @@ fn arithmetic() {
         },
     );
 
-    check_expr(
-        "true || false && true",
+    assert_eq!(
+        sdql!("true || false && true"),
         Expr::Binary {
             lhs: Spanned(Box::new(Expr::Bool { val: true }), (0..4).into()),
             op: BinaryOp::Or,
@@ -306,8 +304,8 @@ fn arithmetic() {
 
 #[test]
 fn comments() {
-    check_expr(
-        "let x = y in z // comment for let",
+    assert_eq!(
+        sdql!("let x = y in z // comment for let"),
         Expr::Let {
             lhs: "x",
             rhs: Spanned(Box::new(Expr::Sym { val: "y" }), (8..9).into()),
@@ -318,8 +316,8 @@ fn comments() {
 
 #[test]
 fn dicts() {
-    check_expr(
-        "{k -> v}",
+    assert_eq!(
+        sdql!("{k -> v}"),
         Expr::Dict {
             map: vec![DictEntry {
                 key: Spanned(Expr::Sym { val: "k" }, (1..2).into()),
@@ -329,8 +327,8 @@ fn dicts() {
         },
     );
 
-    check_expr(
-        "@hashdict {k -> v}",
+    assert_eq!(
+        sdql!("@hashdict {k -> v}"),
         Expr::Dict {
             map: vec![DictEntry {
                 key: Spanned(Expr::Sym { val: "k" }, (11..12).into()),
@@ -340,8 +338,8 @@ fn dicts() {
         },
     );
 
-    check_expr(
-        "@sortdict {k -> v}",
+    assert_eq!(
+        sdql!("@sortdict {k -> v}"),
         Expr::Dict {
             map: vec![DictEntry {
                 key: Spanned(Expr::Sym { val: "k" }, (11..12).into()),
@@ -351,8 +349,8 @@ fn dicts() {
         },
     );
 
-    check_expr(
-        "@smallvecdict {k -> v}",
+    assert_eq!(
+        sdql!("@smallvecdict {k -> v}"),
         Expr::Dict {
             map: vec![DictEntry {
                 key: Spanned(Expr::Sym { val: "k" }, (15..16).into()),
@@ -362,8 +360,8 @@ fn dicts() {
         },
     );
 
-    check_expr(
-        "@vec {k -> v}",
+    assert_eq!(
+        sdql!("@vec {k -> v}"),
         Expr::Dict {
             map: vec![DictEntry {
                 key: Spanned(Expr::Sym { val: "k" }, (6..7).into()),
@@ -376,28 +374,28 @@ fn dicts() {
 
 #[test]
 fn sets() {
-    check_expr("{}", Expr::Set(vec![]));
+    assert_eq!(sdql!("{}"), Expr::Set(vec![]));
 
-    check_expr(
-        "{1}",
+    assert_eq!(
+        sdql!("{1}"),
         Expr::Set(vec![Spanned(Expr::Int { val: 1 }, (1..2).into())]),
     );
 
-    check_expr(
-        "{x}",
+    assert_eq!(
+        sdql!("{x}"),
         Expr::Set(vec![Spanned(Expr::Sym { val: "x" }, (1..2).into())]),
     );
 
-    check_expr(
-        "{0, 1}",
+    assert_eq!(
+        sdql!("{0, 1}"),
         Expr::Set(vec![
             Spanned(Expr::Int { val: 0 }, (1..2).into()),
             Spanned(Expr::Int { val: 1 }, (4..5).into()),
         ]),
     );
 
-    check_expr(
-        "{x, y}",
+    assert_eq!(
+        sdql!("{x, y}"),
         Expr::Set(vec![
             Spanned(Expr::Sym { val: "x" }, (1..2).into()),
             Spanned(Expr::Sym { val: "y" }, (4..5).into()),
@@ -407,8 +405,8 @@ fn sets() {
 
 #[test]
 fn records() {
-    check_expr(
-        "<a = 1, b = 2>",
+    assert_eq!(
+        sdql!("<a = 1, b = 2>"),
         Expr::Record {
             vals: vec![
                 RecordValue {
@@ -426,16 +424,16 @@ fn records() {
 
 #[test]
 fn fields() {
-    check_expr(
-        "x.foo",
+    assert_eq!(
+        sdql!("x.foo"),
         Expr::Field {
             expr: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
             field: "foo".into(),
         },
     );
 
-    check_expr(
-        "x.foo * y.doo",
+    assert_eq!(
+        sdql!("x.foo * y.doo"),
         Expr::Binary {
             lhs: Spanned(
                 Box::new(Expr::Field {
@@ -455,8 +453,8 @@ fn fields() {
         },
     );
 
-    check_expr(
-        "x.foo.doo",
+    assert_eq!(
+        sdql!("x.foo.doo"),
         Expr::Field {
             expr: Spanned(
                 Box::new(Expr::Field {
@@ -469,8 +467,8 @@ fn fields() {
         },
     );
 
-    check_expr(
-        "< first = 1 >.first",
+    assert_eq!(
+        sdql!("< first = 1 >.first"),
         Expr::Field {
             expr: Spanned(
                 Box::new(Expr::Record {
@@ -488,24 +486,24 @@ fn fields() {
 
 #[test]
 fn gets() {
-    check_expr(
-        "x(1)",
+    assert_eq!(
+        sdql!("x(1)"),
         Expr::Get {
             lhs: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
             rhs: Spanned(Box::new(Expr::Int { val: 1 }), (2..3).into()),
         },
     );
 
-    check_expr(
-        "x(y)",
+    assert_eq!(
+        sdql!("x(y)"),
         Expr::Get {
             lhs: Spanned(Box::new(Expr::Sym { val: "x" }), (0..1).into()),
             rhs: Spanned(Box::new(Expr::Sym { val: "y" }), (2..3).into()),
         },
     );
 
-    check_expr(
-        "x(y)(z)",
+    assert_eq!(
+        sdql!("x(y)(z)"),
         Expr::Get {
             lhs: Spanned(
                 Box::new(Expr::Get {
@@ -519,8 +517,8 @@ fn gets() {
     );
 
     // FIXME
-    // check_expr(
-    //     "< first = 1 >(1)",
+    // assert_eq!(sdql!(
+    //     "< first = 1 >(1)"),
     //     Expr::Get {
     //         lhs: Spanned(
     //             Box::new(Expr::Record {
@@ -542,8 +540,8 @@ fn gets() {
 
 #[test]
 fn sum() {
-    check_expr(
-        "sum(<k,v> <- X) v",
+    assert_eq!(
+        sdql!("sum(<k,v> <- X) v"),
         Expr::Sum {
             key: &"k",
             val: &"v",
@@ -552,8 +550,8 @@ fn sum() {
         },
     );
 
-    check_expr(
-        "sum(<k,v> <- X) {k -> v}",
+    assert_eq!(
+        sdql!("sum(<k,v> <- X) {k -> v}"),
         Expr::Sum {
             key: &"k",
             val: &"v",
@@ -574,8 +572,8 @@ fn sum() {
 
 #[test]
 fn load() {
-    check_expr(
-        "load[<foobar: @vec {int -> real}>](\"foo.csv\")",
+    assert_eq!(
+        sdql!("load[<foobar: @vec {int -> real}>](\"foo.csv\")"),
         Expr::Load {
             r#type: Type::Record(vec![RecordType {
                 name: "foobar".into(),
@@ -592,8 +590,8 @@ fn load() {
 
 #[test]
 fn concat() {
-    check_expr(
-        "concat(k,v)",
+    assert_eq!(
+        sdql!("concat(k,v)"),
         Expr::Concat {
             lhs: Spanned(Expr::Sym { val: "k" }, (7..8).into()).boxed(),
             rhs: Spanned(Expr::Sym { val: "v" }, (9..10).into()).boxed(),
@@ -608,8 +606,8 @@ fn concat() {
 
 #[test]
 fn promote() {
-    check_expr(
-        "promote[real](1)",
+    assert_eq!(
+        sdql!("promote[real](1)"),
         Expr::Promote {
             promo: Type::Real,
             expr: Spanned(Expr::Int { val: 1 }, (14..15).into()).boxed(),
@@ -619,8 +617,8 @@ fn promote() {
 
 #[test]
 fn unique() {
-    check_expr(
-        "unique(x)",
+    assert_eq!(
+        sdql!("unique(x)"),
         Expr::Unique {
             expr: Spanned(Box::new(Expr::Sym { val: "x" }), (7..8).into()),
         },
@@ -630,11 +628,11 @@ fn unique() {
 #[test]
 fn tpch_q3() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
-    let _ = parse!(prog);
+    let _ = sdql!(prog);
 }
 
 #[test]
 fn tpch_q6() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q6.sdql"));
-    let _ = parse!(prog);
+    let _ = sdql!(prog);
 }
