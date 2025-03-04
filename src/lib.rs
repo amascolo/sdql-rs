@@ -1,3 +1,4 @@
+mod backend;
 mod frontend;
 mod inference;
 pub mod ir;
