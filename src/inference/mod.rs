@@ -111,9 +111,19 @@ pub enum TypedExpr<'src> {
 
 type Ctx<'src> = im_rc::HashMap<&'src str, Type<'src>>;
 
-impl<'src> From<Expr<'src>> for Typed<'src, TypedExpr<'src>> {
-    fn from(expr: Expr<'src>) -> Self {
-        infer(expr, &Ctx::new())
+impl<'src> From<Spanned<Expr<'src>>> for Typed<'src, Spanned<TypedExpr<'src>>> {
+    fn from(expr: Spanned<Expr<'src>>) -> Self {
+        let Spanned(unspanned, span) = expr;
+        let Typed { val, r#type } = infer(unspanned, &Ctx::new());
+        Typed {
+            val: Spanned(val, span),
+            r#type,
+        }
+        // TODO should Spanned wrapped Typed?
+        //  expected  `Typed<Spanned<TypedExpr>>`
+        //  but found `Spanned<Typed<TypedExpr>>`
+        //  it would simplify down to this:
+        // expr.map(|x| infer(x, &Ctx::new()))
     }
 }
 
