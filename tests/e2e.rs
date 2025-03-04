@@ -1,4 +1,4 @@
-use sdql::backend::ExprFMF;
+use sdql::backend::fmf::ExprFMF;
 use sdql::frontend::lexer::Spanned;
 use sdql::inference::{Typed, TypedExpr};
 use sdql::ir::expr::Expr;
