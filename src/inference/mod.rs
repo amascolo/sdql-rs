@@ -218,11 +218,35 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
                 val: TypedExpr::Unary { op, expr },
             }
         }
-        Expr::Binary { lhs, op, rhs } => {
+        Expr::Binary {
+            lhs,
+            op: op @ (BinaryOp::Add | BinaryOp::Sub | BinaryOp::Mul | BinaryOp::Div),
+            rhs,
+        } => {
             let lhs = infer_spanned(lhs, ctx);
             let rhs = infer_spanned(rhs, ctx);
             Typed {
                 r#type: promote(lhs.r#type.clone(), rhs.r#type.clone()),
+                val: TypedExpr::Binary { lhs, op, rhs },
+            }
+        }
+        Expr::Binary {
+            lhs,
+            op:
+                op @ (BinaryOp::Eq
+                | BinaryOp::NotEq
+                | BinaryOp::Less
+                | BinaryOp::Great
+                | BinaryOp::LessEq
+                | BinaryOp::GreatEq
+                | BinaryOp::And
+                | BinaryOp::Or),
+            rhs,
+        } => {
+            let lhs = infer_spanned(lhs, ctx);
+            let rhs = infer_spanned(rhs, ctx);
+            Typed {
+                r#type: Type::Bool,
                 val: TypedExpr::Binary { lhs, op, rhs },
             }
         }
