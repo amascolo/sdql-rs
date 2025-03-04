@@ -1,5 +1,3 @@
-#![cfg(test)]
-
 use super::*;
 use crate::ir::expr::{BinaryOp, DictEntry, Expr};
 use crate::ir::r#type::DictHint;

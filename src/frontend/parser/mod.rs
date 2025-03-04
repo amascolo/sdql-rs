@@ -6,6 +6,9 @@ use chumsky::error::Rich;
 use chumsky::{input::ValueInput, prelude::*};
 use time::format_description::well_known::Iso8601;
 
+#[cfg(test)]
+mod tests;
+
 pub(super) fn expr_parser<'src, I>()
 -> impl Parser<'src, I, Spanned<Expr<'src>>, extra::Err<Rich<'src, Token<'src>, SimpleSpan>>> + Clone
 where
