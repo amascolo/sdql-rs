@@ -7,6 +7,14 @@ use chumsky::{error::Rich, input::Input, span::SimpleSpan, Parser};
 use lexer::{lexer, Spanned, Token};
 use parser::expr_parser;
 
+#[macro_export]
+macro_rules! parse {
+    ($src:expr) => {{
+        let src: &str = $src;
+        crate::ir::expr::Expr::try_from(src).unwrap()
+    }};
+}
+
 impl<'src> TryFrom<&'src str> for Expr<'src> {
     type Error = Vec<Rich<'src, Token<'src>, SimpleSpan>>;
 
