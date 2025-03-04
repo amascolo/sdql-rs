@@ -2,6 +2,8 @@
 
 use crate::inference::TypedExpr;
 
+pub type ExprFMF<'src> = FilterMapFold<'src, TypedExpr<'src>>;
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum FilterMapFold<'src, T> {
     Expr(T),
@@ -18,5 +20,3 @@ pub enum OpFMF {
     Map,
     Fold,
 }
-
-pub type ExprFMF<'src> = FilterMapFold<'src, TypedExpr<'src>>;
