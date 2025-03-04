@@ -10,7 +10,7 @@ use parser::expr_parser;
 macro_rules! sdql {
     ($src:expr) => {{
         let src: &str = $src;
-        crate::ir::expr::Expr::try_from(src).unwrap()
+        Expr::try_from(src).unwrap()
     }};
 }
 
