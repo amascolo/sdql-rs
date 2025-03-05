@@ -6,8 +6,6 @@ let c_h =
   sum(<i,_> <- range(customer.size))
     if(customer.c_mktsegment(i) == "BUILDING") then
       { unique(customer.c_custkey(i)) -> < _ = customer.c_custkey(i) > }
-    else
-      { }
 
 let o_h =
   sum(<i,_> <- range(orders.size))
@@ -16,8 +14,6 @@ let o_h =
         && (c_h(orders.o_custkey(i)) != {})
       ) then
       { unique(orders.o_orderkey(i)) -> < _ = orders.o_orderdate(i), _ = orders.o_shippriority(i) > }
-    else
-      { }
 
 let l_h =
   sum(<i,_> <- range(lineitem.size))
@@ -33,8 +29,6 @@ let l_h =
         > ->
          < revenue = lineitem.l_extendedprice(i) * (1 - lineitem.l_discount(i)) >
       }
-    else
-      { }
 
 sum(<k,v> <- l_h)
   { unique(concat(k,v)) -> 1 }

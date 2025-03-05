@@ -283,12 +283,12 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
             Typed {
                 r#type: match (&lhs.r#type, &rhs.r#type) {
                     (Type::Record(vals), Type::Int | Type::Long) => {
-                        let n = match *lhs.val.0 {
+                        let n: usize = match *rhs.val.0 {
                             TypedExpr::Int { val } => val.try_into().unwrap(),
                             TypedExpr::Long { val } => val.try_into().unwrap(),
                             _ => unimplemented!(),
                         };
-                        vals.iter().map(|rt| &rt.r#type).nth(n).unwrap()
+                        &vals[n].r#type
                     }
                     (Type::Dict { key, val, .. }, _) if rhs.r#type == **key => val,
                     _ => panic!(),
