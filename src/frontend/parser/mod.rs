@@ -435,13 +435,6 @@ where
                 )
             });
 
-        let unique = just(Token::Unique)
-            .ignore_then(
-                expr.clone()
-                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
-            )
-            .map_with(|expr, e| Spanned(Expr::Unique { expr: expr.boxed() }, e.span()));
-
         // let external = todo!();
 
         let promote = just(Token::Promote)
@@ -460,6 +453,20 @@ where
                 )
             });
 
+        let dom = just(Token::Dom)
+            .ignore_then(
+                expr.clone()
+                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+            )
+            .map_with(|expr, e| Spanned(Expr::Dom { expr: expr.boxed() }, e.span()));
+
+        let unique = just(Token::Unique)
+            .ignore_then(
+                expr.clone()
+                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+            )
+            .map_with(|expr, e| Spanned(Expr::Unique { expr: expr.boxed() }, e.span()));
+
         inline_expr
             .or(if_)
             .or(sum)
@@ -467,6 +474,7 @@ where
             .or(concat)
             // .or(external) // TODO
             .or(promote)
+            .or(dom)
             .or(unique)
             .boxed()
     })

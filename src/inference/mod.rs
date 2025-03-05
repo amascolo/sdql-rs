@@ -52,6 +52,9 @@ pub enum TypedExpr<'src> {
         map: Vec<DictEntry<Typed<'src, Spanned<Self>>, Typed<'src, Spanned<Self>>>>,
         hint: Option<DictHint>,
     },
+    Dom {
+        expr: Typed<'src, Spanned<Box<Self>>>,
+    },
     Let {
         lhs: &'src str,
         rhs: Typed<'src, Spanned<Box<Self>>>,
@@ -200,6 +203,16 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
                     hint: hint.clone(),
                 },
                 val: TypedExpr::Dict { map, hint },
+            }
+        }
+        Expr::Dom { expr } => {
+            let expr = infer_spanned(expr, ctx);
+            match &expr.r#type {
+                Type::Dict { key, .. } => Typed {
+                    r#type: Type::Set((**key).clone()),
+                    val: TypedExpr::Dom { expr },
+                },
+                _ => panic!(),
             }
         }
         Expr::Let { lhs, rhs, cont } => {

@@ -11,7 +11,7 @@ let o_h =
   sum(<i,_> <- range(orders.size))
     if(
         (orders.o_orderdate(i) < date(19950315))
-        && (c_h(orders.o_custkey(i)) != {})
+        && (dom(c_h)(orders.o_custkey(i)))
       ) then
       { unique(orders.o_orderkey(i)) -> < _ = orders.o_orderdate(i), _ = orders.o_shippriority(i) > }
 
@@ -19,7 +19,7 @@ let l_h =
   sum(<i,_> <- range(lineitem.size))
     if(
         (date(19950315) < lineitem.l_shipdate(i))
-        && (o_h(lineitem.l_orderkey(i)) != {})
+        && (dom(o_h)(lineitem.l_orderkey(i)))
       ) then
       {
         <

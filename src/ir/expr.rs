@@ -35,6 +35,9 @@ pub enum Expr<'src> {
         map: Vec<DictEntry<Spanned<Self>, Spanned<Self>>>,
         hint: Option<DictHint>,
     },
+    Dom {
+        expr: Spanned<Box<Self>>,
+    },
     Let {
         lhs: &'src str,
         rhs: Spanned<Box<Self>>,
@@ -180,6 +183,7 @@ impl fmt::Display for Expr<'_> {
                     None => write!(f, "{{{map_str}}}"),
                 }
             }
+            Self::Dom { expr } => write!(f, "dom({expr})"),
             Self::Let { lhs, rhs, cont } => write!(f, "let {lhs} = {rhs} in {cont}"),
             Self::Unary { op, expr } => write!(f, "{op}({expr})"),
             Self::Binary { lhs, op, rhs } => write!(f, "{op}({lhs}, {rhs})"),

@@ -61,7 +61,7 @@ impl<'src> RecordType<'src> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum DictHint {
     HashDict,
     SortDict,
