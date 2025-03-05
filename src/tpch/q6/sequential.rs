@@ -5,7 +5,7 @@ use crate::tpch::types::Lineitem;
 use std::error::Error;
 
 pub fn q6(sf: &str) -> Result<TypeQ6, Box<dyn Error>> {
-    let lineitem = read_lineitems(&format!("datasets/tpch_datasets/SF_{sf}/lineitem.tbl"))?;
+    let lineitem = read_lineitems()(&format!("datasets/tpch_datasets/SF_{sf}/lineitem.tbl"))?;
     Ok(q6_query(&lineitem))
 }
 

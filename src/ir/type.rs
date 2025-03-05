@@ -79,6 +79,12 @@ impl<'src> From<&'src str> for Field<'src> {
     }
 }
 
+impl<'src> Into<&'src str> for Field<'src> {
+    fn into(self) -> &'src str {
+        self.0
+    }
+}
+
 impl<'src> Type<'src> {
     #[allow(non_snake_case)]
     pub fn Set(r#type: Type<'src>) -> Self {

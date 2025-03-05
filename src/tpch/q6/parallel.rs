@@ -5,7 +5,7 @@ use rayon::prelude::*;
 use std::error::Error;
 
 pub fn q6_rayon(sf: &str) -> Result<TypeQ6, Box<dyn Error>> {
-    let lineitem = read_lineitems(&format!("datasets/tpch_datasets/SF_{sf}/lineitem.tbl"))?;
+    let lineitem = read_lineitems()(&format!("datasets/tpch_datasets/SF_{sf}/lineitem.tbl"))?;
     Ok(q6_query_rayon(&lineitem))
 }
 

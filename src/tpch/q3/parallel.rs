@@ -7,9 +7,9 @@ use rayon::prelude::*;
 use std::error::Error;
 
 pub fn q3_rayon(sf: &str) -> Result<TypeQ3, Box<dyn Error>> {
-    let customer = read_customers(&format!("datasets/tpch_datasets/SF_{sf}/customer.tbl"))?;
-    let orders = read_orders(&format!("datasets/tpch_datasets/SF_{sf}/orders.tbl"))?;
-    let lineitem = read_lineitems(&format!("datasets/tpch_datasets/SF_{sf}/lineitem.tbl"))?;
+    let customer = read_customers()(&format!("datasets/tpch_datasets/SF_{sf}/customer.tbl"))?;
+    let orders = read_orders()(&format!("datasets/tpch_datasets/SF_{sf}/orders.tbl"))?;
+    let lineitem = read_lineitems()(&format!("datasets/tpch_datasets/SF_{sf}/lineitem.tbl"))?;
     Ok(q3_query_rayon(&customer, &orders, &lineitem))
 }
 

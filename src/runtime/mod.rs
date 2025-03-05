@@ -1,5 +1,6 @@
 mod date;
 mod hashmap;
+mod load;
 mod record;
 
 pub use date::{month_from_int, Date};

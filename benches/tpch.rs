@@ -7,9 +7,9 @@ use sdql::tpch::read::{read_customers, read_lineitems, read_orders};
 
 fn benchmark_q3(c: &mut Criterion) {
     let path = |table| format!("datasets/tpch_datasets/SF_1/{table}.tbl");
-    let customers = read_customers(&path("customer")).unwrap();
-    let orders = read_orders(&path("orders")).unwrap();
-    let lineitems = read_lineitems(&path("lineitem")).unwrap();
+    let customers = read_customers()(&path("customer")).unwrap();
+    let orders = read_orders()(&path("orders")).unwrap();
+    let lineitems = read_lineitems()(&path("lineitem")).unwrap();
     let data = (customers, orders, lineitems);
     for parallel in [false, true] {
         let query = if parallel { q3_query_rayon } else { q3_query };
@@ -23,7 +23,7 @@ fn benchmark_q3(c: &mut Criterion) {
 
 fn benchmark_q6(c: &mut Criterion) {
     let path = |table| format!("datasets/tpch_datasets/SF_1/{table}.tbl");
-    let lineitems = read_lineitems(&path("lineitem")).unwrap();
+    let lineitems = read_lineitems()(&path("lineitem")).unwrap();
     let data = (lineitems,);
     for parallel in [false, true] {
         let query = if parallel { q6_query_rayon } else { q6_query };

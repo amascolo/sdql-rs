@@ -1,19 +1,9 @@
 use prettyplease::unparse;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{parse2, parse_quote, Ident, Type};
+use syn::{parse2, parse_quote, Ident};
 
-// use syn::parse_str;
-// fn parse_type(t: &str) -> Type {
-//     match t {
-//         "i32" => parse_quote!(i32),
-//         "String" => parse_quote!(String),
-//         "f64" => parse_quote!(f64),
-//         _ => parse_str(t).unwrap(),
-//     }
-// }
-
-fn generate_ast(type_name: &str, field_types: &[Type]) -> TokenStream {
+fn generate_ast(type_name: &str, field_types: &[syn::Type]) -> TokenStream {
     let type_ident = Ident::new(type_name, Span::call_site());
 
     let field_definitions = field_types.iter().map(|ty| {
@@ -30,63 +20,15 @@ fn generate_ast(type_name: &str, field_types: &[Type]) -> TokenStream {
     }
 }
 
-fn generate_reader_function(
-    function_name: &str,
-    struct_name: &str,
-    fields: &[(&str, Type)],
-) -> TokenStream {
-    let function_ident = Ident::new(function_name, Span::call_site());
-    let struct_ident = Ident::new(struct_name, Span::call_site());
-
-    let field_declarations = fields.iter().map(|(name, _ty)| {
-        let field_ident = Ident::new(name, Span::call_site());
-        quote! {
-            let mut #field_ident = Vec::new();
-        }
+fn gen_read_fn(function_name: &str, fields: &[(&str, syn::Type)]) -> TokenStream {
+    let field_tokens = fields.iter().enumerate().map(|(idx, (name, ty))| {
+        quote! { (#idx, #name, #ty) }
     });
-
-    let field_parsing = fields.iter().enumerate().map(|(idx, (name, ty))| {
-        let field_ident = Ident::new(name, Span::call_site());
-        if *ty == parse_quote!(String) {
-            quote! {
-                #field_ident.push(record.get(#idx).unwrap().to_string());
-            }
-        } else {
-            quote! {
-                #field_ident.push(record.get(#idx).unwrap().parse()?);
-            }
-        }
-    });
-
-    let field_tuple = fields.iter().map(|(name, _ty)| {
-        let field_ident = Ident::new(name, Span::call_site());
-        quote! { #field_ident }
-    });
-
     quote! {
-        use std::error::Error;
-        use csv::ReaderBuilder;
-
-        fn #function_ident(path: &str) -> Result<#struct_ident, Box<dyn Error>> {
-            let mut reader = ReaderBuilder::new()
-                .has_headers(false)
-                .delimiter(b'|')
-                .from_path(path)?;
-
-            #(#field_declarations)*
-            let mut size = 0;
-
-            for result in reader.records() {
-                let record = result?;
-                #(#field_parsing)*
-                size += 1;
-            }
-
-            Ok((
-                #(#field_tuple),*,
-                size
-            ))
-        }
+        gen_read_fn!(
+            #function_name,
+            #(#field_tokens),*
+        );
     }
 }
 
@@ -123,14 +65,14 @@ fn main() {
         ("tax", parse_quote!(f64)),
         ("returnflag", parse_quote!(String)),
         ("linestatus", parse_quote!(String)),
-        ("shipdate", parse_quote!(i32)),
-        ("commitdate", parse_quote!(i32)),
-        ("receiptdate", parse_quote!(i32)),
+        ("shipdate", parse_quote!(Date)),
+        ("commitdate", parse_quote!(Date)),
+        ("receiptdate", parse_quote!(Date)),
         ("shipinstruct", parse_quote!(String)),
         ("shipmode", parse_quote!(String)),
         ("comment", parse_quote!(String)),
     ];
-    let tables: &[&[(&str, Type)]] = &[&customer, &orders, &lineitem];
+    let tables: &[&[(&str, syn::Type)]] = &[&customer, &orders, &lineitem];
 
     for fields in tables {
         {
@@ -141,7 +83,7 @@ fn main() {
             println!("{formatted_code}");
         }
         {
-            let ast = generate_reader_function("read_customers", "Customer", &fields);
+            let ast = gen_read_fn("read_customers", &fields);
             let syntax_tree = parse2(ast).unwrap();
             let formatted_code = unparse(&syntax_tree);
             println!("{formatted_code}");
