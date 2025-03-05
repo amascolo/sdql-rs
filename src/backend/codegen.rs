@@ -51,9 +51,13 @@ impl From<ExprFMF<'_>> for TokenStream {
 
 impl From<Typed<'_, Spanned<TypedExpr<'_>>>> for TokenStream {
     fn from(expr: Typed<'_, Spanned<TypedExpr<'_>>>) -> Self {
-        let Typed { val, r#type: _ } = expr;
-        let Spanned(unspanned, _span) = val;
-        match unspanned {
+        TypedExpr::from(expr).into()
+    }
+}
+
+impl From<TypedExpr<'_>> for TokenStream {
+    fn from(expr: TypedExpr<'_>) -> Self {
+        match expr {
             TypedExpr::Load { r#type, path } => {
                 let Type::Record(vals) = r#type else {
                     unreachable!()

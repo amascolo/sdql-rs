@@ -19,6 +19,13 @@ impl<'src, T> Typed<'src, T> {
         }
     }
 }
+impl<'src> From<Typed<'src, Spanned<TypedExpr<'src>>>> for TypedExpr<'src> {
+    fn from(expr: Typed<'src, Spanned<TypedExpr<'src>>>) -> Self {
+        let Typed { val, r#type: _ } = expr;
+        let Spanned(unspanned, _span) = val;
+        unspanned
+    }
+}
 
 #[allow(dead_code)] // TODO remove after using External
 #[derive(Clone, Debug, PartialEq)]
