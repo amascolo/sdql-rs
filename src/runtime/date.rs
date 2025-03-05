@@ -1,6 +1,7 @@
 use crate::date;
 use derive_more::Display;
 use std::ops::AddAssign;
+use time::format_description::well_known::Iso8601;
 use time::Month;
 
 #[derive(Clone, Copy, Debug, Display, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -10,6 +11,14 @@ pub struct Date(time::Date);
 impl Date {
     pub const fn new(date: time::Date) -> Self {
         Date(date)
+    }
+}
+
+impl std::str::FromStr for Date {
+    type Err = time::error::Parse;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        time::Date::parse(s, &Iso8601::DEFAULT).map(Date)
     }
 }
 

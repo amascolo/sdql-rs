@@ -1,152 +1,70 @@
-use super::types::{Customer, Lineitem, Orders};
 use crate::runtime::Date;
-use csv::ReaderBuilder;
-use std::error::Error;
-use time::format_description::well_known::Iso8601;
 
-pub fn read_customers(path: &str) -> Result<Customer, Box<dyn Error>> {
-    let mut reader = ReaderBuilder::new()
-        .has_headers(false)
-        .delimiter(b'|')
-        .from_path(path)?;
-    let mut custkey = Vec::new();
-    let mut name = Vec::new();
-    let mut address = Vec::new();
-    let mut nationkey = Vec::new();
-    let mut phone = Vec::new();
-    let mut acctbal = Vec::new();
-    let mut mktsegment = Vec::new();
-    let mut comment = Vec::new();
-    let mut size = 0;
+macro_rules! read_fn {
+    ($name:ident, $(($index:expr, $field:ident, $ty:ty)),*) => {
+        pub fn $name(path: &str) -> Result<( $(Vec<$ty>,)* usize ), Box<dyn std::error::Error>> {
+            let mut reader = csv::ReaderBuilder::new()
+                .has_headers(false)
+                .delimiter(b'|')
+                .from_path(path)?;
 
-    for result in reader.records() {
-        let record = result?;
-        custkey.push(record.get(0).unwrap().parse()?);
-        name.push(record.get(1).unwrap().to_string());
-        address.push(record.get(2).unwrap().to_string());
-        nationkey.push(record.get(3).unwrap().parse()?);
-        phone.push(record.get(4).unwrap().to_string());
-        acctbal.push(record.get(5).unwrap().parse()?);
-        mktsegment.push(record.get(6).unwrap().to_string());
-        comment.push(record.get(7).unwrap().to_string());
-        size += 1;
-    }
-    Ok((
-        custkey, name, address, nationkey, phone, acctbal, mktsegment, comment, size,
-    ))
+            $( let mut $field = Vec::new(); )*
+            let mut size = 0;
+
+            for result in reader.records() {
+                let record = result?;
+                $(
+                    $field.push(record.get($index).unwrap().parse()?);
+                )*
+                size += 1;
+            }
+
+            Ok(( $( $field, )* size ))
+        }
+    };
 }
 
-pub fn read_orders(path: &str) -> Result<Orders, Box<dyn Error>> {
-    let mut reader = ReaderBuilder::new()
-        .has_headers(false)
-        .delimiter(b'|')
-        .from_path(path)?;
-    let mut orderkey = Vec::new();
-    let mut custkey = Vec::new();
-    let mut orderstatus = Vec::new();
-    let mut totalprice = Vec::new();
-    let mut orderdate = Vec::new();
-    let mut orderpriority = Vec::new();
-    let mut clerk = Vec::new();
-    let mut shippriority = Vec::new();
-    let mut comment = Vec::new();
-    let mut size = 0;
+read_fn!(
+    read_customers,
+    (0, custkey, i32),
+    (1, name, String),
+    (2, address, String),
+    (3, nationkey, i32),
+    (4, phone, String),
+    (5, acctbal, f64),
+    (6, mktsegment, String),
+    (7, comment, String)
+);
 
-    for result in reader.records() {
-        let record = result?;
-        orderkey.push(record.get(0).unwrap().parse()?);
-        custkey.push(record.get(1).unwrap().parse()?);
-        orderstatus.push(record.get(2).unwrap().to_string());
-        totalprice.push(record.get(3).unwrap().parse()?);
-        orderdate.push(Date::new(
-            time::Date::parse(record.get(4).unwrap(), &Iso8601::DEFAULT).unwrap(),
-        ));
-        orderpriority.push(record.get(5).unwrap().to_string());
-        clerk.push(record.get(6).unwrap().to_string());
-        shippriority.push(record.get(7).unwrap().parse()?);
-        comment.push(record.get(8).unwrap().to_string());
-        size += 1;
-    }
-    Ok((
-        orderkey,
-        custkey,
-        orderstatus,
-        totalprice,
-        orderdate,
-        orderpriority,
-        clerk,
-        shippriority,
-        comment,
-        size,
-    ))
-}
+read_fn!(
+    read_orders,
+    (0, orderkey, i32),
+    (1, custkey, i32),
+    (2, orderstatus, String),
+    (3, totalprice, f64),
+    (4, orderdate, Date),
+    (5, orderpriority, String),
+    (6, clerk, String),
+    (7, shippriority, i32),
+    (8, comment, String)
+);
 
-pub fn read_lineitems(path: &str) -> Result<Lineitem, Box<dyn Error>> {
-    let mut reader = ReaderBuilder::new()
-        .has_headers(false)
-        .delimiter(b'|')
-        .from_path(path)?;
-    let mut orderkey = Vec::new();
-    let mut partkey = Vec::new();
-    let mut suppkey = Vec::new();
-    let mut linenumber = Vec::new();
-    let mut quantity = Vec::new();
-    let mut extendedprice = Vec::new();
-    let mut discount = Vec::new();
-    let mut tax = Vec::new();
-    let mut returnflag = Vec::new();
-    let mut linestatus = Vec::new();
-    let mut shipdate = Vec::new();
-    let mut commitdate = Vec::new();
-    let mut receiptdate = Vec::new();
-    let mut shipinstruct = Vec::new();
-    let mut shipmode = Vec::new();
-    let mut comment = Vec::new();
-    let mut size = 0;
-
-    for result in reader.records() {
-        let record = result?;
-        orderkey.push(record.get(0).unwrap().parse()?);
-        partkey.push(record.get(1).unwrap().parse()?);
-        suppkey.push(record.get(2).unwrap().parse()?);
-        linenumber.push(record.get(3).unwrap().parse()?);
-        quantity.push(record.get(4).unwrap().parse()?);
-        extendedprice.push(record.get(5).unwrap().parse()?);
-        discount.push(record.get(6).unwrap().parse()?);
-        tax.push(record.get(7).unwrap().parse()?);
-        returnflag.push(record.get(8).unwrap().to_string());
-        linestatus.push(record.get(9).unwrap().to_string());
-        shipdate.push(Date::new(
-            time::Date::parse(record.get(10).unwrap(), &Iso8601::DEFAULT).unwrap(),
-        ));
-        commitdate.push(Date::new(
-            time::Date::parse(record.get(11).unwrap(), &Iso8601::DEFAULT).unwrap(),
-        ));
-        receiptdate.push(Date::new(
-            time::Date::parse(record.get(12).unwrap(), &Iso8601::DEFAULT).unwrap(),
-        ));
-        shipinstruct.push(record.get(13).unwrap().to_string());
-        shipmode.push(record.get(14).unwrap().to_string());
-        comment.push(record.get(15).unwrap().to_string());
-        size += 1;
-    }
-    Ok((
-        orderkey,
-        partkey,
-        suppkey,
-        linenumber,
-        quantity,
-        extendedprice,
-        discount,
-        tax,
-        returnflag,
-        linestatus,
-        shipdate,
-        commitdate,
-        receiptdate,
-        shipinstruct,
-        shipmode,
-        comment,
-        size,
-    ))
-}
+read_fn!(
+    read_lineitems,
+    (0, orderkey, i32),
+    (1, partkey, i32),
+    (2, suppkey, i32),
+    (3, linenumber, i32),
+    (4, quantity, f64),
+    (5, extendedprice, f64),
+    (6, discount, f64),
+    (7, tax, f64),
+    (8, returnflag, String),
+    (9, linestatus, String),
+    (10, shipdate, Date),
+    (11, commitdate, Date),
+    (12, receiptdate, Date),
+    (13, shipinstruct, String),
+    (14, shipmode, String),
+    (15, comment, String)
+);
