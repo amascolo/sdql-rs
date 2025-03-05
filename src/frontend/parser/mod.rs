@@ -121,6 +121,22 @@ where
 
             let sym = select! { Token::Ident(ident) => ident }.map(|val| Expr::Sym { val });
 
+            let unique = just(Token::Unique)
+                .ignore_then(
+                    expr.clone()
+                        .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+                )
+                .map(Spanned::boxed)
+                .map(|expr| Expr::Unique { expr });
+
+            let dom = just(Token::Dom)
+                .ignore_then(
+                    expr.clone()
+                        .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+                )
+                .map(Spanned::boxed)
+                .map(|expr| Expr::Dom { expr });
+
             let dict_items = expr
                 .clone()
                 .then_ignore(just(Token::Arrow("->")))
@@ -193,6 +209,8 @@ where
                 .or(long)
                 .or(varchar)
                 .or(date)
+                .or(unique)
+                .or(dom)
                 .or(sym)
                 .or(dict)
                 .or(set)
@@ -453,20 +471,6 @@ where
                 )
             });
 
-        let dom = just(Token::Dom)
-            .ignore_then(
-                expr.clone()
-                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
-            )
-            .map_with(|expr, e| Spanned(Expr::Dom { expr: expr.boxed() }, e.span()));
-
-        let unique = just(Token::Unique)
-            .ignore_then(
-                expr.clone()
-                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
-            )
-            .map_with(|expr, e| Spanned(Expr::Unique { expr: expr.boxed() }, e.span()));
-
         inline_expr
             .or(if_)
             .or(sum)
@@ -474,8 +478,6 @@ where
             .or(concat)
             // .or(external) // TODO
             .or(promote)
-            .or(dom)
-            .or(unique)
             .boxed()
     })
 }
