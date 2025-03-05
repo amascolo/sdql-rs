@@ -2,9 +2,9 @@ use super::fmf::ExprFMF;
 use crate::frontend::lexer::Spanned;
 use crate::inference::{Typed, TypedExpr};
 use crate::ir::r#type::{DictHint, Type};
-use proc_macro2::{Ident, Span, TokenStream};
+use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
-use syn::parse_quote;
+use syn::{parse2, parse_quote, Error};
 
 impl From<Type<'_>> for syn::Type {
     fn from(r#type: Type) -> Self {
@@ -54,7 +54,7 @@ impl From<Typed<'_, Spanned<TypedExpr<'_>>>> for TokenStream {
         let Typed { val, r#type: _ } = expr;
         let Spanned(unspanned, _span) = val;
         match unspanned {
-            TypedExpr::Load { r#type, path: _ } => {
+            TypedExpr::Load { r#type, path } => {
                 let Type::Record(vals) = r#type else {
                     unreachable!()
                 };
@@ -68,49 +68,32 @@ impl From<Typed<'_, Spanned<TypedExpr<'_>>>> for TokenStream {
                                 val,
                                 hint: Some(DictHint::Vec),
                             } if matches!(*key, Type::Int) => *val,
-                            t => unreachable!("{t}"),
+                            _ => unreachable!(),
                         };
                         (val.name.into(), r#type.into())
                     })
                     .collect();
-                let field_types: Vec<_> = tables.iter().map(|(_, ty)| ty).cloned().collect();
-                // generate_type_decl("Lineitem", &field_types)
-                gen_read_fn("read_lineitems", &tables)
+                let load = try_gen_load(&tables).unwrap();
+                let tokens = quote! { #load(#path) };
+                debug_assert!(matches!(parse2(tokens.clone()), Ok(syn::Expr::Call(_))));
+                tokens
             }
             _ => todo!(),
         }
     }
 }
 
-fn generate_type_decl(type_name: &str, field_types: &[syn::Type]) -> TokenStream {
-    let type_ident = Ident::new(type_name, Span::call_site());
-
-    let field_definitions = field_types.iter().map(|ty| {
-        quote! {
-            Vec<#ty>,
-        }
-    });
-
-    quote! {
-        pub type #type_ident = (
-            #(#field_definitions)*
-            usize,
-        );
-    }
-}
-
-fn gen_read_fn(function_name: &str, fields: &[(&str, syn::Type)]) -> TokenStream {
-    let function_name = format_ident!("{function_name}");
-    let field_tokens = fields.iter().enumerate().map(|(idx, (name, ty))| {
+fn try_gen_load(fields: &[(&str, syn::Type)]) -> Result<syn::Macro, Error> {
+    let field_tokens = fields.iter().map(|(name, ty)| {
         let name = format_ident!("{name}");
-        quote! { (#idx, #name, #ty) }
+        quote! { #name: #ty }
     });
-    quote! {
-        gen_read_fn!(
-            #function_name,
+    let macro_tokens = quote! {
+        load!(
             #(#field_tokens),*
-        );
-    }
+        )
+    };
+    parse2(macro_tokens)
 }
 
 #[cfg(test)]
@@ -137,8 +120,10 @@ mod tests {
         // }
 
         let tokens: TokenStream = fmf.into();
-        let ast = parse2(tokens).unwrap();
-        let s = prettyplease::unparse(&ast);
-        println!("{s}");
+        println!("{}", tokens);
+        let ast: syn::Expr = parse2(tokens).unwrap();
+        // println!("{:#?}", ast);
+        // let s = prettyplease::unparse(&ast);
+        // println!("{s}");
     }
 }
