@@ -123,6 +123,18 @@ pub enum TypedExpr<'src> {
 
 type Ctx<'src> = im_rc::HashMap<&'src str, Type<'src>>;
 
+// TODO fix forward pipeline to be same as backward pipeline
+//
+// conversion pipeline - forward
+// Spanned<Expr<'src>> -> Typed<'src, Spanned<TypedExpr<'src>>>
+// Expr<'src> -> Typed<'src, TypedExpr<'src>>
+// Spanned<Box<Expr<'src>>> -> Spanned<Box<TypedExpr<'src>>>
+//
+// conversion pipeline - backward
+// Spanned<Expr<'src>> <- Typed<'src, Spanned<TypedExpr<'src>>>
+// Spanned<Box<Expr<'src>>> <- Typed<'src, Spanned<Box<TypedExpr<'src>>>>
+// Expr<'src> <- TypedExpr<'src>
+
 impl<'src> From<Spanned<Expr<'src>>> for Typed<'src, Spanned<TypedExpr<'src>>> {
     fn from(expr: Spanned<Expr<'src>>) -> Self {
         let Spanned(unspanned, span) = expr;
