@@ -75,10 +75,10 @@ impl From<TypedExpr<'_>> for TokenStream {
                 let lhs_ident = syn::Ident::new(lhs, Span::call_site());
                 let lhs_tks = quote! { #lhs_ident };
                 let rhs_tks: TokenStream = rhs.map(Spanned::unboxed).into();
+                let let_tks = quote! { let #lhs_tks = #rhs_tks };
+                debug_assert!(matches!(parse2(let_tks.clone()), Ok(syn::Expr::Let(_))));
                 let cont_tks: TokenStream = cont.map(Spanned::unboxed).into();
-                let tks = quote! { let #lhs_tks = #rhs_tks;  #cont_tks };
-                debug_assert!(true); // TODO
-                tks
+                quote! { #let_tks;  #cont_tks }
             }
             TypedExpr::Load { r#type, path } => {
                 let Type::Record(vals) = r#type else {
@@ -100,9 +100,9 @@ impl From<TypedExpr<'_>> for TokenStream {
                     })
                     .collect();
                 let load = try_gen_load(&tables).unwrap();
-                let tokens = quote! { #load(#path) };
-                debug_assert!(matches!(parse2(tokens.clone()), Ok(syn::Expr::Call(_))));
-                tokens
+                let tks = quote! { #load(#path) };
+                debug_assert!(matches!(parse2(tks.clone()), Ok(syn::Expr::Call(_))));
+                tks
             }
             _ => todo!(),
         }
