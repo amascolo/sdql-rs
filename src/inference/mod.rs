@@ -29,6 +29,21 @@ impl<'src> From<Typed<'src, Spanned<TypedExpr<'src>>>> for TypedExpr<'src> {
     }
 }
 
+// TODO delete experiments
+// impl<'src> From<Spanned<Typed<'src, TypedExpr<'src>>>> for Typed<'src, Spanned<TypedExpr<'src>>> {
+//     fn from(expr: Spanned<Typed<'src, TypedExpr<'src>>>) -> Self {
+//         let Spanned(expr, span) = expr;
+//         expr.map(|expr| Spanned(expr, span))
+//     }
+// }
+// impl<'src> From<Typed<'src, Spanned<TypedExpr<'src>>>> for Spanned<Typed<'src, TypedExpr<'src>>> {
+//     fn from(expr: Typed<'src, Spanned<TypedExpr<'src>>>) -> Self {
+//         let Typed { val, r#type } = expr;
+//         let Spanned(val, span) = val;
+//         Spanned(Typed { val, r#type }, span)
+//     }
+// }
+
 #[allow(dead_code)] // TODO remove after using External
 #[derive(Clone, Debug, PartialEq)]
 pub enum TypedExpr<'src> {
@@ -121,20 +136,6 @@ pub enum TypedExpr<'src> {
     },
 }
 
-type Ctx<'src> = im_rc::HashMap<&'src str, Type<'src>>;
-
-// TODO fix forward pipeline to be same as backward pipeline
-//
-// conversion pipeline - forward
-// Spanned<Expr<'src>> -> Typed<'src, Spanned<TypedExpr<'src>>>
-// Expr<'src> -> Typed<'src, TypedExpr<'src>>
-// Spanned<Box<Expr<'src>>> -> Spanned<Box<TypedExpr<'src>>>
-//
-// conversion pipeline - backward
-// Spanned<Expr<'src>> <- Typed<'src, Spanned<TypedExpr<'src>>>
-// Spanned<Box<Expr<'src>>> <- Typed<'src, Spanned<Box<TypedExpr<'src>>>>
-// Expr<'src> <- TypedExpr<'src>
-
 impl<'src> From<Spanned<Expr<'src>>> for Typed<'src, Spanned<TypedExpr<'src>>> {
     fn from(expr: Spanned<Expr<'src>>) -> Self {
         let Spanned(unspanned, span) = expr;
@@ -144,6 +145,39 @@ impl<'src> From<Spanned<Expr<'src>>> for Typed<'src, Spanned<TypedExpr<'src>>> {
             r#type,
         }
     }
+}
+
+// TODO delete experiments
+// impl<'src> From<Spanned<Expr<'src>>> for Typed<'src, Spanned<TypedExpr<'src>>> {
+//     fn from(expr: Spanned<Expr<'src>>) -> Self {
+//         infer_spanned(expr, &Ctx::new())
+//     }
+// }
+//
+// fn infer_spanned<'src>(
+//     expr: Spanned<Expr<'src>>,
+//     ctx: &Ctx<'src>,
+// ) -> Typed<'src, Spanned<TypedExpr<'src>>> {
+//     expr.map(|expr| infer(expr, ctx)).into()
+// }
+//
+// fn infer_boxed<'src>(
+//     expr: Spanned<Box<Expr<'src>>>,
+//     ctx: &Ctx<'src>,
+// ) -> Typed<'src, Spanned<Box<TypedExpr<'src>>>> {
+//     infer_spanned(expr.unboxed(), ctx).map(Spanned::boxed)
+// }
+
+type Ctx<'src> = im_rc::HashMap<&'src str, Type<'src>>;
+
+fn infer_spanned<'src>(
+    expr: Spanned<Box<Expr<'src>>>,
+    ctx: &Ctx<'src>,
+) -> Typed<'src, Spanned<Box<TypedExpr<'src>>>> {
+    let Spanned(unspanned, span) = expr;
+    let Typed { val, r#type } = infer(*unspanned, ctx);
+    let val = Spanned(val, span).boxed();
+    Typed { val, r#type }
 }
 
 fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>> {
@@ -401,16 +435,6 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
     }
 }
 
-fn infer_spanned<'src>(
-    expr: Spanned<Box<Expr<'src>>>,
-    ctx: &Ctx<'src>,
-) -> Typed<'src, Spanned<Box<TypedExpr<'src>>>> {
-    let Spanned(unspanned, span) = expr;
-    let Typed { val, r#type } = infer(*unspanned, ctx);
-    let val = Spanned(val, span).boxed();
-    Typed { val, r#type }
-}
-
 fn promote<'src>(t1: Type<'src>, t2: Type<'src>) -> Type<'src> {
     if t1 == t2 {
         return t1;
@@ -437,20 +461,6 @@ fn promote<'src>(t1: Type<'src>, t2: Type<'src>) -> Type<'src> {
             hint,
         },
         (t1, t2) => panic!("can't promote: \"{t1}\" \"{t2}\""),
-    }
-}
-
-impl<'src> From<Typed<'src, Spanned<TypedExpr<'src>>>> for Spanned<Expr<'src>> {
-    fn from(expr: Typed<'src, Spanned<TypedExpr<'src>>>) -> Self {
-        let Typed { val, r#type: _ } = expr;
-        let Spanned(unspanned, span) = val;
-        Spanned(unspanned.into(), span)
-    }
-}
-
-impl<'src> From<Typed<'src, Spanned<Box<TypedExpr<'src>>>>> for Spanned<Box<Expr<'src>>> {
-    fn from(expr: Typed<'src, Spanned<Box<TypedExpr<'src>>>>) -> Self {
-        Spanned::<Expr>::from(expr.map(Spanned::unboxed)).boxed()
     }
 }
 
@@ -526,6 +536,20 @@ impl<'src> From<TypedExpr<'src>> for Expr<'src> {
             },
             TypedExpr::Unique { expr } => Expr::Unique { expr: expr.into() },
         }
+    }
+}
+
+impl<'src> From<Typed<'src, Spanned<TypedExpr<'src>>>> for Spanned<Expr<'src>> {
+    fn from(expr: Typed<'src, Spanned<TypedExpr<'src>>>) -> Self {
+        let Typed { val, r#type: _ } = expr;
+        let Spanned(unspanned, span) = val;
+        Spanned(unspanned.into(), span)
+    }
+}
+
+impl<'src> From<Typed<'src, Spanned<Box<TypedExpr<'src>>>>> for Spanned<Box<Expr<'src>>> {
+    fn from(expr: Typed<'src, Spanned<Box<TypedExpr<'src>>>>) -> Self {
+        Spanned::<Expr>::from(expr.map(Spanned::unboxed)).boxed()
     }
 }
 
