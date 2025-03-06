@@ -6,36 +6,12 @@ use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{parse2, parse_quote, Error};
 
-impl From<Type<'_>> for syn::Type {
-    fn from(r#type: Type) -> Self {
-        match r#type {
-            Type::Bool => parse_quote!(bool),
-            Type::Date => parse_quote!(crate::runtime::Date),
-            Type::Int => parse_quote!(i32),
-            Type::Long => parse_quote!(i64),
-            Type::Real => parse_quote!(f64),
-            Type::String { max_len: None } => parse_quote!(String),
-            Type::String {
-                max_len: Some(_max_len),
-            } => parse_quote!(String), // TODO
-            Type::Record(_) => parse_quote!(crate::runtime::Record),
-            Type::Dict {
-                hint: None | Some(DictHint::HashDict),
-                ..
-            } => parse_quote!(crate::runtime::HashMap),
-            Type::Dict {
-                hint: Some(DictHint::Vec),
-                ..
-            } => parse_quote!(Vec),
-            Type::Dict {
-                hint: Some(DictHint::SortDict),
-                ..
-            } => parse_quote!(crate::runtime::SortDict),
-            Type::Dict {
-                hint: Some(DictHint::SmallVecDict),
-                ..
-            } => parse_quote!(crate::runtime::SmallVecDict),
-        }
+impl From<ExprFMF<'_>> for String {
+    fn from(expr: ExprFMF<'_>) -> Self {
+        let tks: TokenStream = expr.into();
+        let main_tks = quote! { fn main() { #tks } };
+        let ast = parse2(main_tks).unwrap();
+        prettyplease::unparse(&ast)
     }
 }
 
@@ -110,16 +86,49 @@ impl From<TypedExpr<'_>> for TokenStream {
 }
 
 fn try_gen_load(fields: &[(&str, syn::Type)]) -> Result<syn::Macro, Error> {
-    let field_tokens = fields.iter().map(|(name, ty)| {
+    let field_tks = fields.iter().map(|(name, ty)| {
         let name = format_ident!("{name}");
         quote! { #name: #ty }
     });
-    let macro_tokens = quote! {
+    let macro_tks = quote! {
         load!(
-            #(#field_tokens),*
+            #(#field_tks),*
         )
     };
-    parse2(macro_tokens)
+    parse2(macro_tks)
+}
+
+impl From<Type<'_>> for syn::Type {
+    fn from(r#type: Type) -> Self {
+        match r#type {
+            Type::Bool => parse_quote!(bool),
+            Type::Date => parse_quote!(crate::runtime::Date),
+            Type::Int => parse_quote!(i32),
+            Type::Long => parse_quote!(i64),
+            Type::Real => parse_quote!(f64),
+            Type::String { max_len: None } => parse_quote!(String),
+            Type::String {
+                max_len: Some(_max_len),
+            } => parse_quote!(String), // TODO
+            Type::Record(_) => parse_quote!(crate::runtime::Record),
+            Type::Dict {
+                hint: None | Some(DictHint::HashDict),
+                ..
+            } => parse_quote!(crate::runtime::HashMap),
+            Type::Dict {
+                hint: Some(DictHint::Vec),
+                ..
+            } => parse_quote!(Vec),
+            Type::Dict {
+                hint: Some(DictHint::SortDict),
+                ..
+            } => parse_quote!(crate::runtime::SortDict),
+            Type::Dict {
+                hint: Some(DictHint::SmallVecDict),
+                ..
+            } => parse_quote!(crate::runtime::SmallVecDict),
+        }
+    }
 }
 
 #[cfg(test)]
