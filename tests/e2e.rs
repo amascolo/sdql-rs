@@ -2,7 +2,6 @@ use sdql::backend::fmf::ExprFMF;
 use sdql::frontend::lexer::Spanned;
 use sdql::inference::{Typed, TypedExpr};
 use sdql::ir::expr::Expr;
-// use sdql::sdql;
 
 fn e2e(src: &str) {
     let expr = Spanned::<Expr>::try_from(src).unwrap();

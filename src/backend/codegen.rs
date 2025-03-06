@@ -80,7 +80,7 @@ impl From<TypedExpr<'_>> for TokenStream {
                 debug_assert!(matches!(parse2(tks.clone()), Ok(syn::Expr::Call(_))));
                 tks
             }
-            _ => todo!(),
+            t => todo!("{t:?}"),
         }
     }
 }

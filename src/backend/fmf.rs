@@ -2,6 +2,8 @@ use crate::frontend::lexer::Spanned;
 use crate::inference::{Typed, TypedExpr};
 use im_rc;
 use im_rc::vector;
+use std::fmt;
+use std::fmt::Formatter;
 
 pub type ExprFMF<'src> = FilterMapFold<'src, Typed<'src, Spanned<TypedExpr<'src>>>>;
 
@@ -25,6 +27,19 @@ pub enum OpFMF {
     Filter,
     Map,
     Fold,
+}
+
+impl<T> fmt::Display for FilterMapFold<'_, T>
+where
+    T: fmt::Display,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            FilterMapFold::Expr(expr) => write!(f, "{expr}"),
+            FilterMapFold::Range { .. } => todo!(),
+            FilterMapFold::FMF { .. } => todo!(),
+        }
+    }
 }
 
 impl<'src> From<Typed<'src, Spanned<TypedExpr<'src>>>> for ExprFMF<'src> {

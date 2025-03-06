@@ -104,12 +104,34 @@ pub struct RecordValue<'src, T> {
     pub name: Field<'src>,
     pub val: T,
 }
+impl<'src, T> RecordValue<'src, T> {
+    pub fn map<U, F>(self, f: F) -> RecordValue<'src, U>
+    where
+        F: FnOnce(T) -> U,
+    {
+        RecordValue {
+            name: self.name,
+            val: f(self.val),
+        }
+    }
+}
 
 #[derive(Clone, Debug, Display, PartialEq)]
 #[display("{key} -> {val}")]
-pub struct DictEntry<T, U> {
-    pub key: T,
-    pub val: U,
+pub struct DictEntry<KT, VT> {
+    pub key: KT,
+    pub val: VT,
+}
+impl<T> DictEntry<T, T> {
+    pub fn map<U, F>(self, f: F) -> DictEntry<U, U>
+    where
+        F: Fn(T) -> U,
+    {
+        DictEntry {
+            key: f(self.key),
+            val: f(self.val),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]

@@ -2,8 +2,10 @@ use crate::frontend::lexer::Spanned;
 use crate::ir::expr::{BinaryOp, DictEntry, Expr, External, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, Field, RecordType, Type};
 use crate::runtime::Date;
+use derive_more::Display;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq)]
+#[display("({val}): {type}")]
 pub struct Typed<'src, T> {
     pub val: T,
     pub r#type: Type<'src>,
@@ -129,11 +131,6 @@ impl<'src> From<Spanned<Expr<'src>>> for Typed<'src, Spanned<TypedExpr<'src>>> {
             val: Spanned(val, span),
             r#type,
         }
-        // TODO should Spanned wrapped Typed?
-        //  expected  `Typed<Spanned<TypedExpr>>`
-        //  but found `Spanned<Typed<TypedExpr>>`
-        //  it would simplify down to this:
-        // expr.map(|x| infer(x, &Ctx::new()))
     }
 }
 
@@ -428,5 +425,117 @@ fn promote<'src>(t1: Type<'src>, t2: Type<'src>) -> Type<'src> {
             hint,
         },
         (t1, t2) => panic!("can't promote: \"{t1}\" \"{t2}\""),
+    }
+}
+
+impl<'src> From<Typed<'src, Spanned<TypedExpr<'src>>>> for Spanned<Expr<'src>> {
+    fn from(expr: Typed<'src, Spanned<TypedExpr<'src>>>) -> Self {
+        let Typed { val, r#type: _ } = expr;
+        let Spanned(unspanned, span) = val;
+        Spanned(unspanned.into(), span)
+    }
+}
+
+impl<'src> From<Typed<'src, Spanned<Box<TypedExpr<'src>>>>> for Spanned<Box<Expr<'src>>> {
+    fn from(expr: Typed<'src, Spanned<Box<TypedExpr<'src>>>>) -> Self {
+        Spanned::<Expr>::from(expr.map(Spanned::unboxed)).boxed()
+    }
+}
+
+impl<'src> From<TypedExpr<'src>> for Expr<'src> {
+    fn from(expr: TypedExpr<'src>) -> Self {
+        match expr {
+            TypedExpr::Sym { val } => Expr::Sym { val },
+            TypedExpr::Bool { val } => Expr::Bool { val },
+            TypedExpr::Date { val } => Expr::Date { val },
+            TypedExpr::Real { val } => Expr::Real { val },
+            TypedExpr::Int { val } => Expr::Int { val },
+            TypedExpr::Long { val } => Expr::Long { val },
+            TypedExpr::String { val, max_len } => Expr::String { val, max_len },
+            TypedExpr::Record { vals } => Expr::Record {
+                vals: vals.into_iter().map(|rv| rv.map(Spanned::from)).collect(),
+            },
+            TypedExpr::Dict { map, hint } => Expr::Dict {
+                map: map.into_iter().map(|d| d.map(Spanned::from)).collect(),
+                hint,
+            },
+            TypedExpr::Dom { expr } => {
+                // let inner = Spanned::<Expr>::from(expr.map(Spanned::unboxed)).boxed();
+                Expr::Dom { expr: expr.into() }
+            }
+            TypedExpr::Let { lhs, rhs, cont } => Expr::Let {
+                lhs,
+                rhs: rhs.into(),
+                cont: cont.into(),
+            },
+            TypedExpr::Unary { op, expr } => Expr::Unary {
+                op,
+                expr: expr.into(),
+            },
+            TypedExpr::Binary { lhs, op, rhs } => Expr::Binary {
+                lhs: lhs.into(),
+                op,
+                rhs: rhs.into(),
+            },
+            TypedExpr::If { r#if, then, r#else } => Expr::If {
+                r#if: r#if.into(),
+                then: then.into(),
+                r#else: r#else.map(|r#else| r#else.into()),
+            },
+            TypedExpr::Field { expr, field } => Expr::Field {
+                expr: expr.into(),
+                field,
+            },
+            TypedExpr::Get { lhs, rhs } => Expr::Get {
+                lhs: lhs.into(),
+                rhs: rhs.into(),
+            },
+            TypedExpr::Load { r#type, path } => Expr::Load { r#type, path },
+            TypedExpr::Sum {
+                key,
+                val,
+                head,
+                body,
+            } => Expr::Sum {
+                key,
+                val,
+                head: head.into(),
+                body: body.into(),
+            },
+            TypedExpr::Range { expr } => Expr::Range { expr: expr.into() },
+            TypedExpr::Concat { lhs, rhs } => Expr::Concat {
+                lhs: lhs.into(),
+                rhs: rhs.into(),
+            },
+            TypedExpr::External { func, args } => Expr::External {
+                func,
+                args: args.into_iter().map(|arg| arg.into()).collect(),
+            },
+            TypedExpr::Promote { promo, expr } => Expr::Promote {
+                promo,
+                expr: expr.into(),
+            },
+            TypedExpr::Unique { expr } => Expr::Unique { expr: expr.into() },
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::sdql;
+
+    #[test]
+    fn tpch_q3() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
+        let expr = sdql!(src);
+        assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
+    }
+
+    #[test]
+    fn tpch_q6() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q6.sdql"));
+        let expr = sdql!(src);
+        assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
     }
 }
