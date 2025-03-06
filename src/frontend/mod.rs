@@ -8,6 +8,13 @@ use parser::expr_parser;
 
 #[macro_export]
 macro_rules! sdql {
+    ($src:expr) => {
+        Spanned::<Expr>::try_from($src).unwrap()
+    };
+}
+
+#[macro_export]
+macro_rules! no_span {
     ($src:expr) => {{
         let src: &str = $src;
         let expr = Spanned::<Expr>::try_from(src).unwrap();
