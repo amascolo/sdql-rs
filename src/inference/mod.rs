@@ -459,10 +459,7 @@ impl<'src> From<TypedExpr<'src>> for Expr<'src> {
                 map: map.into_iter().map(|d| d.map(Spanned::from)).collect(),
                 hint,
             },
-            TypedExpr::Dom { expr } => {
-                // let inner = Spanned::<Expr>::from(expr.map(Spanned::unboxed)).boxed();
-                Expr::Dom { expr: expr.into() }
-            }
+            TypedExpr::Dom { expr } => Expr::Dom { expr: expr.into() },
             TypedExpr::Let { lhs, rhs, cont } => Expr::Let {
                 lhs,
                 rhs: rhs.into(),
