@@ -2,7 +2,7 @@ use super::fmf::ExprFMF;
 use crate::frontend::lexer::Spanned;
 use crate::inference::{Typed, TypedExpr};
 use crate::ir::r#type::{DictHint, Type};
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{parse2, parse_quote, Error};
 
@@ -43,8 +43,8 @@ impl From<ExprFMF<'_>> for TokenStream {
     fn from(expr: ExprFMF) -> Self {
         match expr {
             ExprFMF::Expr(expr) => expr.into(),
-            ExprFMF::Range { .. } => todo!(),
-            ExprFMF::FMF { .. } => todo!(),
+            ExprFMF::Range { .. } => todo!("{expr:?}"),
+            ExprFMF::FMF { .. } => todo!("{expr:?}"),
         }
     }
 }
@@ -58,6 +58,28 @@ impl From<Typed<'_, Spanned<TypedExpr<'_>>>> for TokenStream {
 impl From<TypedExpr<'_>> for TokenStream {
     fn from(expr: TypedExpr<'_>) -> Self {
         match expr {
+            TypedExpr::Bool { val } => quote! { #val },
+            TypedExpr::Date { val } => {
+                let val = val.to_string();
+                quote!( date(#val) )
+            }
+            TypedExpr::Int { val } => quote! { #val },
+            TypedExpr::Long { val } => quote! { #val },
+            TypedExpr::Real { val } => quote! { #val },
+            TypedExpr::String { val, max_len: None } => quote! { #val },
+            TypedExpr::String {
+                val: _,
+                max_len: Some(_),
+            } => todo!(),
+            TypedExpr::Let { lhs, rhs, cont } => {
+                let lhs_ident = syn::Ident::new(lhs, Span::call_site());
+                let lhs_tks = quote! { #lhs_ident };
+                let rhs_tks: TokenStream = rhs.map(Spanned::unboxed).into();
+                let cont_tks: TokenStream = cont.map(Spanned::unboxed).into();
+                let tks = quote! { let #lhs_tks = #rhs_tks;  #cont_tks };
+                debug_assert!(true); // TODO
+                tks
+            }
             TypedExpr::Load { r#type, path } => {
                 let Type::Record(vals) = r#type else {
                     unreachable!()
@@ -108,26 +130,21 @@ mod tests {
     use crate::inference::{Typed, TypedExpr};
     use crate::ir::expr::Expr;
     use proc_macro2::TokenStream;
-    use syn::parse2;
 
     const LOAD: &str = "load[<l_orderkey: @vec {int -> int}, l_partkey: @vec {int -> int}, l_suppkey: @vec {int -> int}, l_linenumber: @vec {int -> int}, l_quantity: @vec {int -> real}, l_extendedprice: @vec {int -> real}, l_discount: @vec {int -> real}, l_tax: @vec {int -> real}, l_returnflag: @vec {int -> varchar(1)}, l_linestatus: @vec {int -> varchar(1)}, l_shipdate: @vec {int -> date}, l_commitdate: @vec {int -> date}, l_receiptdate: @vec {int -> date}, l_shipinstruct: @vec {int -> varchar(25)}, l_shipmode: @vec {int -> varchar(10)}, l_comment: @vec {int -> varchar(44)}, size: int>](\"datasets/tpch_datasets/SF_0.01/lineitem.tbl\")";
 
     #[test]
     fn test_load() {
-        let src = LOAD;
+        let src: &str = &format!("let _ = {LOAD} in 0");
         let expr = Spanned::<Expr>::try_from(src).unwrap();
         let t: Typed<Spanned<TypedExpr>> = expr.into();
         let fmf: ExprFMF = t.into();
-
-        // match fmf {
-        //     ExprFMF::Expr(load @ Expr::Load { .. }) => {}
-        // }
-
-        let tokens: TokenStream = fmf.into();
-        println!("{}", tokens);
-        let ast: syn::Expr = parse2(tokens).unwrap();
-        // println!("{:#?}", ast);
-        // let s = prettyplease::unparse(&ast);
-        // println!("{s}");
+        let tks: TokenStream = fmf.into();
+        // println!("{tks}");
+        let main_tks = quote! { fn main() { #tks } };
+        let ast = parse2(main_tks).unwrap();
+        // println!("{ast:#?}");
+        let s = prettyplease::unparse(&ast);
+        println!("{s}");
     }
 }

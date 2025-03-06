@@ -61,7 +61,7 @@ fn from<'src>(expr: Typed<'src, Spanned<TypedExpr<'src>>>, ctx: &Ctx<'src>) -> E
             r#if: _,
             then: _,
             r#else: Some(_),
-        } => {
+        } if !ctx.is_empty() => {
             let val = Spanned(unspanned, span);
             let expr = Typed { val, r#type };
             ExprFMF::FMF {
@@ -75,13 +75,13 @@ fn from<'src>(expr: Typed<'src, Spanned<TypedExpr<'src>>>, ctx: &Ctx<'src>) -> E
             r#if,
             then,
             r#else: None,
-        } => ExprFMF::FMF {
+        } if !ctx.is_empty() => ExprFMF::FMF {
             op: OpFMF::Filter,
             inner: r#if.map(Spanned::unboxed),
             cont: Some(Box::new(from(then.map(Spanned::unboxed), &ctx))),
             args: ctx.clone(),
         },
-        TypedExpr::Let { lhs, rhs, cont } => {
+        TypedExpr::Let { lhs, rhs, cont } if !ctx.is_empty() => {
             let ctx = ctx + &vector![lhs];
             ExprFMF::FMF {
                 op: OpFMF::Map,
