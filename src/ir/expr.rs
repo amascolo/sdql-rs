@@ -208,7 +208,7 @@ impl fmt::Display for Expr<'_> {
             Self::Dom { expr } => write!(f, "dom({expr})"),
             Self::Let { lhs, rhs, cont } => write!(f, "let {lhs} = {rhs} in {cont}"),
             Self::Unary { op, expr } => write!(f, "{op}({expr})"),
-            Self::Binary { lhs, op, rhs } => write!(f, "{op}({lhs}, {rhs})"),
+            Self::Binary { lhs, op, rhs } => write!(f, "({lhs} {op} {rhs})"),
             Self::If { r#if, then, r#else } => match r#else {
                 Some(r#else) => write!(f, "if {if} then {then} else {else}"),
                 None => write!(f, "if {if} then {then}"),

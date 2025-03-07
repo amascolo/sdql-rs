@@ -5,11 +5,9 @@ use sdql::ir::expr::Expr;
 
 fn e2e(src: &str) {
     let expr = Spanned::<Expr>::try_from(src).unwrap();
-    // println!("{expr}");
     let t: Typed<Spanned<TypedExpr>> = expr.into();
-    // println!("{t:?}");
     let fmf: ExprFMF = t.into();
-    // println!("{fmf:?}");
+    println!("{fmf}");
 }
 
 #[test]

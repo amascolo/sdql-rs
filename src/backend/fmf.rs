@@ -2,6 +2,7 @@ use crate::frontend::lexer::Spanned;
 use crate::inference::{Typed, TypedExpr};
 use im_rc;
 use im_rc::vector;
+use itertools::Itertools;
 use std::fmt;
 use std::fmt::Formatter;
 
@@ -29,6 +30,17 @@ pub enum OpFMF {
     Fold,
 }
 
+impl fmt::Display for OpFMF {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            OpFMF::Filter => "filter",
+            OpFMF::Map => "map",
+            OpFMF::Fold => "fold",
+        }
+        .fmt(f)
+    }
+}
+
 impl<T> fmt::Display for FilterMapFold<'_, T>
 where
     T: fmt::Display,
@@ -36,8 +48,20 @@ where
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             FilterMapFold::Expr(expr) => write!(f, "{expr}"),
-            FilterMapFold::Range { .. } => todo!(),
-            FilterMapFold::FMF { .. } => todo!(),
+            FilterMapFold::Range { range, cont } => write!(f, "{range}.{cont}"),
+            FilterMapFold::FMF {
+                op,
+                args,
+                inner,
+                cont,
+            } => {
+                write!(
+                    f,
+                    "{op}(|{}| {inner} ){}",
+                    args.iter().join(","),
+                    cont.as_ref().map(|c| format!(".{c}")).unwrap_or_default()
+                )
+            }
         }
     }
 }

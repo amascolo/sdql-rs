@@ -3,9 +3,10 @@ use crate::ir::expr::{BinaryOp, DictEntry, Expr, External, RecordValue, UnaryOp}
 use crate::ir::r#type::{DictHint, Field, RecordType, Type};
 use crate::runtime::Date;
 use derive_more::Display;
+use std::fmt;
 
 #[derive(Clone, Debug, Display, PartialEq)]
-#[display("({val}): {type}")]
+#[display("{val}")]
 pub struct Typed<'src, T> {
     pub val: T,
     pub r#type: Type<'src>,
@@ -134,6 +135,12 @@ pub enum TypedExpr<'src> {
     Unique {
         expr: Typed<'src, Spanned<Box<Self>>>,
     },
+}
+
+impl<'src> fmt::Display for TypedExpr<'src> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        Expr::from(self.clone()).fmt(f) // TODO
+    }
 }
 
 impl<'src> From<Spanned<Expr<'src>>> for Typed<'src, Spanned<TypedExpr<'src>>> {
