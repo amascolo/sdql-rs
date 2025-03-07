@@ -238,6 +238,13 @@ impl fmt::Display for Expr<'_> {
     }
 }
 
+// TODO pretty printing with indentation
+// impl<'src> Expr<'src> {
+//     fn indented(&self, f: &mut fmt::Formatter, indent: usize) -> fmt::Result {
+//         todo!()
+//     }
+// }
+
 impl fmt::Display for UnaryOp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
