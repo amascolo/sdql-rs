@@ -12,8 +12,8 @@ fn e2e(src: &str) {
     let fmf = Typed::<Spanned<ExprFMF>>::from(typed);
     println!("{fmf}");
     // FIXME
-    // let string = String::from(fmf);
-    // println!("{string}");
+    let string = String::from(fmf);
+    println!("{string}");
     // TODO one liner
 }
 

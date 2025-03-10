@@ -1,10 +1,13 @@
-use super::fmf::ExprFMF;
+use super::fmf::{ExprFMF, OpFMF};
 use crate::frontend::lexer::Spanned;
 use crate::inference::Typed;
+use crate::ir::expr::BinaryOp;
 use crate::ir::r#type::{DictHint, Type};
-use proc_macro2::{Span, TokenStream};
+use im_rc::vector;
+use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
-use syn::{parse2, parse_quote, Error};
+use std::iter::repeat;
+use syn::{parse2, parse_quote, BinOp, Error, ExprBinary, ExprRange, RangeLimits};
 
 impl From<ExprFMF<'_>> for String {
     fn from(expr: ExprFMF<'_>) -> Self {
@@ -27,9 +30,19 @@ impl<'src> From<Typed<'src, Spanned<ExprFMF<'src>>>> for TokenStream {
     }
 }
 
+impl<'src> From<Typed<'src, Spanned<Box<ExprFMF<'src>>>>> for TokenStream {
+    fn from(expr: Typed<'src, Spanned<Box<ExprFMF<'src>>>>) -> Self {
+        ExprFMF::from(expr.map(Spanned::unboxed)).into()
+    }
+}
+
 impl From<ExprFMF<'_>> for TokenStream {
     fn from(expr: ExprFMF<'_>) -> Self {
         match expr {
+            ExprFMF::Sym { val } => {
+                let ident = Ident::new(val, Span::call_site());
+                quote!(#ident)
+            }
             ExprFMF::Bool { val } => quote! { #val },
             ExprFMF::Date { val } => {
                 let val = val.to_string();
@@ -46,10 +59,10 @@ impl From<ExprFMF<'_>> for TokenStream {
             ExprFMF::Let { lhs, rhs, cont } => {
                 let lhs_ident = syn::Ident::new(lhs, Span::call_site());
                 let lhs_tks = quote! { #lhs_ident };
-                let rhs_tks: TokenStream = rhs.map(Spanned::unboxed).into();
+                let rhs_tks: TokenStream = rhs.into();
                 let let_tks = quote! { let #lhs_tks = #rhs_tks };
                 debug_assert!(matches!(parse2(let_tks.clone()), Ok(syn::Expr::Let(_))));
-                let cont_tks: TokenStream = cont.map(Spanned::unboxed).into();
+                let cont_tks: TokenStream = cont.into();
                 quote! { #let_tks;  #cont_tks }
             }
             ExprFMF::Load { r#type, path } => {
@@ -76,9 +89,113 @@ impl From<ExprFMF<'_>> for TokenStream {
                 debug_assert!(matches!(parse2(tks.clone()), Ok(syn::Expr::Call(_))));
                 tks
             }
+            ExprFMF::Sum {
+                key,
+                val: "_",
+                head:
+                    Typed {
+                        val: Spanned(range, _span),
+                        r#type: _,
+                    },
+                body,
+            } if matches!(*range, ExprFMF::Range { .. }) => {
+                let ExprFMF::Range { expr } = *range else {
+                    unreachable!()
+                };
+                let expr = ExprFMF::from(expr.map(Spanned::unboxed));
+                let expr: syn::Expr = parse2(expr.into()).unwrap();
+                let expr = gen_range(expr);
+                let body = ExprFMF::from(body.map(Spanned::unboxed));
+                let body = sum_body(body, &vector![key]);
+                quote! { (#expr)#body }
+            }
+            ExprFMF::FMF {
+                op: OpFMF::Filter,
+                args: _,
+                inner: _,
+                cont: None,
+            } => unimplemented!(),
+            ExprFMF::FMF {
+                op: OpFMF::Filter,
+                args,
+                inner,
+                cont: Some(cont),
+            } => {
+                let inner: TokenStream = inner.into();
+                let cont = ExprFMF::from(cont.map(Spanned::unboxed));
+                let cont = sum_body(cont, &args);
+                let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
+                quote! {.filter(|#(#args),*| #inner)#cont}
+            }
+            ExprFMF::Binary { lhs, op, rhs } => {
+                let lhs = parse2(lhs.into()).unwrap();
+                let rhs = parse2(rhs.into()).unwrap();
+                let expr = syn::Expr::Binary(ExprBinary {
+                    attrs: vec![],
+                    left: Box::new(lhs),
+                    op: op.into(),
+                    right: Box::new(rhs),
+                });
+                quote! { #expr }
+            }
+            ExprFMF::Field { .. } => todo!(), // TODO convert to ExprFMF::Get
+            ExprFMF::Get { .. } => todo!(),
             t => todo!("{t:?}"),
         }
     }
+}
+
+fn sum_body(expr: ExprFMF<'_>, args: &im_rc::Vector<&str>) -> TokenStream {
+    match expr {
+        ExprFMF::Sym { val } => {
+            let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
+            let val = Ident::new(val, Span::call_site());
+            quote! {.map(|#(#args),*| #val).sum()}
+        }
+        ExprFMF::Bool { .. } | ExprFMF::Date { .. } | ExprFMF::String { .. } => unimplemented!(),
+        ExprFMF::Real { val } => {
+            let args = repeat(Ident::new("_", Span::call_site())).take(args.len());
+            quote! {.map(|#(#args),*| #val).sum()}
+        }
+        ExprFMF::Int { val } => {
+            let args = repeat(Ident::new("_", Span::call_site())).take(args.len());
+            quote! {.map(|#(#args),*| #val).sum()}
+        }
+        ExprFMF::Long { val } => {
+            let args = repeat(Ident::new("_", Span::call_site())).take(args.len());
+            quote! {.map(|#(#args),*| #val).sum()}
+        }
+        _ => expr.into(),
+        // ExprFMF::Record { .. } => todo!(),
+        // ExprFMF::Dict { .. } => todo!(),
+        // ExprFMF::Dom { .. } => todo!(),
+        // ExprFMF::Let { .. } => todo!(),
+        // ExprFMF::Unary { .. } => todo!(),
+        // ExprFMF::Binary { .. } => todo!(),
+        // ExprFMF::If { .. } => todo!(),
+        // ExprFMF::Field { .. } => todo!(),
+        // ExprFMF::Get { .. } => todo!(),
+        // ExprFMF::Load { .. } => todo!(),
+        // ExprFMF::Sum { .. } => todo!(),
+        // ExprFMF::Range { .. } => todo!(),
+        // ExprFMF::Concat { .. } => todo!(),
+        // ExprFMF::External { .. } => todo!(),
+        // ExprFMF::Promote { .. } => todo!(),
+        // ExprFMF::Unique { .. } => todo!(),
+        // ExprFMF::FMF { .. } => todo!(),
+    }
+}
+
+// let ident = Ident::new(end, Span::call_site());
+// syn::Expr::Path(parse_quote!(#ident))
+
+fn gen_range(end: syn::Expr) -> syn::Expr {
+    syn::Expr::Range(ExprRange {
+        attrs: Vec::new(),
+        start: Some(Box::new(parse_quote!(0))),
+        limits: RangeLimits::HalfOpen(Default::default()),
+        end: Some(Box::new(end)),
+    })
 }
 
 fn try_gen_load(fields: &[(&str, syn::Type)]) -> Result<syn::Macro, Error> {
@@ -123,6 +240,25 @@ impl From<Type<'_>> for syn::Type {
                 hint: Some(DictHint::SmallVecDict),
                 ..
             } => parse_quote!(crate::runtime::SmallVecDict),
+        }
+    }
+}
+
+impl From<BinaryOp> for BinOp {
+    fn from(op: BinaryOp) -> Self {
+        match op {
+            BinaryOp::Add => Self::Add(Default::default()),
+            BinaryOp::Sub => Self::Sub(Default::default()),
+            BinaryOp::Mul => Self::Mul(Default::default()),
+            BinaryOp::Div => Self::Div(Default::default()),
+            BinaryOp::Eq => Self::Eq(Default::default()),
+            BinaryOp::NotEq => Self::Ne(Default::default()),
+            BinaryOp::Less => Self::Lt(Default::default()),
+            BinaryOp::Great => Self::Gt(Default::default()),
+            BinaryOp::LessEq => Self::Le(Default::default()),
+            BinaryOp::GreatEq => Self::Ge(Default::default()),
+            BinaryOp::And => Self::And(Default::default()),
+            BinaryOp::Or => Self::Or(Default::default()),
         }
     }
 }
