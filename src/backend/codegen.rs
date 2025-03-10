@@ -1,6 +1,6 @@
 use super::fmf::ExprFMF;
 use crate::frontend::lexer::Spanned;
-use crate::inference::{Typed, TypedExpr};
+use crate::inference::Typed;
 use crate::ir::r#type::{DictHint, Type};
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
@@ -15,39 +15,35 @@ impl From<ExprFMF<'_>> for String {
     }
 }
 
+impl<'src> From<Typed<'src, Spanned<ExprFMF<'src>>>> for String {
+    fn from(expr: Typed<'src, Spanned<ExprFMF<'src>>>) -> Self {
+        ExprFMF::from(expr).into()
+    }
+}
+
+impl<'src> From<Typed<'src, Spanned<ExprFMF<'src>>>> for TokenStream {
+    fn from(expr: Typed<'src, Spanned<ExprFMF<'src>>>) -> Self {
+        ExprFMF::from(expr).into()
+    }
+}
+
 impl From<ExprFMF<'_>> for TokenStream {
-    fn from(expr: ExprFMF) -> Self {
+    fn from(expr: ExprFMF<'_>) -> Self {
         match expr {
-            ExprFMF::Expr(expr) => expr.into(),
-            ExprFMF::Range { .. } => todo!("{expr:?}"),
-            ExprFMF::FMF { .. } => todo!("{expr:?}"),
-        }
-    }
-}
-
-impl From<Typed<'_, Spanned<TypedExpr<'_>>>> for TokenStream {
-    fn from(expr: Typed<'_, Spanned<TypedExpr<'_>>>) -> Self {
-        TypedExpr::from(expr).into()
-    }
-}
-
-impl From<TypedExpr<'_>> for TokenStream {
-    fn from(expr: TypedExpr<'_>) -> Self {
-        match expr {
-            TypedExpr::Bool { val } => quote! { #val },
-            TypedExpr::Date { val } => {
+            ExprFMF::Bool { val } => quote! { #val },
+            ExprFMF::Date { val } => {
                 let val = val.to_string();
                 quote!( date(#val) )
             }
-            TypedExpr::Int { val } => quote! { #val },
-            TypedExpr::Long { val } => quote! { #val },
-            TypedExpr::Real { val } => quote! { #val },
-            TypedExpr::String { val, max_len: None } => quote! { #val },
-            TypedExpr::String {
+            ExprFMF::Int { val } => quote! { #val },
+            ExprFMF::Long { val } => quote! { #val },
+            ExprFMF::Real { val } => quote! { #val },
+            ExprFMF::String { val, max_len: None } => quote! { #val },
+            ExprFMF::String {
                 val: _,
                 max_len: Some(_),
             } => todo!(),
-            TypedExpr::Let { lhs, rhs, cont } => {
+            ExprFMF::Let { lhs, rhs, cont } => {
                 let lhs_ident = syn::Ident::new(lhs, Span::call_site());
                 let lhs_tks = quote! { #lhs_ident };
                 let rhs_tks: TokenStream = rhs.map(Spanned::unboxed).into();
@@ -56,7 +52,7 @@ impl From<TypedExpr<'_>> for TokenStream {
                 let cont_tks: TokenStream = cont.map(Spanned::unboxed).into();
                 quote! { #let_tks;  #cont_tks }
             }
-            TypedExpr::Load { r#type, path } => {
+            ExprFMF::Load { r#type, path } => {
                 let Type::Record(vals) = r#type else {
                     unreachable!()
                 };
@@ -147,7 +143,7 @@ mod tests {
         let src: &str = &format!("let _ = {LOAD} in 0");
         let expr = Spanned::<Expr>::try_from(src).unwrap();
         let t: Typed<Spanned<TypedExpr>> = expr.into();
-        let fmf: ExprFMF = t.into();
+        let fmf: Typed<Spanned<ExprFMF>> = t.into();
         let tks: TokenStream = fmf.into();
         // println!("{tks}");
         let main_tks = quote! { fn main() { #tks } };

@@ -8,6 +8,8 @@ pub mod fmf;
 
 impl From<Spanned<Expr<'_>>> for String {
     fn from(expr: Spanned<Expr<'_>>) -> Self {
-        String::from(ExprFMF::from(Typed::from(expr)))
+        let typed = Typed::from(expr);
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed);
+        fmf.to_string()
     }
 }

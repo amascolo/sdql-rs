@@ -22,28 +22,6 @@ impl<'src, T> Typed<'src, T> {
         }
     }
 }
-impl<'src> From<Typed<'src, Spanned<TypedExpr<'src>>>> for TypedExpr<'src> {
-    fn from(expr: Typed<'src, Spanned<TypedExpr<'src>>>) -> Self {
-        let Typed { val, r#type: _ } = expr;
-        let Spanned(unspanned, _span) = val;
-        unspanned
-    }
-}
-
-// TODO delete experiments
-// impl<'src> From<Spanned<Typed<'src, TypedExpr<'src>>>> for Typed<'src, Spanned<TypedExpr<'src>>> {
-//     fn from(expr: Spanned<Typed<'src, TypedExpr<'src>>>) -> Self {
-//         let Spanned(expr, span) = expr;
-//         expr.map(|expr| Spanned(expr, span))
-//     }
-// }
-// impl<'src> From<Typed<'src, Spanned<TypedExpr<'src>>>> for Spanned<Typed<'src, TypedExpr<'src>>> {
-//     fn from(expr: Typed<'src, Spanned<TypedExpr<'src>>>) -> Self {
-//         let Typed { val, r#type } = expr;
-//         let Spanned(val, span) = val;
-//         Spanned(Typed { val, r#type }, span)
-//     }
-// }
 
 #[allow(dead_code)] // TODO remove after using External
 #[derive(Clone, Debug, PartialEq)]
@@ -153,27 +131,6 @@ impl<'src> From<Spanned<Expr<'src>>> for Typed<'src, Spanned<TypedExpr<'src>>> {
         }
     }
 }
-
-// TODO delete experiments
-// impl<'src> From<Spanned<Expr<'src>>> for Typed<'src, Spanned<TypedExpr<'src>>> {
-//     fn from(expr: Spanned<Expr<'src>>) -> Self {
-//         infer_spanned(expr, &Ctx::new())
-//     }
-// }
-//
-// fn infer_spanned<'src>(
-//     expr: Spanned<Expr<'src>>,
-//     ctx: &Ctx<'src>,
-// ) -> Typed<'src, Spanned<TypedExpr<'src>>> {
-//     expr.map(|expr| infer(expr, ctx)).into()
-// }
-//
-// fn infer_boxed<'src>(
-//     expr: Spanned<Box<Expr<'src>>>,
-//     ctx: &Ctx<'src>,
-// ) -> Typed<'src, Spanned<Box<TypedExpr<'src>>>> {
-//     infer_spanned(expr.unboxed(), ctx).map(Spanned::boxed)
-// }
 
 type Ctx<'src> = im_rc::HashMap<&'src str, Type<'src>>;
 
