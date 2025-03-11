@@ -46,7 +46,7 @@ impl From<ExprFMF<'_>> for TokenStream {
             ExprFMF::Bool { val } => quote! { #val },
             ExprFMF::Date { val } => {
                 let val = val.to_string();
-                quote!( date(#val) )
+                quote!(date!(#val))
             }
             ExprFMF::Int { val } => quote! { #val },
             ExprFMF::Long { val } => quote! { #val },
