@@ -245,6 +245,19 @@ fn from<'src>(
                         args: ctx.clone(),
                     }
                 }
+                expr @ TypedExpr::Dict { .. } if !ctx.is_empty() => {
+                    let inner = Typed {
+                        val: Spanned(expr, span).boxed(),
+                        r#type,
+                    }
+                    .into();
+                    ExprFMF::FMF {
+                        op: OpFMF::Fold,
+                        args: ctx.clone(),
+                        inner,
+                        cont: None,
+                    }
+                }
                 expr if !ctx.is_empty() => {
                     let inner = Typed {
                         val: Spanned(expr, span).boxed(),

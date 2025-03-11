@@ -1,7 +1,7 @@
 use super::fmf::{ExprFMF, OpFMF};
 use crate::frontend::lexer::Spanned;
 use crate::inference::Typed;
-use crate::ir::expr::BinaryOp;
+use crate::ir::expr::{BinaryOp, DictEntry};
 use crate::ir::r#type::{DictHint, Type};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
@@ -189,13 +189,32 @@ impl From<ExprFMF<'_>> for TokenStream {
                 }
                 _ => panic!(),
             },
+            ExprFMF::FMF {
+                op: OpFMF::Fold,
+                args,
+                inner,
+                cont: None,
+            } => {
+                let ExprFMF::Dict { map, hint } = *inner.val.0 else {
+                    unimplemented!()
+                };
+                let map: Result<[DictEntry<_, _>; _], _> = map.try_into();
+                let Ok([map]) = map else { unimplemented!() };
+                let key: TokenStream = map.key.into();
+                let val: TokenStream = map.val.into();
+                let hint = to_type(hint);
+                let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
+                quote! {
+                    .fold(#hint::new(), |mut acc, #(#args),*| {
+                        acc[&#key] += #val;
+                        acc
+                    })
+                }
+            }
             t => todo!("{t:?}"),
         }
     }
 }
-
-// let ident = Ident::new(end, Span::call_site());
-// syn::Expr::Path(parse_quote!(#ident))
 
 fn gen_range(end: syn::Expr) -> syn::Expr {
     syn::Expr::Range(ExprRange {
@@ -232,22 +251,23 @@ impl From<Type<'_>> for syn::Type {
                 max_len: Some(_max_len),
             } => parse_quote!(String), // TODO
             Type::Record(_) => parse_quote!(Record),
-            Type::Dict {
-                hint: None | Some(DictHint::HashDict),
-                ..
-            } => parse_quote!(HashMap),
-            Type::Dict {
-                hint: Some(DictHint::Vec),
-                ..
-            } => parse_quote!(Vec),
-            Type::Dict {
-                hint: Some(DictHint::SortDict),
-                ..
-            } => parse_quote!(SortDict),
-            Type::Dict {
-                hint: Some(DictHint::SmallVecDict),
-                ..
-            } => parse_quote!(SmallVecDict),
+            Type::Dict { hint, .. } => to_type(hint),
+        }
+    }
+}
+
+fn to_type(hint: Option<DictHint>) -> syn::Type {
+    hint.map(syn::Type::from)
+        .unwrap_or_else(|| parse_quote!(HashMap))
+}
+
+impl From<DictHint> for syn::Type {
+    fn from(hint: DictHint) -> Self {
+        match hint {
+            DictHint::HashDict => parse_quote!(HashMap),
+            DictHint::SortDict => parse_quote!(SortDict),
+            DictHint::SmallVecDict => parse_quote!(SmallVecDict),
+            DictHint::Vec => parse_quote!(Vec),
         }
     }
 }
