@@ -2,7 +2,7 @@ let lineitem = load[<l_orderkey: @vec {int -> int}, l_partkey: @vec {int -> int}
 
 sum(<i,_> <- range(lineitem(16)))
   if((0.05 <= lineitem(6)(i)) && (lineitem(6)(i) <= 0.07) &&
-      (lineitem(4)(i) < 24) && (date(19940101) <= lineitem(10)(i)) &&
+      (lineitem(4)(i) < 24.0) && (date(19940101) <= lineitem(10)(i)) &&
       (lineitem(10)(i) < date(19950101))) then
     lineitem(5)(i) * lineitem(6)(i)
 

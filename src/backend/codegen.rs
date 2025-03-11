@@ -199,13 +199,17 @@ fn sum_body(expr: ExprFMF<'_>, args: &im_rc::Vector<&str>) -> TokenStream {
             let args = repeat(Ident::new("_", Span::call_site())).take(args.len());
             quote! {.map(|#(#args),*| #val).sum()}
         }
+        ExprFMF::Binary { .. } => {
+            let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
+            let ts: TokenStream = expr.into();
+            quote! {.map(|#(#args),*| #ts).sum()}
+        }
         _ => expr.into(),
         // ExprFMF::Record { .. } => todo!(),
         // ExprFMF::Dict { .. } => todo!(),
         // ExprFMF::Dom { .. } => todo!(),
         // ExprFMF::Let { .. } => todo!(),
         // ExprFMF::Unary { .. } => todo!(),
-        // ExprFMF::Binary { .. } => todo!(),
         // ExprFMF::If { .. } => todo!(),
         // ExprFMF::Field { .. } => todo!(),
         // ExprFMF::Get { .. } => todo!(),
