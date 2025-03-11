@@ -148,16 +148,33 @@ impl From<ExprFMF<'_>> for TokenStream {
                 });
                 quote! { #expr }
             }
-            ExprFMF::Field { .. } => todo!(),
+            ExprFMF::Field { expr, field } => match expr.r#type {
+                Type::Record(ref vals) => {
+                    let index = vals.iter().position(|rt| rt.name == field).unwrap();
+                    let index = index.try_into().unwrap();
+                    let field = syn::Expr::Field(ExprField {
+                        attrs: vec![],
+                        base: Box::new(parse2(expr.into()).unwrap()),
+                        dot_token: Default::default(),
+                        member: Member::Unnamed(Index {
+                            index,
+                            span: Span::call_site(),
+                        }),
+                    });
+                    quote! { #field }
+                }
+                _ => panic!(),
+            },
             ExprFMF::Get { lhs, rhs } => match lhs.r#type {
                 Type::Record(_) => match *rhs.val.0 {
                     ExprFMF::Int { val } => {
+                        let index = val.try_into().unwrap();
                         let field = syn::Expr::Field(ExprField {
                             attrs: vec![],
                             base: Box::new(parse2(lhs.into()).unwrap()),
                             dot_token: Default::default(),
                             member: Member::Unnamed(Index {
-                                index: val.try_into().unwrap(),
+                                index,
                                 span: Span::call_site(),
                             }),
                         });
