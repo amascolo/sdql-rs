@@ -165,6 +165,21 @@ impl From<ExprFMF<'_>> for TokenStream {
                 }
                 _ => panic!(),
             },
+            ExprFMF::Get {
+                lhs:
+                    Typed {
+                        val: Spanned(val, _),
+                        r#type: _,
+                    },
+                rhs,
+            } if matches!(*val, ExprFMF::Dom { .. }) => {
+                let ExprFMF::Dom { expr } = *val else {
+                    unreachable!()
+                };
+                let lhs: TokenStream = expr.into();
+                let rhs: TokenStream = rhs.into();
+                quote! { #lhs.contains_key(#rhs) }
+            }
             ExprFMF::Get { lhs, rhs } => match lhs.r#type {
                 Type::Record(_) => match *rhs.val.0 {
                     ExprFMF::Int { val } => {
@@ -215,6 +230,8 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let vals = vals.into_iter().map(|rv| TokenStream::from(rv.val));
                 quote! { Record::new((#(#vals),*,)) }
             }
+            ExprFMF::Dom { .. } => unimplemented!(),
+            ExprFMF::Unique { expr } => expr.into(), // TODO
             t => todo!("{t:?}"),
         }
     }

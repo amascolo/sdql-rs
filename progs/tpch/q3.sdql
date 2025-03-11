@@ -5,23 +5,21 @@ let lineitem = load[<l_orderkey: @vec {int -> int}, l_partkey: @vec {int -> int}
 let c_h =
   sum(<i,_> <- range(customer.size))
     if(customer.c_mktsegment(i) == "BUILDING") then
-      { customer.c_custkey(i) -> < _ = customer.c_custkey(i) > }
-//      { unique(customer.c_custkey(i)) -> < _ = customer.c_custkey(i) > }
+      { unique(customer.c_custkey(i)) -> < _ = customer.c_custkey(i) > }
 
 let o_h =
   sum(<i,_> <- range(orders.size))
     if(
         (orders.o_orderdate(i) < date(19950315))
-//        && (dom(c_h)(orders.o_custkey(i)))
+        && (dom(c_h)(orders.o_custkey(i)))
       ) then
-      { orders.o_orderkey(i) -> < _ = orders.o_orderdate(i), _ = orders.o_shippriority(i) > }
-//      { unique(orders.o_orderkey(i)) -> < _ = orders.o_orderdate(i), _ = orders.o_shippriority(i) > }
+      { unique(orders.o_orderkey(i)) -> < _ = orders.o_orderdate(i), _ = orders.o_shippriority(i) > }
 
 let l_h =
   sum(<i,_> <- range(lineitem.size))
     if(
         (date(19950315) < lineitem.l_shipdate(i))
-//        && (dom(o_h)(lineitem.l_orderkey(i)))
+        && (dom(o_h)(lineitem.l_orderkey(i)))
       ) then
       {
         <
