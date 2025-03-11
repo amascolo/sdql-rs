@@ -6,8 +6,7 @@ use crate::ir::r#type::{DictHint, Type};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
-    parse2, parse_quote, BinOp, Error, ExprBinary, ExprField, ExprIndex, ExprRange, Index,
-    Member, RangeLimits,
+    parse2, parse_quote, BinOp, Error, ExprBinary, ExprField, ExprRange, Index, Member, RangeLimits,
 };
 
 impl From<ExprFMF<'_>> for String {
@@ -150,15 +149,12 @@ impl From<ExprFMF<'_>> for TokenStream {
                 quote! { #expr }
             }
             ExprFMF::Field { .. } => todo!(),
-            ExprFMF::Get { lhs, rhs } => {
-                let lhs = parse2(lhs.into()).unwrap();
-                let rhs = ExprFMF::from(rhs.map(Spanned::unboxed));
-                // TODO remove hack (. or [] depends on lhs type)
-                match rhs {
+            ExprFMF::Get { lhs, rhs } => match lhs.r#type {
+                Type::Record(_) => match *rhs.val.0 {
                     ExprFMF::Int { val } => {
                         let field = syn::Expr::Field(ExprField {
                             attrs: vec![],
-                            base: Box::new(lhs),
+                            base: Box::new(parse2(lhs.into()).unwrap()),
                             dot_token: Default::default(),
                             member: Member::Unnamed(Index {
                                 index: val.try_into().unwrap(),
@@ -167,18 +163,15 @@ impl From<ExprFMF<'_>> for TokenStream {
                         });
                         quote! { #field }
                     }
-                    _ => {
-                        let rhs: syn::Expr = parse2(rhs.into()).unwrap();
-                        let expr = syn::Expr::Index(ExprIndex {
-                            attrs: Vec::new(),
-                            expr: Box::new(lhs),
-                            bracket_token: Default::default(),
-                            index: Box::new(rhs),
-                        });
-                        quote! { #expr }
-                    }
+                    _ => unimplemented!(),
+                },
+                Type::Dict { .. } => {
+                    let lhs: TokenStream = lhs.into();
+                    let rhs: TokenStream = rhs.into();
+                    quote! { #lhs[#rhs] }
                 }
-            }
+                _ => panic!(),
+            },
             t => todo!("{t:?}"),
         }
     }
