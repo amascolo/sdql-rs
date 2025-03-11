@@ -238,6 +238,13 @@ fn from<'src>(
                         args: ctx.clone(),
                     }
                 }
+                // TODO this should get rid of sum_body in codegen
+                // _ if !ctx.is_empty() => ExprFMF::FMF {
+                //     op: OpFMF::Map,
+                //     args: ctx.clone(),
+                //     inner: todo!(), // TODO whole outer expr node should go here
+                //     cont: None,
+                // },
                 // in all other cases - leave as is
                 TypedExpr::Sym { val } => ExprFMF::Sym { val },
                 TypedExpr::Bool { val } => ExprFMF::Bool { val },
