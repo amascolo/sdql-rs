@@ -7,11 +7,17 @@ use im_rc::vector;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use std::iter::repeat;
-use syn::{parse2, parse_quote, BinOp, Error, ExprBinary, ExprRange, RangeLimits};
+use syn::{
+    parse2, parse_quote, BinOp, Error, ExprBinary, ExprField, ExprIndex, ExprRange, Index,
+    Member, RangeLimits,
+};
 
 impl From<ExprFMF<'_>> for String {
     fn from(expr: ExprFMF<'_>) -> Self {
         let tks: TokenStream = expr.into();
+        println!();
+        println!("{tks}");
+        println!();
         let main_tks = quote! { fn main() { #tks } };
         let ast = parse2(main_tks).unwrap();
         prettyplease::unparse(&ast)
@@ -138,8 +144,36 @@ impl From<ExprFMF<'_>> for TokenStream {
                 });
                 quote! { #expr }
             }
-            ExprFMF::Field { .. } => todo!(), // TODO convert to ExprFMF::Get
-            ExprFMF::Get { .. } => todo!(),
+            ExprFMF::Field { .. } => todo!(),
+            ExprFMF::Get { lhs, rhs } => {
+                let lhs = parse2(lhs.into()).unwrap();
+                let rhs = ExprFMF::from(rhs.map(Spanned::unboxed));
+                // TODO remove hack (. or [] depends on lhs type)
+                match rhs {
+                    ExprFMF::Int { val } => {
+                        let field = syn::Expr::Field(ExprField {
+                            attrs: vec![],
+                            base: Box::new(lhs),
+                            dot_token: Default::default(),
+                            member: Member::Unnamed(Index {
+                                index: val.try_into().unwrap(),
+                                span: Span::call_site(),
+                            }),
+                        });
+                        quote! { #field }
+                    }
+                    _ => {
+                        let rhs: syn::Expr = parse2(rhs.into()).unwrap();
+                        let expr = syn::Expr::Index(ExprIndex {
+                            attrs: Vec::new(),
+                            expr: Box::new(lhs),
+                            bracket_token: Default::default(),
+                            index: Box::new(rhs),
+                        });
+                        quote! { #expr }
+                    }
+                }
+            }
             t => todo!("{t:?}"),
         }
     }
@@ -215,7 +249,7 @@ impl From<Type<'_>> for syn::Type {
     fn from(r#type: Type) -> Self {
         match r#type {
             Type::Bool => parse_quote!(bool),
-            Type::Date => parse_quote!(crate::runtime::Date),
+            Type::Date => parse_quote!(Date),
             Type::Int => parse_quote!(i32),
             Type::Long => parse_quote!(i64),
             Type::Real => parse_quote!(f64),
@@ -223,11 +257,11 @@ impl From<Type<'_>> for syn::Type {
             Type::String {
                 max_len: Some(_max_len),
             } => parse_quote!(String), // TODO
-            Type::Record(_) => parse_quote!(crate::runtime::Record),
+            Type::Record(_) => parse_quote!(Record),
             Type::Dict {
                 hint: None | Some(DictHint::HashDict),
                 ..
-            } => parse_quote!(crate::runtime::HashMap),
+            } => parse_quote!(HashMap),
             Type::Dict {
                 hint: Some(DictHint::Vec),
                 ..
@@ -235,11 +269,11 @@ impl From<Type<'_>> for syn::Type {
             Type::Dict {
                 hint: Some(DictHint::SortDict),
                 ..
-            } => parse_quote!(crate::runtime::SortDict),
+            } => parse_quote!(SortDict),
             Type::Dict {
                 hint: Some(DictHint::SmallVecDict),
                 ..
-            } => parse_quote!(crate::runtime::SmallVecDict),
+            } => parse_quote!(SmallVecDict),
         }
     }
 }

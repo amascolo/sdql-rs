@@ -1,9 +1,15 @@
 let lineitem = load[<l_orderkey: @vec {int -> int}, l_partkey: @vec {int -> int}, l_suppkey: @vec {int -> int}, l_linenumber: @vec {int -> int}, l_quantity: @vec {int -> real}, l_extendedprice: @vec {int -> real}, l_discount: @vec {int -> real}, l_tax: @vec {int -> real}, l_returnflag: @vec {int -> varchar(1)}, l_linestatus: @vec {int -> varchar(1)}, l_shipdate: @vec {int -> date}, l_commitdate: @vec {int -> date}, l_receiptdate: @vec {int -> date}, l_shipinstruct: @vec {int -> varchar(25)}, l_shipmode: @vec {int -> varchar(10)}, l_comment: @vec {int -> varchar(44)}, size: int>]("datasets/tpch_datasets/SF_0.01/lineitem.tbl")
 
-sum(<i,_> <- range(lineitem.size))
-  if((0.05 <= lineitem.l_discount(i)) && (lineitem.l_discount(i) <= 0.07) &&
-      (lineitem.l_quantity(i) < 24) && (date(19940101) <= lineitem.l_shipdate(i)) &&
-      (lineitem.l_shipdate(i) < date(19950101))) then
-    lineitem.l_extendedprice(i) * lineitem.l_discount(i)
+sum(<i,_> <- range(lineitem(16)))
+  if((0.05 <= lineitem(6)(i)) && (lineitem(6)(i) <= 0.07) &&
+      (lineitem(4)(i) < 24) && (date(19940101) <= lineitem(10)(i)) &&
+      (lineitem(10)(i) < date(19950101))) then
+    lineitem(5)(i) * lineitem(6)(i)
+
+//sum(<i,_> <- range(lineitem.size))
+//  if((0.05 <= lineitem.l_discount(i)) && (lineitem.l_discount(i) <= 0.07) &&
+//      (lineitem.l_quantity(i) < 24) && (date(19940101) <= lineitem.l_shipdate(i)) &&
+//      (lineitem.l_shipdate(i) < date(19950101))) then
+//    lineitem.l_extendedprice(i) * lineitem.l_discount(i)
 //  else
 //    0
