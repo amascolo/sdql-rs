@@ -4,17 +4,16 @@ use sdql::inference::{Typed, TypedExpr};
 use sdql::ir::expr::Expr;
 use sdql::sdql;
 
+// TODO one liner
 fn e2e(src: &str) {
     let expr = sdql!(src);
     // println!("{expr:#?}");
     let typed: Typed<Spanned<TypedExpr>> = Typed::from(expr);
     // println!("{typed}");
     let fmf = Typed::<Spanned<ExprFMF>>::from(typed);
-    println!("{fmf}");
-    // FIXME
+    // println!("{fmf}");
     let string = String::from(fmf);
     println!("{string}");
-    // TODO one liner
 }
 
 // FIXME

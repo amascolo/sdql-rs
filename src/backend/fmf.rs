@@ -176,6 +176,8 @@ fn from<'src>(
     expr: Typed<'src, Spanned<TypedExpr<'src>>>,
     ctx: &Ctx<'src>,
 ) -> Typed<'src, Spanned<ExprFMF<'src>>> {
+    let r#type = expr.r#type.clone(); // TODO avoid clone
+    let span = expr.val.1;
     expr.map(|spanned| {
         spanned.map(|expr| {
             match expr {
@@ -215,15 +217,20 @@ fn from<'src>(
                     cont: Some(from(then.map(Spanned::unboxed), &ctx).map(Spanned::boxed)),
                     args: ctx.clone(),
                 },
-                TypedExpr::If {
+                expr @ TypedExpr::If {
                     r#if: _,
                     then: _,
                     r#else: Some(_),
                 } if !ctx.is_empty() => {
+                    let inner = Typed {
+                        val: Spanned(expr, span).boxed(),
+                        r#type,
+                    }
+                    .into();
                     ExprFMF::FMF {
                         op: OpFMF::Map,
                         args: ctx.clone(),
-                        inner: todo!(), // TODO whole outer expr node should go here
+                        inner,
                         cont: None,
                     }
                 }
@@ -238,13 +245,19 @@ fn from<'src>(
                         args: ctx.clone(),
                     }
                 }
-                // TODO this should get rid of sum_body in codegen
-                // _ if !ctx.is_empty() => ExprFMF::FMF {
-                //     op: OpFMF::Map,
-                //     args: ctx.clone(),
-                //     inner: todo!(), // TODO whole outer expr node should go here
-                //     cont: None,
-                // },
+                expr if !ctx.is_empty() => {
+                    let inner = Typed {
+                        val: Spanned(expr, span).boxed(),
+                        r#type,
+                    }
+                    .into();
+                    ExprFMF::FMF {
+                        op: OpFMF::Map,
+                        args: ctx.clone(),
+                        inner,
+                        cont: None,
+                    }
+                }
                 // in all other cases - leave as is
                 TypedExpr::Sym { val } => ExprFMF::Sym { val },
                 TypedExpr::Bool { val } => ExprFMF::Bool { val },
@@ -400,21 +413,11 @@ impl<'src> From<ExprFMF<'src>> for TypedExpr<'src> {
             ExprFMF::FMF {
                 op: OpFMF::Map,
                 args: _,
-                inner:
-                    Typed {
-                        val: Spanned(val, _span),
-                        r#type: _,
-                    },
+                inner,
                 cont: None,
-            } if matches!(*val, ExprFMF::If { .. }) => {
-                let ExprFMF::If { r#if, then, r#else } = *val else {
-                    unreachable!()
-                };
-                TypedExpr::If {
-                    r#if: r#if.into(),
-                    then: then.into(),
-                    r#else: r#else.map(|r#else| r#else.into()),
-                }
+            } => {
+                let inner: Typed<Spanned<Box<TypedExpr>>> = inner.into();
+                *inner.val.0
             }
             ExprFMF::FMF {
                 op: OpFMF::Map,
@@ -441,7 +444,7 @@ impl<'src> From<ExprFMF<'src>> for TypedExpr<'src> {
                     cont: cont.into(),
                 }
             }
-            ExprFMF::FMF { .. } => todo!(),
+            expr @ ExprFMF::FMF { .. } => todo!("{expr:?}"),
         }
     }
 }

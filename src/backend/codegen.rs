@@ -3,10 +3,8 @@ use crate::frontend::lexer::Spanned;
 use crate::inference::Typed;
 use crate::ir::expr::BinaryOp;
 use crate::ir::r#type::{DictHint, Type};
-use im_rc::vector;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
-use std::iter::repeat;
 use syn::{
     parse2, parse_quote, BinOp, Error, ExprBinary, ExprField, ExprIndex, ExprRange, Index,
     Member, RangeLimits,
@@ -15,9 +13,6 @@ use syn::{
 impl From<ExprFMF<'_>> for String {
     fn from(expr: ExprFMF<'_>) -> Self {
         let tks: TokenStream = expr.into();
-        println!();
-        println!("{tks}");
-        println!();
         let main_tks = quote! { fn main() { #tks } };
         let ast = parse2(main_tks).unwrap();
         prettyplease::unparse(&ast)
@@ -96,7 +91,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 tks
             }
             ExprFMF::Sum {
-                key,
+                key: _,
                 val: "_",
                 head:
                     Typed {
@@ -112,7 +107,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let expr: syn::Expr = parse2(expr.into()).unwrap();
                 let expr = gen_range(expr);
                 let body = ExprFMF::from(body.map(Spanned::unboxed));
-                let body = sum_body(body, &vector![key]);
+                let body: TokenStream = body.into();
                 quote! { (#expr)#body }
             }
             ExprFMF::FMF {
@@ -129,9 +124,19 @@ impl From<ExprFMF<'_>> for TokenStream {
             } => {
                 let inner: TokenStream = inner.into();
                 let cont = ExprFMF::from(cont.map(Spanned::unboxed));
-                let cont = sum_body(cont, &args);
+                let cont: TokenStream = cont.into();
                 let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
                 quote! {.filter(|#(#args),*| #inner)#cont}
+            }
+            ExprFMF::FMF {
+                op: OpFMF::Map,
+                args,
+                inner,
+                cont: None,
+            } => {
+                let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
+                let inner: TokenStream = inner.into();
+                quote! {.map(|#(#args),*| #inner).sum()}
             }
             ExprFMF::Binary { lhs, op, rhs } => {
                 let lhs = parse2(lhs.into()).unwrap();
@@ -176,51 +181,6 @@ impl From<ExprFMF<'_>> for TokenStream {
             }
             t => todo!("{t:?}"),
         }
-    }
-}
-
-fn sum_body(expr: ExprFMF<'_>, args: &im_rc::Vector<&str>) -> TokenStream {
-    match expr {
-        ExprFMF::Sym { val } => {
-            let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
-            let val = Ident::new(val, Span::call_site());
-            quote! {.map(|#(#args),*| #val).sum()}
-        }
-        ExprFMF::Bool { .. } | ExprFMF::Date { .. } | ExprFMF::String { .. } => unimplemented!(),
-        ExprFMF::Real { val } => {
-            let args = repeat(Ident::new("_", Span::call_site())).take(args.len());
-            quote! {.map(|#(#args),*| #val).sum()}
-        }
-        ExprFMF::Int { val } => {
-            let args = repeat(Ident::new("_", Span::call_site())).take(args.len());
-            quote! {.map(|#(#args),*| #val).sum()}
-        }
-        ExprFMF::Long { val } => {
-            let args = repeat(Ident::new("_", Span::call_site())).take(args.len());
-            quote! {.map(|#(#args),*| #val).sum()}
-        }
-        ExprFMF::Binary { .. } => {
-            let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
-            let ts: TokenStream = expr.into();
-            quote! {.map(|#(#args),*| #ts).sum()}
-        }
-        _ => expr.into(),
-        // ExprFMF::Record { .. } => todo!(),
-        // ExprFMF::Dict { .. } => todo!(),
-        // ExprFMF::Dom { .. } => todo!(),
-        // ExprFMF::Let { .. } => todo!(),
-        // ExprFMF::Unary { .. } => todo!(),
-        // ExprFMF::If { .. } => todo!(),
-        // ExprFMF::Field { .. } => todo!(),
-        // ExprFMF::Get { .. } => todo!(),
-        // ExprFMF::Load { .. } => todo!(),
-        // ExprFMF::Sum { .. } => todo!(),
-        // ExprFMF::Range { .. } => todo!(),
-        // ExprFMF::Concat { .. } => todo!(),
-        // ExprFMF::External { .. } => todo!(),
-        // ExprFMF::Promote { .. } => todo!(),
-        // ExprFMF::Unique { .. } => todo!(),
-        // ExprFMF::FMF { .. } => todo!(),
     }
 }
 
