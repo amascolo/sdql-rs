@@ -17,11 +17,11 @@ fn e2e(src: &str) {
 }
 
 // FIXME
-// #[test]
-// fn tpch_q3() {
-//     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
-//     e2e(src);
-// }
+#[test]
+fn tpch_q3() {
+    let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
+    e2e(src);
+}
 
 #[test]
 fn tpch_q6() {

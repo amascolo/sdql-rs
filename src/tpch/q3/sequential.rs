@@ -14,10 +14,10 @@ pub fn q3(sf: &str) -> Result<TypeQ3, Box<dyn Error>> {
 }
 
 pub fn q3_query(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ3 {
-    let c_h: HashMap<i32, i32> = (0../* size */ customer.8)
+    let c_h: HashMap<i32, Record<(i32,)>> = (0../* size */ customer.8)
         .filter(|&i| /* mktsegment */ customer.6[i] == "BUILDING")
         .fold(HashMap::new(), |mut acc, i| {
-            acc[&/* custkey */ customer.0[i]] += /* custkey */ customer.0[i];
+            acc[&/* custkey */ customer.0[i]] += Record::new((/* custkey */ customer.0[i],));
             acc
         });
 

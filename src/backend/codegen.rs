@@ -211,6 +211,10 @@ impl From<ExprFMF<'_>> for TokenStream {
                     })
                 }
             }
+            ExprFMF::Record { vals } => {
+                let vals = vals.into_iter().map(|rv| TokenStream::from(rv.val));
+                quote! { Record::new((#(#vals),*,)) }
+            }
             t => todo!("{t:?}"),
         }
     }
