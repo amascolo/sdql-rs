@@ -5,7 +5,7 @@ pub const TRUE: Bool = Bool(true);
 pub const FALSE: Bool = Bool(false);
 
 #[derive(Clone, Copy, Debug, Display, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[display("{_0:?}")]
+#[display("{_0}")]
 pub struct Bool(bool);
 
 impl AddAssign for Bool {
