@@ -9,7 +9,7 @@ use sdql::tpch::types::Lineitem;
 use sdql::{date, load};
 
 fn main() {
-    println!("{:?}", q3()); // TODO display
+    println!("{}", q3());
     println!("{}", q6());
 }
 

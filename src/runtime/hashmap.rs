@@ -5,7 +5,7 @@ use std::hash::Hash;
 use std::ops::{AddAssign, Deref, DerefMut, Index, IndexMut};
 
 #[derive(Clone, Debug, Display, Default, PartialEq)]
-#[display("{_0}")]
+#[display("{_0:?}")]
 pub struct HashMap<K, V>(hashbrown::HashMap<K, V>)
 where
     K: Eq + Hash;
