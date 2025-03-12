@@ -32,19 +32,24 @@ pub fn q3_query(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> Ty
             acc
         });
 
-    let l_h: HashMap<Record<(i32, Date, i32)>, OrderedFloat<f64>> = (0../* size */ lineitem.16)
-        .filter(|&i| /* shipdate */ lineitem.10[i] > _19950315)
-        .filter(|&i| o_h.contains_key(&/* orderkey */ lineitem.0[i]))
-        .fold(HashMap::new(), |mut acc, i| {
-            acc[&Record::new((
-                /* orderkey */ lineitem.0[i],
-                o_h[&/* orderkey */ lineitem.0[i]].0,
-                o_h[&/* orderkey */ lineitem.0[i]].1,
-            ))] += /* extendedprice */ lineitem.5[i] * (1.0 - /* discount */ lineitem.6[i]);
-            acc
-        });
+    let l_h: HashMap<Record<(i32, Date, i32)>, Record<(OrderedFloat<f64>,)>> =
+        (0../* size */ lineitem.16)
+            .filter(|&i| /* shipdate */ lineitem.10[i] > _19950315)
+            .filter(|&i| o_h.contains_key(&/* orderkey */ lineitem.0[i]))
+            .fold(HashMap::new(), |mut acc, i| {
+                acc[&Record::new((
+                    /* orderkey */ lineitem.0[i],
+                    o_h[&/* orderkey */ lineitem.0[i]].0,
+                    o_h[&/* orderkey */ lineitem.0[i]].1,
+                ))] += Record::new((
+                    // TODO remove OrderedFloat
+                    /* extendedprice */
+                    OrderedFloat(lineitem.5[i]) * (1.0 - /* discount */ lineitem.6[i]),
+                ));
+                acc
+            });
 
     l_h.into_iter()
-        .map(|(key, val)| (Record::new((key.0, key.1, key.2, val)), 1))
+        .map(|(key, val)| (Record::new((key.0, key.1, key.2, val.0)), 1))
         .collect()
 }
