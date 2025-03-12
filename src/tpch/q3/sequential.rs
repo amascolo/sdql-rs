@@ -1,6 +1,6 @@
 use super::TypeQ3;
 use super::_19950315;
-use crate::runtime::{Date, HashMap, Record};
+use crate::runtime::{Date, HashMap, Record, TRUE};
 use crate::tpch::read::{read_customers, read_lineitems, read_orders};
 use crate::tpch::types::{Customer, Lineitem, Orders};
 use ordered_float::OrderedFloat;
@@ -49,6 +49,6 @@ pub fn q3_query(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> Ty
             });
 
     l_h.into_iter()
-        .map(|(key, val)| (Record::new((key.0, key.1, key.2, val.0)), true))
+        .map(|(key, val)| (Record::new((key.0, key.1, key.2, val.0)), TRUE))
         .collect()
 }

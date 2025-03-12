@@ -78,7 +78,7 @@ fn q3() -> TypeQ3 {
             acc
         });
     todo!()
-    // l_h.iter().fold(TypeQ3::new(), |mut acc: TypeQ3, (k, v)| {
+    // l_h.iter().fold(HashMap::new(), |mut acc: TypeQ3, (k, v)| {
     //     acc[&Record::new((k.0, k.1, k.2, v.0))] += true;
     //     acc
     // })

@@ -1,13 +1,13 @@
+use crate::runtime::{Bool, HashMap};
 use crate::runtime::{Date, Record};
 use crate::utils::round;
-use hashbrown::HashMap;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
 
 pub mod parallel;
 pub mod sequential;
 
-pub type TypeQ3 = HashMap<Record<(i32, Date, i32, OrderedFloat<f64>)>, bool>;
+pub type TypeQ3 = HashMap<Record<(i32, Date, i32, OrderedFloat<f64>)>, Bool>;
 
 const _19950315: Date = crate::date!(19950315);
 
@@ -21,7 +21,7 @@ pub fn format_q3_result(result: &TypeQ3) -> String {
                 key.1,
                 key.2,
                 round(key.3, 4),
-                *val as i32,
+                (**val) as i32,
             )
         })
         .sorted()
