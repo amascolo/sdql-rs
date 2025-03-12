@@ -1,14 +1,29 @@
-use derive_more::Display;
 use hashbrown::hash_map::rayon::IntoParIter;
 use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelIterator};
+use std::fmt;
 use std::hash::Hash;
 use std::ops::{AddAssign, Deref, DerefMut, Index, IndexMut};
 
-#[derive(Clone, Debug, Display, Default, PartialEq)]
-#[display("{_0:?}")]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct HashMap<K, V>(hashbrown::HashMap<K, V>)
 where
     K: Eq + Hash;
+
+impl<K, V> fmt::Display for HashMap<K, V>
+where
+    K: fmt::Display + Ord + Eq + Hash,
+    V: fmt::Display + Ord,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut entries: Vec<_> = self.iter().collect();
+        entries.sort();
+        let entries: Vec<_> = self
+            .iter()
+            .map(|(k, v)| format!("{} -> {}", k, v))
+            .collect();
+        write!(f, "{{\n    {}\n}}", entries.join(",\n    "))
+    }
+}
 
 impl<K, V> HashMap<K, V>
 where
@@ -133,8 +148,6 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test() {
         let mut map: HashMap<(), u8> = HashMap::new();

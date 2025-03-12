@@ -1,9 +1,21 @@
-use derive_more::Display;
+use std::fmt;
 use std::ops::{AddAssign, Deref};
 
-#[derive(Clone, Copy, Debug, Display, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[display("{_0:?}")]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Record<T: IsTuple>(T);
+
+// TODO should print record names too
+// TODO display inner tuple types, not debug
+impl<T> fmt::Display for Record<T>
+where
+    T: IsTuple + fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let tuple = format!("{:?}", self.0);
+        let angled = format!("<{}>", &tuple[1..tuple.len() - 1]);
+        write!(f, "{angled}")
+    }
+}
 
 impl<T> Record<T>
 where

@@ -1,16 +1,27 @@
 use crate::date;
-use derive_more::Display;
+use std::fmt;
 use std::ops::AddAssign;
 use time::format_description::well_known::Iso8601;
 use time::Month;
 
-#[derive(Clone, Copy, Debug, Display, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[display("{_0:?}")]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Date(time::Date);
 
 impl Date {
     pub const fn new(date: time::Date) -> Self {
         Date(date)
+    }
+}
+
+impl fmt::Display for Date {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0.format(&Iso8601::DATE).unwrap())
+    }
+}
+// TODO Debug only needed until we have Record::Display
+impl fmt::Debug for Date {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self)
     }
 }
 
