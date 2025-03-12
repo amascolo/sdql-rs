@@ -73,6 +73,6 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
     // .unwrap_or_default();
 
     l_h.into_par_iter()
-        .map(|(key, val)| (Record::new((key.0, key.1, key.2, val)), 1))
+        .map(|(key, val)| (Record::new((key.0, key.1, key.2, val)), true))
         .collect()
 }

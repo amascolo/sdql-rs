@@ -49,6 +49,6 @@ pub fn q3_query(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> Ty
             });
 
     l_h.into_iter()
-        .map(|(key, val)| (Record::new((key.0, key.1, key.2, val.0)), 1))
+        .map(|(key, val)| (Record::new((key.0, key.1, key.2, val.0)), true))
         .collect()
 }

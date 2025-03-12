@@ -50,14 +50,14 @@ impl From<ExprFMF<'_>> for TokenStream {
             }
             ExprFMF::Int { val } => quote! { #val },
             ExprFMF::Long { val } => quote! { #val },
-            ExprFMF::Real { val } => quote! { #val },
+            ExprFMF::Real { val } => quote! { OrderedFloat(#val) },
             ExprFMF::String { val, max_len: None } => quote! { #val },
             ExprFMF::String {
                 val: _,
                 max_len: Some(_),
             } => todo!(),
             ExprFMF::Let { lhs, rhs, cont } => {
-                let lhs_ident = syn::Ident::new(lhs, Span::call_site());
+                let lhs_ident = Ident::new(lhs, Span::call_site());
                 let lhs_tks = quote! { #lhs_ident };
                 let rhs_tks: TokenStream = rhs.into();
                 let let_tks = quote! { let #lhs_tks = #rhs_tks };
@@ -108,6 +108,31 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let body = ExprFMF::from(body.map(Spanned::unboxed));
                 let body: TokenStream = body.into();
                 quote! { (#expr)#body }
+            }
+            ExprFMF::Sum {
+                key: _,
+                val: _,
+                head,
+                body,
+            } => {
+                let head: TokenStream = head.into();
+                let body: TokenStream = body.into();
+                quote! { #head.iter()#body }
+            }
+            ExprFMF::Concat { lhs, rhs } => {
+                let lhs_len = match lhs.r#type {
+                    Type::Record(ref vals) => vals.len(),
+                    _ => panic!(),
+                };
+                let rhs_len = match rhs.r#type {
+                    Type::Record(ref vals) => vals.len(),
+                    _ => panic!(),
+                };
+                let lhs: TokenStream = lhs.into();
+                let rhs: TokenStream = rhs.into();
+                let lhs = (0..lhs_len).map(Index::from).map(|i| quote! { #lhs.#i });
+                let rhs = (0..rhs_len).map(Index::from).map(|i| quote! { #rhs.#i });
+                quote! { Record::new(#(#lhs),*, #(#rhs),*) }
             }
             ExprFMF::FMF {
                 op: OpFMF::Filter,
@@ -266,7 +291,7 @@ impl From<Type<'_>> for syn::Type {
             Type::Date => parse_quote!(Date),
             Type::Int => parse_quote!(i32),
             Type::Long => parse_quote!(i64),
-            Type::Real => parse_quote!(f64),
+            Type::Real => parse_quote!(OrderedFloat<f64>),
             Type::String { max_len: None } => parse_quote!(String),
             Type::String {
                 max_len: Some(_max_len),

@@ -206,7 +206,22 @@ fn from<'src>(
                         body,
                     }
                 }
-                TypedExpr::Sum { .. } => todo!(),
+                TypedExpr::Sum {
+                    key,
+                    val,
+                    head,
+                    body,
+                } => {
+                    let ctx = ctx + &vector![key, val];
+                    let head = head.into();
+                    let body = from(body.map(Spanned::unboxed), &ctx).map(Spanned::boxed);
+                    ExprFMF::Sum {
+                        key,
+                        val,
+                        head,
+                        body,
+                    }
+                }
                 TypedExpr::If {
                     r#if,
                     then,
