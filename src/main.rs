@@ -13,28 +13,6 @@ fn main() {
     println!("{}", q6());
 }
 
-fn q6() -> TypeQ6 {
-    let lineitem: Lineitem = load!(
-        l_orderkey : i32, l_partkey : i32, l_suppkey : i32, l_linenumber : i32,
-        l_quantity : OrderedFloat < f64 >, l_extendedprice : OrderedFloat < f64 >,
-        l_discount : OrderedFloat < f64 >, l_tax : OrderedFloat < f64 >, l_returnflag :
-        String, l_linestatus : String, l_shipdate : Date, l_commitdate : Date,
-        l_receiptdate : Date, l_shipinstruct : String, l_shipmode : String, l_comment :
-        String
-    )("datasets/tpch_datasets/SF_0.01/lineitem.tbl")
-    .unwrap();
-    (0..lineitem.16)
-        .filter(|&i| {
-            OrderedFloat(0.05f64) <= lineitem.6[i]
-                && lineitem.6[i] <= OrderedFloat(0.07f64)
-                && lineitem.4[i] < OrderedFloat(24.0f64)
-                && date!(19940101) <= lineitem.10[i]
-                && lineitem.10[i] < date!(19950101)
-        })
-        .map(|i| lineitem.5[i] * lineitem.6[i])
-        .sum()
-}
-
 fn q3() -> TypeQ3 {
     let customer = load!(
         c_custkey : i32, c_name : String, c_address : String, c_nationkey : i32, c_phone
@@ -80,4 +58,26 @@ fn q3() -> TypeQ3 {
         acc[&Record::new((k.0, k.1, k.2, v.0))] += TRUE;
         acc
     })
+}
+
+fn q6() -> TypeQ6 {
+    let lineitem: Lineitem = load!(
+        l_orderkey : i32, l_partkey : i32, l_suppkey : i32, l_linenumber : i32,
+        l_quantity : OrderedFloat < f64 >, l_extendedprice : OrderedFloat < f64 >,
+        l_discount : OrderedFloat < f64 >, l_tax : OrderedFloat < f64 >, l_returnflag :
+        String, l_linestatus : String, l_shipdate : Date, l_commitdate : Date,
+        l_receiptdate : Date, l_shipinstruct : String, l_shipmode : String, l_comment :
+        String
+    )("datasets/tpch_datasets/SF_0.01/lineitem.tbl")
+    .unwrap();
+    (0..lineitem.16)
+        .filter(|&i| {
+            OrderedFloat(0.05f64) <= lineitem.6[i]
+                && lineitem.6[i] <= OrderedFloat(0.07f64)
+                && lineitem.4[i] < OrderedFloat(24.0f64)
+                && date!(19940101) <= lineitem.10[i]
+                && lineitem.10[i] < date!(19950101)
+        })
+        .map(|i| lineitem.5[i] * lineitem.6[i])
+        .sum()
 }
