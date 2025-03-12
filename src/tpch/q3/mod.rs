@@ -7,7 +7,7 @@ use ordered_float::OrderedFloat;
 pub mod parallel;
 pub mod sequential;
 
-type TypeQ3 = HashMap<Record<(i32, Date, i32, OrderedFloat<f64>)>, bool>;
+pub type TypeQ3 = HashMap<Record<(i32, Date, i32, OrderedFloat<f64>)>, bool>;
 
 const _19950315: Date = crate::date!(19950315);
 

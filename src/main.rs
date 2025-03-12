@@ -1,92 +1,85 @@
-use prettyplease::unparse;
-use proc_macro2::{Span, TokenStream};
-use quote::quote;
-use syn::{parse2, parse_quote, Ident};
+#![feature(stmt_expr_attributes)]
 
-fn generate_ast(type_name: &str, field_types: &[syn::Type]) -> TokenStream {
-    let type_ident = Ident::new(type_name, Span::call_site());
-
-    let field_definitions = field_types.iter().map(|ty| {
-        quote! {
-            Vec<#ty>,
-        }
-    });
-
-    quote! {
-        pub type #type_ident = (
-            #(#field_definitions)*
-            usize,
-        );
-    }
-}
-
-fn gen_read_fn(function_name: &str, fields: &[(&str, syn::Type)]) -> TokenStream {
-    let field_tokens = fields.iter().enumerate().map(|(idx, (name, ty))| {
-        quote! { (#idx, #name, #ty) }
-    });
-    quote! {
-        gen_read_fn!(
-            #function_name,
-            #(#field_tokens),*
-        );
-    }
-}
+use ordered_float::OrderedFloat;
+use sdql::runtime::Date;
+use sdql::runtime::{HashMap, Record};
+use sdql::tpch::q3::TypeQ3;
+use sdql::tpch::q6::TypeQ6;
+use sdql::tpch::types::Lineitem;
+use sdql::{date, load};
 
 fn main() {
-    let customer = [
-        ("custkey", parse_quote!(i32)),
-        ("name", parse_quote!(String)),
-        ("address", parse_quote!(String)),
-        ("nationkey", parse_quote!(i32)),
-        ("phone", parse_quote!(String)),
-        ("acctbal", parse_quote!(f64)),
-        ("mktsegment", parse_quote!(String)),
-        ("comment", parse_quote!(String)),
-    ];
-    let orders = [
-        ("orderkey", parse_quote!(i32)),
-        ("custkey", parse_quote!(i32)),
-        ("orderstatus", parse_quote!(String)),
-        ("totalprice", parse_quote!(f64)),
-        ("orderdate", parse_quote!(i32)),
-        ("orderpriority", parse_quote!(String)),
-        ("clerk", parse_quote!(String)),
-        ("shippriority", parse_quote!(i32)),
-        ("comment", parse_quote!(String)),
-    ];
-    let lineitem = [
-        ("orderkey", parse_quote!(i32)),
-        ("partkey", parse_quote!(i32)),
-        ("suppkey", parse_quote!(i32)),
-        ("linenumber", parse_quote!(i32)),
-        ("quantity", parse_quote!(f64)),
-        ("extendedprice", parse_quote!(f64)),
-        ("discount", parse_quote!(f64)),
-        ("tax", parse_quote!(f64)),
-        ("returnflag", parse_quote!(String)),
-        ("linestatus", parse_quote!(String)),
-        ("shipdate", parse_quote!(Date)),
-        ("commitdate", parse_quote!(Date)),
-        ("receiptdate", parse_quote!(Date)),
-        ("shipinstruct", parse_quote!(String)),
-        ("shipmode", parse_quote!(String)),
-        ("comment", parse_quote!(String)),
-    ];
-    let tables: &[&[(&str, syn::Type)]] = &[&customer, &orders, &lineitem];
+    // println!("{}", q3()); // TODO
+    println!("{}", q6());
+}
 
-    for fields in tables {
-        {
-            let field_types: Vec<_> = fields.iter().map(|(_, ty)| ty).cloned().collect();
-            let ast = generate_ast("Customer", &field_types);
-            let syntax_tree = parse2(ast).unwrap();
-            let formatted_code = unparse(&syntax_tree);
-            println!("{formatted_code}");
-        }
-        {
-            let ast = gen_read_fn("read_customers", &fields);
-            let syntax_tree = parse2(ast).unwrap();
-            let formatted_code = unparse(&syntax_tree);
-            println!("{formatted_code}");
-        }
-    }
+fn q6() -> TypeQ6 {
+    let lineitem: Lineitem = load!(
+        l_orderkey : i32, l_partkey : i32, l_suppkey : i32, l_linenumber : i32,
+        l_quantity : OrderedFloat < f64 >, l_extendedprice : OrderedFloat < f64 >,
+        l_discount : OrderedFloat < f64 >, l_tax : OrderedFloat < f64 >, l_returnflag :
+        String, l_linestatus : String, l_shipdate : Date, l_commitdate : Date,
+        l_receiptdate : Date, l_shipinstruct : String, l_shipmode : String, l_comment :
+        String
+    )("datasets/tpch_datasets/SF_0.01/lineitem.tbl")
+    .unwrap();
+    (0..lineitem.16)
+        .filter(|&i| {
+            OrderedFloat(0.05f64) <= lineitem.6[i]
+                && lineitem.6[i] <= OrderedFloat(0.07f64)
+                && lineitem.4[i] < OrderedFloat(24.0f64)
+                && date!(19940101) <= lineitem.10[i]
+                && lineitem.10[i] < date!(19950101)
+        })
+        .map(|i| lineitem.5[i] * lineitem.6[i])
+        .sum()
+}
+
+#[allow(dead_code, unused_variables)] // TODO
+fn q3() -> TypeQ3 {
+    let customer = load!(
+        c_custkey : i32, c_name : String, c_address : String, c_nationkey : i32, c_phone
+        : String, c_acctbal : OrderedFloat < f64 >, c_mktsegment : String, c_comment :
+        String
+    )("datasets/tpch/customer.tbl")
+    .unwrap();
+    let orders = load!(
+        o_orderkey : i32, o_custkey : i32, o_orderstatus : String, o_totalprice :
+        OrderedFloat < f64 >, o_orderdate : Date, o_orderpriority : String, o_clerk :
+        String, o_shippriority : i32, o_comment : String
+    )("datasets/tpch/orders.tbl")
+    .unwrap();
+    let lineitem = load!(
+        l_orderkey : i32, l_partkey : i32, l_suppkey : i32, l_linenumber : i32,
+        l_quantity : OrderedFloat < f64 >, l_extendedprice : OrderedFloat < f64 >,
+        l_discount : OrderedFloat < f64 >, l_tax : OrderedFloat < f64 >, l_returnflag :
+        String, l_linestatus : String, l_shipdate : Date, l_commitdate : Date,
+        l_receiptdate : Date, l_shipinstruct : String, l_shipmode : String, l_comment :
+        String
+    )("datasets/tpch/lineitem.tbl")
+    .unwrap();
+    let c_h: HashMap<i32, Record<(i32,)>> = (0..customer.8)
+        .filter(|&i| customer.6[i] == "BUILDING")
+        .fold(HashMap::new(), |mut acc, i| {
+            acc[&customer.0[i]] += Record::new((customer.0[i],));
+            acc
+        });
+    let o_h: HashMap<i32, Record<(Date, i32)>> = (0..orders.9)
+        .filter(|&i| orders.4[i] < date!(19950315) && c_h.contains_key(&orders.1[i]))
+        .fold(HashMap::new(), |mut acc, i| {
+            acc[&orders.0[i]] += Record::new((orders.4[i], orders.7[i]));
+            acc
+        });
+    let l_h: HashMap<Record<(i32, Date, i32)>, Record<(OrderedFloat<f64>,)>> = (0..lineitem.16)
+        .filter(|&i| date!(19950315) < lineitem.10[i] && o_h.contains_key(&lineitem.0[i]))
+        .fold(HashMap::new(), |mut acc, i| {
+            acc[&Record::new((lineitem.0[i], o_h[&lineitem.0[i]].0, o_h[&lineitem.0[i]].1))] +=
+                Record::new((lineitem.5[i] * (OrderedFloat(1f64) - lineitem.6[i]),));
+            acc
+        });
+    todo!()
+    // l_h.iter().fold(TypeQ3::new(), |mut acc: TypeQ3, (k, v)| {
+    //     acc[&Record::new((k.0, k.1, k.2, v.0))] += true;
+    //     acc
+    // })
 }
