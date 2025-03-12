@@ -472,6 +472,15 @@ impl<'src> From<ExprFMF<'src>> for TypedExpr<'src> {
                     cont: cont.into(),
                 }
             }
+            ExprFMF::FMF {
+                op: OpFMF::Fold,
+                args: _,
+                inner,
+                cont: None,
+            } => {
+                let inner: Typed<Spanned<Box<TypedExpr>>> = inner.into();
+                *inner.val.0
+            }
             expr @ ExprFMF::FMF { .. } => todo!("{expr:?}"),
         }
     }
@@ -498,14 +507,13 @@ mod tests {
     use crate::ir::expr::Expr;
     use crate::sdql;
 
-    // FIXME
-    // #[test]
-    // fn tpch_q3() {
-    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
-    //     let typed = Typed::from(sdql!(src));
-    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
-    //     assert_eq!(Typed::from(fmf), typed);
-    // }
+    #[test]
+    fn tpch_q3() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
 
     #[test]
     fn tpch_q6() {
