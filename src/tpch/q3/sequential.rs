@@ -42,9 +42,8 @@ pub fn q3_query(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> Ty
                     o_h[&/* orderkey */ lineitem.0[i]].0,
                     o_h[&/* orderkey */ lineitem.0[i]].1,
                 ))] += Record::new((
-                    // TODO remove OrderedFloat
                     /* extendedprice */
-                    OrderedFloat(lineitem.5[i]) * (1.0 - /* discount */ lineitem.6[i]),
+                    lineitem.5[i] * (OrderedFloat(1.0) - /* discount */ lineitem.6[i]),
                 ));
                 acc
             });

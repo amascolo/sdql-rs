@@ -64,7 +64,7 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
                     /* orderkey */ lineitem.0[i],
                     o_h[&/* orderkey */ lineitem.0[i]].0,
                     o_h[&/* orderkey */ lineitem.0[i]].1,
-                ))] += /* extendedprice */ lineitem.5[i] * (1.0 - /* discount */ lineitem.6[i]);
+                ))] += /* extendedprice */ lineitem.5[i] * (OrderedFloat(1.0) - /* discount */ lineitem.6[i]);
             acc
         })
         .reduce(HashMap::new, HashMap::sum);

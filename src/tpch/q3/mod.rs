@@ -20,7 +20,7 @@ pub fn format_q3_result(result: &TypeQ3) -> String {
                 key.0,
                 key.1,
                 key.2,
-                round(*key.3, 4),
+                round(key.3, 4),
                 val
             )
         })

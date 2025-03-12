@@ -1,6 +1,7 @@
 use crate::load;
 use crate::runtime::Date;
 use crate::tpch::types::{Customer, Lineitem, Orders};
+use ordered_float::OrderedFloat;
 
 pub fn read_customers() -> fn(&str) -> Result<Customer, Box<dyn std::error::Error>> {
     load!(
@@ -9,7 +10,7 @@ pub fn read_customers() -> fn(&str) -> Result<Customer, Box<dyn std::error::Erro
         address: String,
         nationkey: i32,
         phone: String,
-        acctbal: f64,
+        acctbal: OrderedFloat<f64>,
         mktsegment: String,
         comment: String
     )
@@ -20,7 +21,7 @@ pub fn read_orders() -> fn(&str) -> Result<Orders, Box<dyn std::error::Error>> {
         orderkey: i32,
         custkey: i32,
         orderstatus: String,
-        totalprice: f64,
+        totalprice: OrderedFloat<f64>,
         orderdate: Date,
         orderpriority: String,
         clerk: String,
@@ -35,10 +36,10 @@ pub fn read_lineitems() -> fn(&str) -> Result<Lineitem, Box<dyn std::error::Erro
         partkey: i32,
         suppkey: i32,
         linenumber: i32,
-        quantity: f64,
-        extendedprice: f64,
-        discount: f64,
-        tax: f64,
+        quantity: OrderedFloat<f64>,
+        extendedprice: OrderedFloat<f64>,
+        discount: OrderedFloat<f64>,
+        tax: OrderedFloat<f64>,
         returnflag: String,
         linestatus: String,
         shipdate: Date,

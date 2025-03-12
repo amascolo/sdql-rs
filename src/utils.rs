@@ -1,4 +1,6 @@
-pub fn round(f: f64, n: u32) -> f64 {
+use ordered_float::OrderedFloat;
+
+pub fn round(f: OrderedFloat<f64>, n: u32) -> OrderedFloat<f64> {
     let factor = 10_f64.powi(n as i32);
-    (f * factor).round() / factor
+    OrderedFloat((f * factor).round() / factor)
 }
