@@ -20,3 +20,10 @@ fn tpch_q6() {
     let _rs = rs!(src);
     // println!("{_rs}");
 }
+
+#[test]
+fn tpch_q18() {
+    let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q18.sdql"));
+    let _rs = rs!(src);
+    // println!("{_rs}");
+}
