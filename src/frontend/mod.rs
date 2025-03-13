@@ -9,10 +9,10 @@ use parser::expr_parser;
 #[macro_export]
 macro_rules! rs {
     ($src:expr) => {{
-        use sdql::backend::fmf::ExprFMF;
-        use sdql::frontend::lexer::Spanned;
-        use sdql::inference::{Typed, TypedExpr};
-        use sdql::ir::expr::Expr;
+        use $crate::backend::fmf::ExprFMF;
+        use $crate::frontend::lexer::Spanned;
+        use $crate::inference::{Typed, TypedExpr};
+        use $crate::ir::expr::Expr;
 
         let src: &str = $src;
         let expr = Spanned::<Expr>::try_from(src).unwrap();

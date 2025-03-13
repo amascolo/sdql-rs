@@ -339,27 +339,14 @@ impl From<BinaryOp> for BinOp {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::backend::fmf::ExprFMF;
-    use crate::frontend::lexer::Spanned;
-    use crate::inference::{Typed, TypedExpr};
-    use crate::ir::expr::Expr;
-    use proc_macro2::TokenStream;
+    use crate::rs;
 
     const LOAD: &str = "load[<l_orderkey: @vec {int -> int}, l_partkey: @vec {int -> int}, l_suppkey: @vec {int -> int}, l_linenumber: @vec {int -> int}, l_quantity: @vec {int -> real}, l_extendedprice: @vec {int -> real}, l_discount: @vec {int -> real}, l_tax: @vec {int -> real}, l_returnflag: @vec {int -> varchar(1)}, l_linestatus: @vec {int -> varchar(1)}, l_shipdate: @vec {int -> date}, l_commitdate: @vec {int -> date}, l_receiptdate: @vec {int -> date}, l_shipinstruct: @vec {int -> varchar(25)}, l_shipmode: @vec {int -> varchar(10)}, l_comment: @vec {int -> varchar(44)}, size: int>](\"datasets/tpch_datasets/SF_0.01/lineitem.tbl\")";
 
     #[test]
     fn test_load() {
         let src: &str = &format!("let _ = {LOAD} in 0");
-        let expr = Spanned::<Expr>::try_from(src).unwrap();
-        let t: Typed<Spanned<TypedExpr>> = expr.into();
-        let fmf: Typed<Spanned<ExprFMF>> = t.into();
-        let tks: TokenStream = fmf.into();
-        // println!("{tks}");
-        let main_tks = quote! { fn main() { #tks } };
-        let ast = parse2(main_tks).unwrap();
-        // println!("{ast:#?}");
-        let s = prettyplease::unparse(&ast);
-        println!("{s}");
+        let _rs = rs!(src);
+        // println!("{_rs}");
     }
 }

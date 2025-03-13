@@ -148,6 +148,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn test() {
         let mut map: HashMap<(), u8> = HashMap::new();
