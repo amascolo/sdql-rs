@@ -8,9 +8,66 @@ use sdql::tpch::q6::TypeQ6;
 use sdql::{date, load};
 
 fn main() {
+    // println!("{}", q1());
     println!("{}", q3());
     println!("{}", q6());
 }
+
+// FIXME needs support for varchar
+// use sdql::runtime::Bool;
+// type TypeQ1 = HashMap<
+//     Record<(
+//         String,
+//         String,
+//         OrderedFloat<f64>,
+//         OrderedFloat<f64>,
+//         OrderedFloat<f64>,
+//         OrderedFloat<f64>,
+//         i32,
+//     )>,
+//     Bool,
+// >;
+//
+// fn q1() -> TypeQ1 {
+//     let lineitem = load!(
+//         l_orderkey : i32, l_partkey : i32, l_suppkey : i32, l_linenumber : i32,
+//         l_quantity : OrderedFloat < f64 >, l_extendedprice : OrderedFloat < f64 >,
+//         l_discount : OrderedFloat < f64 >, l_tax : OrderedFloat < f64 >, l_returnflag :
+//         String, l_linestatus : String, l_shipdate : Date, l_commitdate : Date,
+//         l_receiptdate : Date, l_shipinstruct : String, l_shipmode : String, l_comment :
+//         String
+//     )("datasets/tpch/lineitem.tbl")
+//     .unwrap();
+//     let l_h: HashMap<
+//         Record<(String, String)>,
+//         Record<(
+//             OrderedFloat<f64>,
+//             OrderedFloat<f64>,
+//             OrderedFloat<f64>,
+//             OrderedFloat<f64>,
+//             i32,
+//         )>,
+//     > = (0..lineitem.16)
+//         .filter(|&i| lineitem.10[i] <= date!(19980902))
+//         .fold(HashMap::new(), |mut acc, i| {
+//             todo!()
+//             // acc[&Record::new((lineitem.8[i], lineitem.9[i]))] += Record::new((
+//             //     lineitem.4[i],
+//             //     lineitem.5[i],
+//             //     lineitem.5[i] * (OrderedFloat(1f64) - lineitem.6[i]),
+//             //     lineitem.5[i]
+//             //         * (OrderedFloat(1f64) - lineitem.6[i])
+//             //         * (OrderedFloat(1f64) + lineitem.7[i]),
+//             //     1i32,
+//             // ));
+//             // acc
+//         });
+//     l_h.iter().fold(HashMap::new(), |mut acc, (k, v)| {
+//         todo!()
+//         // acc[&Record::new((k.0, k.1, v.0, v.1, v.2, v.3, v.4))] += TRUE;
+//         // acc
+//     })
+// }
 
 fn q3() -> TypeQ3 {
     let customer = load!(
