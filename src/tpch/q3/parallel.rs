@@ -2,6 +2,7 @@ use super::{TypeQ3, _19950315};
 use crate::runtime::{Date, HashMap, Record, TRUE};
 use crate::tpch::read::{read_customers, read_lineitems, read_orders};
 use crate::tpch::types::{Customer, Lineitem, Orders};
+use arrayvec::ArrayString;
 use ordered_float::OrderedFloat;
 use rayon::prelude::*;
 use std::error::Error;
@@ -16,7 +17,7 @@ pub fn q3_rayon(sf: &str) -> Result<TypeQ3, Box<dyn Error>> {
 pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ3 {
     let c_h: HashMap<i32, i32> = (0../* size */ customer.8)
         .into_par_iter()
-        .filter(|&i| /* mktsegment */ customer.6[i] == "BUILDING")
+        .filter(|&i| /* mktsegment */ customer.6[i] == ArrayString::from("BUILDING").unwrap())
         .fold(HashMap::new, |mut acc, i| {
             acc[/* custkey */ &customer.0[i]] += /* custkey */ customer.0[i];
             acc

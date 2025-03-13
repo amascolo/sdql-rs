@@ -3,6 +3,7 @@ use super::_19950315;
 use crate::runtime::{Date, HashMap, Record, TRUE};
 use crate::tpch::read::{read_customers, read_lineitems, read_orders};
 use crate::tpch::types::{Customer, Lineitem, Orders};
+use arrayvec::ArrayString;
 use ordered_float::OrderedFloat;
 use std::error::Error;
 
@@ -15,7 +16,7 @@ pub fn q3(sf: &str) -> Result<TypeQ3, Box<dyn Error>> {
 
 pub fn q3_query(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ3 {
     let c_h: HashMap<i32, Record<(i32,)>> = (0../* size */ customer.8)
-        .filter(|&i| /* mktsegment */ customer.6[i] == "BUILDING")
+        .filter(|&i| /* mktsegment */ customer.6[i] == ArrayString::from("BUILDING").unwrap())
         .fold(HashMap::new(), |mut acc, i| {
             acc[&/* custkey */ customer.0[i]] += Record::new((/* custkey */ customer.0[i],));
             acc
