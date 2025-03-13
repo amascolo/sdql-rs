@@ -6,7 +6,8 @@ use crate::ir::r#type::{DictHint, Type};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
-    parse2, parse_quote, BinOp, Error, ExprBinary, ExprField, ExprRange, Index, Member, RangeLimits,
+    parse2, parse_quote, BinOp, Error, ExprBinary, ExprField, ExprRange, Index, LitInt,
+    Member, RangeLimits,
 };
 
 impl From<ExprFMF<'_>> for String {
@@ -57,9 +58,9 @@ impl From<ExprFMF<'_>> for TokenStream {
             ExprFMF::Real { val } => quote! { OrderedFloat(#val) },
             ExprFMF::String { val, max_len: None } => quote! { #val },
             ExprFMF::String {
-                val: _,
-                max_len: Some(_),
-            } => todo!(),
+                val,
+                max_len: Some(max_len),
+            } => quote! { ArrayString::<#max_len>::from(#val).unwrap() },
             ExprFMF::Let { lhs, rhs, cont } => {
                 let lhs_ident = Ident::new(lhs, Span::call_site());
                 let lhs_tks = quote! { #lhs_ident };
@@ -298,8 +299,11 @@ impl From<Type<'_>> for syn::Type {
             Type::Real => parse_quote!(OrderedFloat<f64>),
             Type::String { max_len: None } => parse_quote!(String),
             Type::String {
-                max_len: Some(_max_len),
-            } => parse_quote!(String), // TODO
+                max_len: Some(max_len),
+            } => {
+                let max_len = LitInt::new(&max_len.to_string(), Span::call_site());
+                parse_quote!(ArrayString<#max_len>)
+            }
             Type::Record(_) => parse_quote!(Record),
             Type::Dict { hint, .. } => to_type(hint),
         }

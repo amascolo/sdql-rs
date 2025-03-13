@@ -8,7 +8,7 @@ let l_h =
 
 let orderkeys =
   sum(<l_orderkey,l_quantity> <- l_h)
-    if(300 < l_quantity) then
+    if(300.0 < l_quantity) then
       { unique(l_orderkey) -> 1 }
 
 let custkey_to_name =
