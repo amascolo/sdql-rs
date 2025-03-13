@@ -5,7 +5,7 @@ use time::format_description::well_known::Iso8601;
 use time::Month;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Date(time::Date);
+pub struct Date(pub time::Date);
 
 impl Date {
     pub const fn new(date: time::Date) -> Self {

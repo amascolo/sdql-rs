@@ -5,7 +5,6 @@ use sdql::runtime::{Date, TRUE};
 use sdql::runtime::{HashMap, Record};
 use sdql::tpch::q3::TypeQ3;
 use sdql::tpch::q6::TypeQ6;
-use sdql::tpch::types::Lineitem;
 use sdql::{date, load};
 
 fn main() {
@@ -61,7 +60,7 @@ fn q3() -> TypeQ3 {
 }
 
 fn q6() -> TypeQ6 {
-    let lineitem: Lineitem = load!(
+    let lineitem = load!(
         l_orderkey : i32, l_partkey : i32, l_suppkey : i32, l_linenumber : i32,
         l_quantity : OrderedFloat < f64 >, l_extendedprice : OrderedFloat < f64 >,
         l_discount : OrderedFloat < f64 >, l_tax : OrderedFloat < f64 >, l_returnflag :
@@ -74,7 +73,7 @@ fn q6() -> TypeQ6 {
         .filter(|&i| {
             OrderedFloat(0.05f64) <= lineitem.6[i]
                 && lineitem.6[i] <= OrderedFloat(0.07f64)
-                && lineitem.4[i] < OrderedFloat(24.0f64)
+                && lineitem.4[i] < OrderedFloat(24f64)
                 && date!(19940101) <= lineitem.10[i]
                 && lineitem.10[i] < date!(19950101)
         })

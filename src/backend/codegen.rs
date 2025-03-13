@@ -44,10 +44,14 @@ impl From<ExprFMF<'_>> for TokenStream {
                 quote!(#ident)
             }
             ExprFMF::Bool { val } => quote! { #val },
-            ExprFMF::Date { val } => {
-                let val = val.to_string();
-                quote!(date!(#val))
-            }
+            ExprFMF::Date { val } => format!(
+                "date!({:04}{:02}{:02})",
+                val.0.year(),
+                val.0.month() as u8,
+                val.0.day()
+            )
+            .parse()
+            .unwrap(),
             ExprFMF::Int { val } => quote! { #val },
             ExprFMF::Long { val } => quote! { #val },
             ExprFMF::Real { val } => quote! { OrderedFloat(#val) },
@@ -85,8 +89,8 @@ impl From<ExprFMF<'_>> for TokenStream {
                     })
                     .collect();
                 let load = try_gen_load(&tables).unwrap();
-                let tks = quote! { #load(#path) };
-                debug_assert!(matches!(parse2(tks.clone()), Ok(syn::Expr::Call(_))));
+                let tks = quote! { #load(#path).unwrap() };
+                debug_assert!(matches!(parse2(tks.clone()), Ok(syn::Expr::MethodCall(_))));
                 tks
             }
             ExprFMF::Sum {
@@ -150,7 +154,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let cont = ExprFMF::from(cont.map(Spanned::unboxed));
                 let cont: TokenStream = cont.into();
                 let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
-                quote! {.filter(|#(#args),*| #inner)#cont}
+                quote! {.filter(|#(&#args),*| #inner)#cont}
             }
             ExprFMF::FMF {
                 op: OpFMF::Map,
