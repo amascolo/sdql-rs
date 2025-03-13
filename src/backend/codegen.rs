@@ -207,7 +207,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 };
                 let lhs: TokenStream = expr.into();
                 let rhs: TokenStream = rhs.into();
-                quote! { #lhs.contains_key(#rhs) }
+                quote! { #lhs.contains_key(&#rhs) }
             }
             ExprFMF::Get { lhs, rhs } => match lhs.r#type {
                 Type::Record(_) => match *rhs.val.0 {

@@ -10,6 +10,7 @@ use sdql::{date, load};
 fn main() {
     // println!("{}", q1());
     println!("{}", q3());
+    // println!("{}", q5());
     println!("{}", q6());
 }
 
@@ -115,6 +116,9 @@ fn q3() -> TypeQ3 {
         acc
     })
 }
+
+// use sdql::runtime::Bool;
+// type TypeQ5 = HashMap<Record<(i32, OrderedFloat<f64>)>, Bool>;
 
 fn q6() -> TypeQ6 {
     let lineitem = load!(
