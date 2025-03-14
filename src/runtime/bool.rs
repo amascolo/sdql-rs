@@ -1,8 +1,8 @@
 use derive_more::Display;
 use std::ops::{AddAssign, Deref};
 
-pub const TRUE: Bool = Bool(true);
 pub const FALSE: Bool = Bool(false);
+pub const TRUE: Bool = Bool(true);
 
 #[derive(Clone, Copy, Debug, Display, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[display("{_0}")]

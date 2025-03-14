@@ -1,29 +1,28 @@
-use crate::runtime::Date;
-use arrayvec::ArrayString;
+use crate::runtime::{Date, VarChar};
 use ordered_float::OrderedFloat;
 
 pub type Customer = (
     /* custkey */ Vec<i32>,
-    /* name */ Vec<ArrayString<25>>,
-    /* address */ Vec<ArrayString<40>>,
+    /* name */ Vec<VarChar<25>>,
+    /* address */ Vec<VarChar<40>>,
     /* nationkey */ Vec<i32>,
-    /* phone */ Vec<ArrayString<15>>,
+    /* phone */ Vec<VarChar<15>>,
     /* acctbal */ Vec<OrderedFloat<f64>>,
-    /* mktsegment */ Vec<ArrayString<10>>,
-    /* comment */ Vec<ArrayString<117>>,
+    /* mktsegment */ Vec<VarChar<10>>,
+    /* comment */ Vec<VarChar<117>>,
     /* size */ usize,
 );
 
 pub type Orders = (
     /* orderkey */ Vec<i32>,
     /* custkey */ Vec<i32>,
-    /* orderstatus */ Vec<ArrayString<1>>,
+    /* orderstatus */ Vec<VarChar<1>>,
     /* totalprice */ Vec<OrderedFloat<f64>>,
     /* orderdate */ Vec<Date>,
-    /* orderpriority */ Vec<ArrayString<15>>,
-    /* clerk */ Vec<ArrayString<15>>,
+    /* orderpriority */ Vec<VarChar<15>>,
+    /* clerk */ Vec<VarChar<15>>,
     /* shippriority */ Vec<i32>,
-    /* comment */ Vec<ArrayString<117>>,
+    /* comment */ Vec<VarChar<117>>,
     /* size */ usize,
 );
 
@@ -36,13 +35,13 @@ pub type Lineitem = (
     /* extendedprice */ Vec<OrderedFloat<f64>>,
     /* discount */ Vec<OrderedFloat<f64>>,
     /* tax */ Vec<OrderedFloat<f64>>,
-    /* returnflag */ Vec<ArrayString<1>>,
-    /* linestatus */ Vec<ArrayString<1>>,
+    /* returnflag */ Vec<VarChar<1>>,
+    /* linestatus */ Vec<VarChar<1>>,
     /* shipdate */ Vec<Date>,
     /* commitdate */ Vec<Date>,
     /* receiptdate */ Vec<Date>,
-    /* shipinstruct */ Vec<ArrayString<25>>,
-    /* shipmode */ Vec<ArrayString<10>>,
-    /* comment */ Vec<ArrayString<117>>,
+    /* shipinstruct */ Vec<VarChar<25>>,
+    /* shipmode */ Vec<VarChar<10>>,
+    /* comment */ Vec<VarChar<117>>,
     /* size */ usize,
 );

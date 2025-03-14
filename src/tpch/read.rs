@@ -1,19 +1,18 @@
 use crate::load;
-use crate::runtime::Date;
+use crate::runtime::{Date, VarChar};
 use crate::tpch::types::{Customer, Lineitem, Orders};
-use arrayvec::ArrayString;
 use ordered_float::OrderedFloat;
 
 pub fn read_customers() -> fn(&str) -> Result<Customer, Box<dyn std::error::Error>> {
     load!(
         custkey: i32,
-        name: ArrayString<25>,
-        address: ArrayString<40>,
+        name: VarChar<25>,
+        address: VarChar<40>,
         nationkey: i32,
-        phone: ArrayString<15>,
+        phone: VarChar<15>,
         acctbal: OrderedFloat<f64>,
-        mktsegment: ArrayString<10>,
-        comment: ArrayString<117>
+        mktsegment: VarChar<10>,
+        comment: VarChar<117>
     )
 }
 
@@ -21,13 +20,13 @@ pub fn read_orders() -> fn(&str) -> Result<Orders, Box<dyn std::error::Error>> {
     load!(
         orderkey: i32,
         custkey: i32,
-        orderstatus: ArrayString<1>,
+        orderstatus: VarChar<1>,
         totalprice: OrderedFloat<f64>,
         orderdate: Date,
-        orderpriority: ArrayString<15>,
-        clerk: ArrayString<15>,
+        orderpriority: VarChar<15>,
+        clerk: VarChar<15>,
         shippriority: i32,
-        comment: ArrayString<117>
+        comment: VarChar<117>
     )
 }
 
@@ -41,13 +40,13 @@ pub fn read_lineitems() -> fn(&str) -> Result<Lineitem, Box<dyn std::error::Erro
         extendedprice: OrderedFloat<f64>,
         discount: OrderedFloat<f64>,
         tax: OrderedFloat<f64>,
-        returnflag: ArrayString<1>,
-        linestatus: ArrayString<1>,
+        returnflag: VarChar<1>,
+        linestatus: VarChar<1>,
         shipdate: Date,
         commitdate: Date,
         receiptdate: Date,
-        shipinstruct: ArrayString<25>,
-        shipmode: ArrayString<10>,
-        comment: ArrayString<117>
+        shipinstruct: VarChar<25>,
+        shipmode: VarChar<10>,
+        comment: VarChar<117>
     )
 }
