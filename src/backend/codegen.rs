@@ -86,7 +86,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                             } if matches!(*key, Type::Int) => *val,
                             _ => unreachable!(),
                         };
-                        (val.name.into(), r#type.into())
+                        (val.name.into(), (&r#type).into())
                     })
                     .collect();
                 let load = try_gen_load(&tables).unwrap();
@@ -245,8 +245,6 @@ impl From<ExprFMF<'_>> for TokenStream {
                 };
                 let map: Result<[DictEntry<_, _>; _], _> = map.try_into();
                 let Ok([map]) = map else { unimplemented!() };
-                let key: TokenStream = map.key.into();
-                let val: TokenStream = map.val.into();
                 let hint_type = to_type(hint);
                 let capacity = match hint {
                     None => None,
@@ -256,10 +254,19 @@ impl From<ExprFMF<'_>> for TokenStream {
                     None => quote! { #hint_type::new() },
                     Some(capacity) => {
                         let capacity = LitInt::new(&capacity.to_string(), Span::call_site());
-                        quote! { #hint_type::with_capacity(#capacity) }
+                        let Some(hint) = hint else { unreachable!() };
+                        match hint {
+                            DictHint::Vec { .. } => {
+                                let r#type = syn::Type::from(&map.val.r#type);
+                                quote! { vec![#r#type::default(); #capacity] }
+                            }
+                            _ => quote! { #hint_type::with_capacity(#capacity) },
+                        }
                     }
                 };
                 let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
+                let key: TokenStream = map.key.into();
+                let val: TokenStream = map.val.into();
                 quote! {
                     .fold(#init, |mut acc, #(#args),*| {
                         acc[&#key] += #val;
@@ -300,8 +307,8 @@ fn try_gen_load(fields: &[(&str, syn::Type)]) -> Result<syn::Macro, Error> {
     parse2(macro_tks)
 }
 
-impl From<Type<'_>> for syn::Type {
-    fn from(r#type: Type) -> Self {
+impl From<&Type<'_>> for syn::Type {
+    fn from(r#type: &Type) -> Self {
         match r#type {
             Type::Bool => parse_quote!(bool),
             Type::Date => parse_quote!(Date),
@@ -316,7 +323,7 @@ impl From<Type<'_>> for syn::Type {
                 parse_quote!(ArrayString<#max_len>)
             }
             Type::Record(_) => parse_quote!(Record),
-            Type::Dict { hint, .. } => to_type(hint),
+            Type::Dict { hint, .. } => to_type(*hint),
         }
     }
 }
