@@ -1,4 +1,3 @@
-use crate::ir::r#type::DictHint;
 use chumsky::prelude::*;
 use derive_more::Display;
 use std::fmt;
@@ -42,7 +41,7 @@ pub enum Token<'src> {
     Sum,
     Range,
     At,
-    DictHint(DictHint),
+    DictHint(DictHintToken),
     Dom,
     Load,
     Type(ScalarType),
@@ -61,6 +60,14 @@ pub enum ScalarType {
     Real,
     String,
     VarChar,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum DictHintToken {
+    HashDict,
+    SortDict,
+    SmallVecDict,
+    Vec,
 }
 
 impl fmt::Display for Token<'_> {
@@ -82,10 +89,10 @@ impl fmt::Display for Token<'_> {
             Token::Sum => write!(f, "sum"),
             Token::Range => write!(f, "range"),
             Token::At => write!(f, "@"),
-            Token::DictHint(DictHint::HashDict) => write!(f, "hashdict"),
-            Token::DictHint(DictHint::SortDict) => write!(f, "sortdict"),
-            Token::DictHint(DictHint::SmallVecDict) => write!(f, "smallvecdict"),
-            Token::DictHint(DictHint::Vec) => write!(f, "vec"),
+            Token::DictHint(DictHintToken::HashDict) => write!(f, "hashdict"),
+            Token::DictHint(DictHintToken::SortDict) => write!(f, "sortdict"),
+            Token::DictHint(DictHintToken::SmallVecDict) => write!(f, "smallvecdict"),
+            Token::DictHint(DictHintToken::Vec) => write!(f, "vec"),
             Token::Dom => write!(f, "dom"),
             Token::Load => write!(f, "load"),
             Token::Type(t) => write!(f, "{t}"),
@@ -174,11 +181,11 @@ pub(super) fn lexer<'src>()
         "false" => Token::Bool(false),
         "sum" => Token::Sum,
         "range" => Token::Range,
-        "hashdict" => Token::DictHint(DictHint::HashDict),
-        "sortdict" => Token::DictHint(DictHint::SortDict),
-        "smallvecdict" => Token::DictHint(DictHint::SmallVecDict),
+        "hashdict" => Token::DictHint(DictHintToken::HashDict),
+        "sortdict" => Token::DictHint(DictHintToken::SortDict),
+        "smallvecdict" => Token::DictHint(DictHintToken::SmallVecDict),
         "dom" => Token::Dom,
-        "vec" => Token::DictHint(DictHint::Vec),
+        "vec" => Token::DictHint(DictHintToken::Vec),
         "load" => Token::Load,
         "concat" => Token::Concat,
         "external" => Token::External,

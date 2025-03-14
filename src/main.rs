@@ -292,7 +292,7 @@ fn q9() -> TypeQ9 {
                 Record::new((s_h[&partsupp.1[i]], partsupp.3[i]));
             acc
         });
-    let o_h: Vec<Date> = (0..orders.9).fold(Vec::new(), |mut acc, i| {
+    let o_h: Vec<Date> = (0..orders.9).fold(Vec::with_capacity(6000000), |mut acc, i| {
         acc[usize::try_from(orders.0[i]).unwrap()] += orders.4[i];
         acc
     });

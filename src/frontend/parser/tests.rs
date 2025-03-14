@@ -335,7 +335,7 @@ fn dicts() {
                 key: Spanned(no_span!("k"), (11..12).into()),
                 val: Spanned(no_span!("v"), (16..17).into()),
             }],
-            hint: Some(DictHint::HashDict),
+            hint: Some(DictHint::HashDict { capacity: None }),
         },
     );
 
@@ -346,7 +346,7 @@ fn dicts() {
                 key: Spanned(no_span!("k"), (11..12).into()),
                 val: Spanned(no_span!("v"), (16..17).into()),
             }],
-            hint: Some(DictHint::SortDict),
+            hint: Some(DictHint::SortDict { capacity: None }),
         },
     );
 
@@ -357,7 +357,7 @@ fn dicts() {
                 key: Spanned(no_span!("k"), (15..16).into()),
                 val: Spanned(no_span!("v"), (20..21).into()),
             }],
-            hint: Some(DictHint::SmallVecDict),
+            hint: Some(DictHint::SmallVecDict { capacity: None }),
         },
     );
 
@@ -368,7 +368,7 @@ fn dicts() {
                 key: Spanned(no_span!("k"), (6..7).into()),
                 val: Spanned(no_span!("v"), (11..12).into()),
             }],
-            hint: Some(DictHint::Vec),
+            hint: Some(DictHint::Vec { capacity: None }),
         },
     );
 }
@@ -581,7 +581,7 @@ fn load() {
                 r#type: Type::Dict {
                     key: Box::new(Type::Int),
                     val: Box::new(Type::Real),
-                    hint: Some(DictHint::Vec),
+                    hint: Some(DictHint::Vec { capacity: None }),
                 },
             }]),
             path: "foo.csv",

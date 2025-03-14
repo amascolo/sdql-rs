@@ -1,4 +1,4 @@
-use crate::frontend::lexer::{ScalarType, Spanned, Token};
+use crate::frontend::lexer::{DictHintToken, ScalarType, Spanned, Token};
 use crate::ir::expr::{BinaryOp, DictEntry, Expr, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, RecordType, Type};
 use crate::runtime::Date;
@@ -16,18 +16,22 @@ where
 {
     recursive(|expr| {
         let hint = just(Token::At)
-            .ignore_then(
-                just(Token::DictHint(DictHint::HashDict))
-                    .or(just(Token::DictHint(DictHint::SortDict)))
-                    .or(just(Token::DictHint(DictHint::SmallVecDict)))
-                    .or(just(Token::DictHint(DictHint::Vec))),
+            .ignore_then(select! { Token::DictHint(x) => x })
+            .then(
+                select! { Token::Integer(n) => n }
+                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')')))
+                    .or_not(),
             )
-            .map(|hint| match hint {
-                Token::DictHint(hint) => hint,
-                _ => unreachable!(),
+            .map(|(hint, capacity)| {
+                let capacity = capacity.map(|c| c.try_into().unwrap());
+                match hint {
+                    DictHintToken::HashDict => DictHint::HashDict { capacity },
+                    DictHintToken::SortDict => DictHint::SortDict { capacity },
+                    DictHintToken::SmallVecDict => DictHint::SmallVecDict { capacity },
+                    DictHintToken::Vec => DictHint::Vec { capacity },
+                }
             })
             .boxed();
-
         let varchar_type = just(Token::Type(ScalarType::VarChar))
             .ignore_then(
                 select! { Token::Integer(n) => n }

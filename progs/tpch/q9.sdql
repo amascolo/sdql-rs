@@ -26,8 +26,7 @@ let ps_h =
 
 let o_h =
   sum(<i,_> <- range(orders.size))
-    @vec { orders.o_orderkey(i) -> orders.o_orderdate(i) }
-//    @vec(6000000) { orders.o_orderkey(i) -> orders.o_orderdate(i) }
+    @vec(6000000) { orders.o_orderkey(i) -> orders.o_orderdate(i) }
 
 let l_h =
   sum(<i,_> <- range(lineitem.size))

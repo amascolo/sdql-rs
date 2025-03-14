@@ -82,7 +82,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                             Type::Dict {
                                 key,
                                 val,
-                                hint: Some(DictHint::Vec),
+                                hint: Some(DictHint::Vec { capacity: None }),
                             } if matches!(*key, Type::Int) => *val,
                             _ => unreachable!(),
                         };
@@ -247,10 +247,21 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let Ok([map]) = map else { unimplemented!() };
                 let key: TokenStream = map.key.into();
                 let val: TokenStream = map.val.into();
-                let hint = to_type(hint);
+                let hint_type = to_type(hint);
+                let capacity = match hint {
+                    None => None,
+                    Some(hint) => hint.capacity(),
+                };
+                let init = match capacity {
+                    None => quote! { #hint_type::new() },
+                    Some(capacity) => {
+                        let capacity = LitInt::new(&capacity.to_string(), Span::call_site());
+                        quote! { #hint_type::with_capacity(#capacity) }
+                    }
+                };
                 let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
                 quote! {
-                    .fold(#hint::new(), |mut acc, #(#args),*| {
+                    .fold(#init, |mut acc, #(#args),*| {
                         acc[&#key] += #val;
                         acc
                     })
@@ -318,10 +329,10 @@ fn to_type(hint: Option<DictHint>) -> syn::Type {
 impl From<DictHint> for syn::Type {
     fn from(hint: DictHint) -> Self {
         match hint {
-            DictHint::HashDict => parse_quote!(HashMap),
-            DictHint::SortDict => parse_quote!(SortDict),
-            DictHint::SmallVecDict => parse_quote!(SmallVecDict),
-            DictHint::Vec => parse_quote!(Vec),
+            DictHint::HashDict { capacity: _ } => parse_quote!(HashMap),
+            DictHint::SortDict { capacity: _ } => parse_quote!(SortDict),
+            DictHint::SmallVecDict { capacity: _ } => parse_quote!(SmallVecDict),
+            DictHint::Vec { capacity: _ } => parse_quote!(Vec),
         }
     }
 }
