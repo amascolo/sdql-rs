@@ -278,13 +278,12 @@ fn q9() -> TypeQ9 {
         acc[&supplier.0[i]] += n_h[&supplier.3[i]].0;
         acc
     });
-    let p_h: HashMap<i32, Record<(i32,)>> =
-        (0..part.9)
-            .filter(|&i| true)
-            .fold(HashMap::new(), |mut acc, i| {
-                acc[&part.0[i]] += Record::new((part.0[i],));
-                acc
-            });
+    let p_h: HashMap<i32, Record<(i32,)>> = (0..part.9)
+        .filter(|&i| part.1[i].contains(&"green"))
+        .fold(HashMap::new(), |mut acc, i| {
+            acc[&part.0[i]] += Record::new((part.0[i],));
+            acc
+        });
     let ps_h: HashMap<Record<(i32, i32)>, Record<(VarChar<25>, OrderedFloat<f64>)>> = (0..partsupp
         .5)
         .filter(|&i| p_h.contains_key(&partsupp.0[i]))

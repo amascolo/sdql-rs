@@ -1,6 +1,6 @@
 use arrayvec::{ArrayString, CapacityError};
 use derive_more::Display;
-use std::ops::AddAssign;
+use std::ops::{AddAssign, Deref};
 use std::str::FromStr;
 
 #[derive(Clone, Copy, Debug, Display, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -24,5 +24,13 @@ impl<const CAP: usize> FromStr for VarChar<CAP> {
 impl<const CAP: usize> AddAssign for VarChar<CAP> {
     fn add_assign(&mut self, rhs: Self) {
         *self = rhs; // overwrite
+    }
+}
+
+impl<const CAP: usize> Deref for VarChar<CAP> {
+    type Target = ArrayString<CAP>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
