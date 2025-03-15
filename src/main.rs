@@ -64,7 +64,7 @@ fn q1() -> TypeQ1 {
             ));
             acc
         });
-    l_h.iter().fold(HashMap::new(), |mut acc, (k, v)| {
+    l_h.iter().fold(HashMap::new(), |mut acc, (&k, &v)| {
         acc[&Record::new((k.0, k.1, v.0, v.1, v.2, v.3, v.4))] += TRUE;
         acc
     })
@@ -111,7 +111,7 @@ fn q3() -> TypeQ3 {
                 Record::new((lineitem.5[i] * (OrderedFloat(1f64) - lineitem.6[i]),));
             acc
         });
-    l_h.iter().fold(HashMap::new(), |mut acc, (k, v)| {
+    l_h.iter().fold(HashMap::new(), |mut acc, (&k, &v)| {
         acc[&Record::new((k.0, k.1, k.2, v.0))] += TRUE;
         acc
     })
@@ -306,7 +306,7 @@ fn q9() -> TypeQ9 {
                 - ps_h[&Record::new((lineitem.1[i], lineitem.2[i]))].1 * lineitem.4[i],));
             acc
         });
-    l_h.iter().fold(HashMap::new(), |mut acc, (k, v)| {
+    l_h.iter().fold(HashMap::new(), |mut acc, (&k, &v)| {
         acc[&Record::new((k.0, k.1, v.0))] += TRUE;
         acc
     })
@@ -387,7 +387,7 @@ fn q18() -> TypeQ18 {
             acc[&o_h[&lineitem.0[i]]] += Record::new((lineitem.4[i],));
             acc
         });
-    result_h.iter().fold(HashMap::new(), |mut acc, (k, v)| {
+    result_h.iter().fold(HashMap::new(), |mut acc, (&k, &v)| {
         acc[&Record::new((k.0, k.1, k.2, k.3, k.4, v.0))] += TRUE;
         acc
     })

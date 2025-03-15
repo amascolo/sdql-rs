@@ -301,17 +301,14 @@ impl From<ExprFMF<'_>> for TokenStream {
 
 fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
     let len = args.len();
-    let mut idents = args
+    let mut args = args
         .into_iter()
-        .map(|name| Ident::new(name, Span::call_site()))
-        .map(|ident| syn::Expr::Path(parse_quote! { #ident }));
+        .map(|arg| Ident::new(arg, Span::call_site()))
+        .map(|arg| parse_quote! { &#arg });
     match len {
         0 => unimplemented!(),
-        1 => {
-            let ident = idents.next().unwrap();
-            parse_quote! { #ident }
-        }
-        _ => parse_quote! { (#(#idents),*) },
+        1 => args.next().unwrap(),
+        _ => parse_quote! { (#(#args),*) },
     }
 }
 
