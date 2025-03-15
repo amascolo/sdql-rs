@@ -258,13 +258,18 @@ impl From<ExprFMF<'_>> for TokenStream {
                 };
                 let map: Result<[DictEntry<_, _>; _], _> = map.try_into();
                 let Ok([map]) = map else { unimplemented!() };
-                let hint_type = to_type(hint);
+                let r#type = to_type(hint);
+                // FIXME missing ::
+                // let r#type: syn::Type = (&inner.r#type).into();
+                // println!();
+                // println!("{:?}", r#type);
+                // println!();
                 let capacity = match hint {
                     None => None,
                     Some(hint) => hint.capacity(),
                 };
                 let init = match capacity {
-                    None => quote! { #hint_type::new() },
+                    None => quote! { #r#type::new() },
                     Some(capacity) => {
                         let capacity = LitInt::new(&capacity.to_string(), Span::call_site());
                         let Some(hint) = hint else { unreachable!() };
@@ -273,14 +278,13 @@ impl From<ExprFMF<'_>> for TokenStream {
                                 let r#type = syn::Type::from(&map.val.r#type);
                                 quote! { vec![#r#type::default(); #capacity] }
                             }
-                            _ => quote! { #hint_type::with_capacity(#capacity) },
+                            _ => quote! { #r#type::with_capacity(#capacity) },
                         }
                     }
                 };
                 let args = gen_args(args);
                 let key: TokenStream = map.key.into();
                 let val: TokenStream = map.val.into();
-                // let r#type: syn::Type = (&inner.r#type).into(); // TODO
                 quote! {
                     .fold(#init, |mut acc, #args| {
                         acc[&#key] += #val;
