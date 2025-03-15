@@ -60,11 +60,11 @@ impl From<ExprFMF<'_>> for TokenStream {
             ExprFMF::Int { val } => quote! { #val },
             ExprFMF::Long { val } => quote! { #val },
             ExprFMF::Real { val } => quote! { OrderedFloat(#val) },
-            ExprFMF::String { val, max_len: None } => quote! { #val },
+            ExprFMF::String { val, max_len: None } => quote! { VarChar::from_str(#val).unwrap() },
             ExprFMF::String {
                 val,
                 max_len: Some(max_len),
-            } => quote! { VarChar::<#max_len>::from(#val).unwrap() },
+            } => quote! { VarChar::<#max_len>::from_str(#val).unwrap() },
             ExprFMF::Let { lhs, rhs, cont } => {
                 let lhs_ident = Ident::new(lhs, Span::call_site());
                 let mut lhs_tks = quote! { #lhs_ident };
@@ -235,10 +235,13 @@ impl From<ExprFMF<'_>> for TokenStream {
                     }
                     _ => unimplemented!(),
                 },
-                Type::Dict { .. } => {
+                Type::Dict { hint, .. } => {
                     let lhs: TokenStream = lhs.into();
                     let rhs: TokenStream = rhs.into();
-                    quote! { #lhs[#rhs] }
+                    match hint {
+                        Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs] },
+                        _ => quote! { #lhs[&#rhs] },
+                    }
                 }
                 _ => panic!(),
             },
