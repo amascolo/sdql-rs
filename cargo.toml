@@ -28,8 +28,6 @@ time = { version = "0.3.37", features = ["parsing"] }
 # TODO get rid of rayon and time dependencies that are for runtime
 sdql_runtime = { path = "runtime" }
 
-wrapped = { path = "wrapped" }
-
 [dev-dependencies]
 criterion = "0.5.1"
 
