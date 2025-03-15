@@ -67,10 +67,14 @@ impl From<ExprFMF<'_>> for TokenStream {
             } => quote! { VarChar::<#max_len>::from(#val).unwrap() },
             ExprFMF::Let { lhs, rhs, cont } => {
                 let lhs_ident = Ident::new(lhs, Span::call_site());
-                let lhs_tks = quote! { #lhs_ident };
+                let mut lhs_tks = quote! { #lhs_ident };
+                // TODO remove special case for load
+                if !matches!(*rhs.val.0, ExprFMF::Load { .. }) {
+                    let rhs_type: syn::Type = (&rhs.r#type).into();
+                    lhs_tks = quote! { #lhs_tks: #rhs_type }
+                }
                 let rhs_tks: TokenStream = rhs.into();
                 let let_tks = quote! { let #lhs_tks = #rhs_tks };
-                debug_assert!(matches!(parse2(let_tks.clone()), Ok(syn::Expr::Let(_))));
                 let cont_tks: TokenStream = cont.into();
                 quote! { #let_tks;  #cont_tks }
             }
@@ -271,6 +275,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let args = gen_args(args);
                 let key: TokenStream = map.key.into();
                 let val: TokenStream = map.val.into();
+                // let r#type: syn::Type = (&inner.r#type).into(); // TODO
                 quote! {
                     .fold(#init, |mut acc, #args| {
                         acc[&#key] += #val;
@@ -342,8 +347,17 @@ impl From<&Type<'_>> for syn::Type {
                 let max_len = LitInt::new(&max_len.to_string(), Span::call_site());
                 parse_quote!(VarChar<#max_len>)
             }
-            Type::Record(_) => parse_quote!(Record),
-            Type::Dict { hint, .. } => to_type(*hint),
+            Type::Record(tps) => {
+                let tps: Vec<syn::Type> =
+                    tps.iter().map(|rt| syn::Type::from(&rt.r#type)).collect();
+                parse_quote!(Record<(#(#tps),*,)>)
+            }
+            Type::Dict { key, val, hint } => {
+                let dict = to_type(*hint);
+                let key = syn::Type::from(&**key);
+                let val = syn::Type::from(&**val);
+                parse_quote!(#dict<#key, #val>)
+            }
         }
     }
 }

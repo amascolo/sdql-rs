@@ -72,28 +72,28 @@ fn q1() -> TypeQ1 {
 
 fn q3() -> TypeQ3 {
     let customer = load!(
-        c_custkey : i32, c_name : String, c_address : String, c_nationkey : i32, c_phone
-        : String, c_acctbal : OrderedFloat < f64 >, c_mktsegment : String, c_comment :
-        String
+        c_custkey : i32, c_name : VarChar < 25 >, c_address : VarChar < 40 >, c_nationkey
+        : i32, c_phone : VarChar < 15 >, c_acctbal : OrderedFloat < f64 >, c_mktsegment :
+        VarChar < 10 >, c_comment : VarChar < 117 >
     )("datasets/tpch_datasets/SF_0.01/customer.tbl")
     .unwrap();
     let orders = load!(
-        o_orderkey : i32, o_custkey : i32, o_orderstatus : String, o_totalprice :
-        OrderedFloat < f64 >, o_orderdate : Date, o_orderpriority : String, o_clerk :
-        String, o_shippriority : i32, o_comment : String
+        o_orderkey : i32, o_custkey : i32, o_orderstatus : VarChar < 1 >, o_totalprice :
+        OrderedFloat < f64 >, o_orderdate : Date, o_orderpriority : VarChar < 15 >,
+        o_clerk : VarChar < 15 >, o_shippriority : i32, o_comment : VarChar < 79 >
     )("datasets/tpch_datasets/SF_0.01/orders.tbl")
     .unwrap();
     let lineitem = load!(
         l_orderkey : i32, l_partkey : i32, l_suppkey : i32, l_linenumber : i32,
         l_quantity : OrderedFloat < f64 >, l_extendedprice : OrderedFloat < f64 >,
         l_discount : OrderedFloat < f64 >, l_tax : OrderedFloat < f64 >, l_returnflag :
-        String, l_linestatus : String, l_shipdate : Date, l_commitdate : Date,
-        l_receiptdate : Date, l_shipinstruct : String, l_shipmode : String, l_comment :
-        String
+        VarChar < 1 >, l_linestatus : VarChar < 1 >, l_shipdate : Date, l_commitdate :
+        Date, l_receiptdate : Date, l_shipinstruct : VarChar < 25 >, l_shipmode : VarChar
+        < 10 >, l_comment : VarChar < 44 >
     )("datasets/tpch_datasets/SF_0.01/lineitem.tbl")
     .unwrap();
     let c_h: HashMap<i32, Record<(i32,)>> = (0..customer.8)
-        .filter(|&i| customer.6[i] == "BUILDING")
+        .filter(|&i| customer.6[i] == VarChar::from_str("BUILDING").unwrap())
         .fold(HashMap::new(), |mut acc, i| {
             acc[&customer.0[i]] += Record::new((customer.0[i],));
             acc
@@ -111,7 +111,7 @@ fn q3() -> TypeQ3 {
                 Record::new((lineitem.5[i] * (OrderedFloat(1f64) - lineitem.6[i]),));
             acc
         });
-    l_h.iter().fold(HashMap::new(), |mut acc: TypeQ3, (k, v)| {
+    l_h.iter().fold(HashMap::new(), |mut acc, (k, v)| {
         acc[&Record::new((k.0, k.1, k.2, v.0))] += TRUE;
         acc
     })
@@ -210,9 +210,9 @@ fn q6() -> TypeQ6 {
         l_orderkey : i32, l_partkey : i32, l_suppkey : i32, l_linenumber : i32,
         l_quantity : OrderedFloat < f64 >, l_extendedprice : OrderedFloat < f64 >,
         l_discount : OrderedFloat < f64 >, l_tax : OrderedFloat < f64 >, l_returnflag :
-        String, l_linestatus : String, l_shipdate : Date, l_commitdate : Date,
-        l_receiptdate : Date, l_shipinstruct : String, l_shipmode : String, l_comment :
-        String
+        VarChar < 1 >, l_linestatus : VarChar < 1 >, l_shipdate : Date, l_commitdate :
+        Date, l_receiptdate : Date, l_shipinstruct : VarChar < 25 >, l_shipmode : VarChar
+        < 10 >, l_comment : VarChar < 44 >
     )("datasets/tpch_datasets/SF_0.01/lineitem.tbl")
     .unwrap();
     (0..lineitem.16)
