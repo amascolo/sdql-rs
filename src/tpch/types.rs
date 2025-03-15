@@ -1,4 +1,4 @@
-use crate::runtime::{Date, VarChar};
+use sdql_runtime::{Date, VarChar};
 use ordered_float::OrderedFloat;
 
 pub type Customer = (

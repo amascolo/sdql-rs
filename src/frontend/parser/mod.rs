@@ -1,7 +1,7 @@
 use crate::frontend::lexer::{DictHintToken, ScalarType, Spanned, Token};
 use crate::ir::expr::{BinOp, DictEntry, Expr, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, RecordType, Type};
-use crate::runtime::Date;
+use sdql_runtime::Date;
 use chumsky::error::Rich;
 use chumsky::{input::ValueInput, prelude::*};
 use time::format_description::well_known::Iso8601;

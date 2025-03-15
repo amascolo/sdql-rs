@@ -596,12 +596,10 @@ dependencies = [
 name = "sdql"
 version = "0.1.0"
 dependencies = [
- "arrayvec",
  "chumsky",
  "criterion",
  "csv",
  "derive_more",
- "hashbrown",
  "im-rc",
  "itertools 0.14.0",
  "ordered-float",
@@ -609,9 +607,21 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rayon",
+ "sdql_runtime",
  "syn",
  "time",
  "wrapped",
+]
+
+[[package]]
+name = "sdql_runtime"
+version = "0.1.0"
+dependencies = [
+ "arrayvec",
+ "derive_more",
+ "hashbrown",
+ "rayon",
+ "time",
 ]
 
 [[package]]

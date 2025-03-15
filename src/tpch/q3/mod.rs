@@ -1,15 +1,14 @@
-use crate::runtime::{Bool, HashMap};
-use crate::runtime::{Date, Record};
 use crate::utils::round;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
+use sdql_runtime::{date, Bool, Date, HashMap, Record};
 
 pub mod parallel;
 pub mod sequential;
 
 pub type TypeQ3 = HashMap<Record<(i32, Date, i32, OrderedFloat<f64>)>, Bool>;
 
-const _19950315: Date = crate::date!(19950315);
+const _19950315: Date = date!(19950315);
 
 pub fn format_q3_result(result: &TypeQ3) -> String {
     result

@@ -1,12 +1,10 @@
 #![feature(stmt_expr_attributes)]
-#![allow(dead_code, unused_variables)] // TODO remove
+#![allow(unused_variables)]
 
 use ordered_float::OrderedFloat;
-use sdql::runtime::Bool;
-use sdql::runtime::{Date, HashMap, Record, VarChar, TRUE};
 use sdql::tpch::q3::TypeQ3;
 use sdql::tpch::q6::TypeQ6;
-use sdql::{date, load};
+use sdql_runtime::{date, load, Bool, Date, HashMap, Record, VarChar, TRUE};
 use std::str::FromStr;
 
 fn main() {

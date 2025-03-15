@@ -1,9 +1,9 @@
 use super::{TypeQ3, _19950315};
-use crate::runtime::{Date, HashMap, Record, VarChar, TRUE};
 use crate::tpch::read::{read_customers, read_lineitems, read_orders};
 use crate::tpch::types::{Customer, Lineitem, Orders};
 use ordered_float::OrderedFloat;
 use rayon::prelude::*;
+use sdql_runtime::{Date, HashMap, Record, VarChar, TRUE};
 use std::error::Error;
 
 pub fn q3_rayon(sf: &str) -> Result<TypeQ3, Box<dyn Error>> {

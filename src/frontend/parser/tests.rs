@@ -1,7 +1,8 @@
 use super::*;
 use crate::ir::expr::{BinOp, DictEntry, Expr};
 use crate::ir::r#type::DictHint;
-use crate::{date, no_span};
+use crate::no_span;
+use sdql_runtime::date;
 
 #[test]
 fn constants() {

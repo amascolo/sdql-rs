@@ -1,7 +1,7 @@
 use crate::frontend::lexer::Spanned;
 use crate::ir::expr::{BinOp, DictEntry, Expr, External, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, Field, RecordType, Type};
-use crate::runtime::Date;
+use sdql_runtime::Date;
 use derive_more::Display;
 use std::fmt;
 

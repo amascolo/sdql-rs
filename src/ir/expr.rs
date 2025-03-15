@@ -1,7 +1,7 @@
 use crate::frontend::lexer::Spanned;
 use crate::ir::r#type::{DictHint, Field, Type};
-use crate::runtime::Date;
 use derive_more::Display;
+use sdql_runtime::Date;
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq)]

@@ -1,7 +1,7 @@
 use super::TypeQ3;
 use super::_19950315;
 
-use crate::runtime::{Date, HashMap, Record, VarChar, TRUE};
+use sdql_runtime::{Date, HashMap, Record, VarChar, TRUE};
 use crate::tpch::read::{read_customers, read_lineitems, read_orders};
 use crate::tpch::types::{Customer, Lineitem, Orders};
 use ordered_float::OrderedFloat;

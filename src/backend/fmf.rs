@@ -2,7 +2,7 @@ use crate::frontend::lexer::Spanned;
 use crate::inference::{Typed, TypedExpr};
 use crate::ir::expr::{BinOp, DictEntry, External, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, Field, Type};
-use crate::runtime::Date;
+use sdql_runtime::Date;
 use im_rc::vector;
 use std::fmt;
 

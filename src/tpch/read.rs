@@ -1,7 +1,6 @@
-use crate::load;
-use crate::runtime::{Date, VarChar};
 use crate::tpch::types::{Customer, Lineitem, Orders};
 use ordered_float::OrderedFloat;
+use sdql_runtime::{load, Date, VarChar};
 
 pub fn read_customers() -> fn(&str) -> Result<Customer, Box<dyn std::error::Error>> {
     load!(
