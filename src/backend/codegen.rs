@@ -60,11 +60,13 @@ impl From<ExprFMF<'_>> for TokenStream {
             ExprFMF::Int { val } => quote! { #val },
             ExprFMF::Long { val } => quote! { #val },
             ExprFMF::Real { val } => quote! { OrderedFloat(#val) },
-            ExprFMF::String { val, max_len: None } => quote! { VarChar::from_str(#val).unwrap() },
-            ExprFMF::String {
-                val,
-                max_len: Some(max_len),
-            } => quote! { VarChar::<#max_len>::from_str(#val).unwrap() },
+            ExprFMF::String { val, max_len } => {
+                let suffixed = match max_len {
+                    None => quote! { VarChar },
+                    Some(max_len) => quote! { VarChar::<#max_len> },
+                };
+                quote! { #suffixed::from_str(#val).unwrap() }
+            }
             ExprFMF::Let { lhs, rhs, cont } => {
                 let lhs_ident = Ident::new(lhs, Span::call_site());
                 let mut lhs_tks = quote! { #lhs_ident };
