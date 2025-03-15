@@ -1,0 +1,11 @@
+[package]
+name = "sdql_runtime"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+arrayvec = "0.7.6"
+derive_more = { version = "2.0.1", features = ["display"] }
+hashbrown = { version = "0.15.2", features = ["inline-more", "rayon"] }
+rayon = "1.10.0"
+time = { version = "0.3.37", features = ["formatting", "parsing"] }
