@@ -258,12 +258,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 };
                 let map: Result<[DictEntry<_, _>; _], _> = map.try_into();
                 let Ok([map]) = map else { unimplemented!() };
-                let r#type = to_type(hint);
-                // FIXME missing ::
-                // let r#type: syn::Type = (&inner.r#type).into();
-                // println!();
-                // println!("{:?}", r#type);
-                // println!();
+                let r#type = qualified_type(&inner.r#type);
                 let capacity = match hint {
                     None => None,
                     Some(hint) => hint.capacity(),
@@ -341,7 +336,7 @@ fn try_gen_load(fields: &[(&str, syn::Type)]) -> Result<syn::Macro, Error> {
 impl From<&Type<'_>> for syn::Type {
     fn from(r#type: &Type) -> Self {
         match r#type {
-            Type::Bool => parse_quote!(bool),
+            Type::Bool => parse_quote!(Bool),
             Type::Date => parse_quote!(Date),
             Type::Int => parse_quote!(i32),
             Type::Long => parse_quote!(i64),
@@ -365,6 +360,28 @@ impl From<&Type<'_>> for syn::Type {
                 parse_quote!(#dict<#key, #val>)
             }
         }
+    }
+}
+// TODO simplify / avoid code duplication
+fn qualified_type(r#type: &Type) -> syn::Type {
+    match r#type {
+        Type::String {
+            max_len: Some(max_len),
+        } => {
+            let max_len = LitInt::new(&max_len.to_string(), Span::call_site());
+            parse_quote!(VarChar::<#max_len>)
+        }
+        Type::Record(tps) => {
+            let tps: Vec<syn::Type> = tps.iter().map(|rt| syn::Type::from(&rt.r#type)).collect();
+            parse_quote!(Record::<(#(#tps),*,)>)
+        }
+        Type::Dict { key, val, hint } => {
+            let dict = to_type(*hint);
+            let key = syn::Type::from(&**key);
+            let val = syn::Type::from(&**val);
+            parse_quote!(#dict::<#key, #val>)
+        }
+        _ => r#type.into(),
     }
 }
 
