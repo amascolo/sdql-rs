@@ -6,7 +6,7 @@ use crate::ir::r#type::{DictHint, Type};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
-    parse2, parse_quote, BinOp, Error, ExprBinary, ExprField, ExprRange, ExprTuple, Index, LitInt,
+    parse2, parse_quote, BinOp, Error, ExprBinary, ExprField, ExprRange, Index, LitInt,
     Member, RangeLimits,
 };
 
@@ -290,22 +290,18 @@ impl From<ExprFMF<'_>> for TokenStream {
 }
 
 fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
-    match args.len() {
+    let len = args.len();
+    let mut idents = args
+        .into_iter()
+        .map(|name| Ident::new(name, Span::call_site()))
+        .map(|ident| syn::Expr::Path(parse_quote! { #ident }));
+    match len {
         0 => unimplemented!(),
         1 => {
-            let name = &args[0];
-            let ident = Ident::new(name, Span::call_site());
-            syn::Expr::Path(parse_quote! { #ident })
+            let ident = idents.next().unwrap();
+            parse_quote! { #ident }
         }
-        _ => syn::Expr::Tuple(ExprTuple {
-            attrs: Vec::new(),
-            paren_token: Default::default(),
-            elems: args
-                .iter()
-                .map(|name| Ident::new(name, Span::call_site()))
-                .map(|ident: Ident| syn::Expr::Path(parse_quote! { #ident }))
-                .collect(),
-        }),
+        _ => parse_quote! { (#(#idents),*) },
     }
 }
 
