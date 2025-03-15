@@ -1,5 +1,5 @@
 use crate::frontend::lexer::Spanned;
-use crate::ir::expr::{BinaryOp, DictEntry, Expr, External, RecordValue, UnaryOp};
+use crate::ir::expr::{BinOp, DictEntry, Expr, External, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, Field, RecordType, Type};
 use crate::runtime::Date;
 use derive_more::Display;
@@ -69,7 +69,7 @@ pub enum TypedExpr<'src> {
     },
     Binary {
         lhs: Typed<'src, Spanned<Box<Self>>>,
-        op: BinaryOp,
+        op: BinOp,
         rhs: Typed<'src, Spanned<Box<Self>>>,
     },
     If {
@@ -247,7 +247,7 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
         }
         Expr::Binary {
             lhs,
-            op: op @ (BinaryOp::Add | BinaryOp::Sub | BinaryOp::Mul | BinaryOp::Div),
+            op: op @ (BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div),
             rhs,
         } => {
             let lhs = infer_spanned(lhs, ctx);
@@ -260,14 +260,14 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
         Expr::Binary {
             lhs,
             op:
-                op @ (BinaryOp::Eq
-                | BinaryOp::NotEq
-                | BinaryOp::Less
-                | BinaryOp::Great
-                | BinaryOp::LessEq
-                | BinaryOp::GreatEq
-                | BinaryOp::And
-                | BinaryOp::Or),
+                op @ (BinOp::Eq
+                | BinOp::Ne
+                | BinOp::Lt
+                | BinOp::Gt
+                | BinOp::Le
+                | BinOp::Ge
+                | BinOp::And
+                | BinOp::Or),
             rhs,
         } => {
             let lhs = infer_spanned(lhs, ctx);

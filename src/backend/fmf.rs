@@ -1,6 +1,6 @@
 use crate::frontend::lexer::Spanned;
 use crate::inference::{Typed, TypedExpr};
-use crate::ir::expr::{BinaryOp, DictEntry, External, RecordValue, UnaryOp};
+use crate::ir::expr::{BinOp, DictEntry, External, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, Field, Type};
 use crate::runtime::Date;
 use im_rc::vector;
@@ -52,7 +52,7 @@ pub enum ExprFMF<'src> {
     },
     Binary {
         lhs: Typed<'src, Spanned<Box<Self>>>,
-        op: BinaryOp,
+        op: BinOp,
         rhs: Typed<'src, Spanned<Box<Self>>>,
     },
     If {

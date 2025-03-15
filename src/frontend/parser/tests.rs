@@ -1,5 +1,5 @@
 use super::*;
-use crate::ir::expr::{BinaryOp, DictEntry, Expr};
+use crate::ir::expr::{BinOp, DictEntry, Expr};
 use crate::ir::r#type::DictHint;
 use crate::{date, no_span};
 
@@ -131,7 +131,7 @@ fn arithmetic() {
         no_span!("2 * 3"),
         Expr::Binary {
             lhs: Spanned(Box::new(no_span!("2")), (0..1).into()),
-            op: BinaryOp::Mul,
+            op: BinOp::Mul,
             rhs: Spanned(Box::new(no_span!("3")), (4..5).into()),
         },
     );
@@ -140,7 +140,7 @@ fn arithmetic() {
         no_span!("2 + 3"),
         Expr::Binary {
             lhs: Spanned(Box::new(no_span!("2")), (0..1).into()),
-            op: BinaryOp::Add,
+            op: BinOp::Add,
             rhs: Spanned(Box::new(no_span!("3")), (4..5).into()),
         },
     );
@@ -149,7 +149,7 @@ fn arithmetic() {
         no_span!("2 / 3"),
         Expr::Binary {
             lhs: Spanned(Box::new(no_span!("2")), (0..1).into()),
-            op: BinaryOp::Div,
+            op: BinOp::Div,
             rhs: Spanned(Box::new(no_span!("3")), (4..5).into()),
         },
     );
@@ -158,7 +158,7 @@ fn arithmetic() {
         no_span!("2 - 3"),
         Expr::Binary {
             lhs: Spanned(Box::new(no_span!("2")), (0..1).into()),
-            op: BinaryOp::Sub,
+            op: BinOp::Sub,
             rhs: Spanned(Box::new(no_span!("3")), (4..5).into()),
         },
     );
@@ -167,11 +167,11 @@ fn arithmetic() {
         no_span!("2 + 1 * 3"),
         Expr::Binary {
             lhs: Spanned(Box::new(no_span!("2")), (0..1).into()),
-            op: BinaryOp::Add,
+            op: BinOp::Add,
             rhs: Spanned(
                 Box::new(Expr::Binary {
                     lhs: Spanned(Box::new(no_span!("1")), (4..5).into()),
-                    op: BinaryOp::Mul,
+                    op: BinOp::Mul,
                     rhs: Spanned(Box::new(no_span!("3")), (8..9).into()),
                 }),
                 (4..9).into(),
@@ -185,12 +185,12 @@ fn arithmetic() {
             lhs: Spanned(
                 Box::new(Expr::Binary {
                     lhs: Spanned(Box::new(no_span!("2")), (0..1).into()),
-                    op: BinaryOp::Mul,
+                    op: BinOp::Mul,
                     rhs: Spanned(Box::new(no_span!("1")), (4..5).into()),
                 }),
                 (0..5).into(),
             ),
-            op: BinaryOp::Add,
+            op: BinOp::Add,
             rhs: Spanned(Box::new(no_span!("3")), (8..9).into()),
         },
     );
@@ -201,12 +201,12 @@ fn arithmetic() {
             lhs: Spanned(
                 Box::new(Expr::Binary {
                     lhs: Spanned(Box::new(no_span!("6")), (0..1).into()),
-                    op: BinaryOp::Div,
+                    op: BinOp::Div,
                     rhs: Spanned(Box::new(no_span!("3")), (4..5).into()),
                 }),
                 (0..5).into(),
             ),
-            op: BinaryOp::Mul,
+            op: BinOp::Mul,
             rhs: Spanned(Box::new(no_span!("2")), (8..9).into()),
         },
     );
@@ -215,7 +215,7 @@ fn arithmetic() {
         no_span!("2 < 3"),
         Expr::Binary {
             lhs: Spanned(Box::new(no_span!("2")), (0..1).into()),
-            op: BinaryOp::Less,
+            op: BinOp::Lt,
             rhs: Spanned(Box::new(no_span!("3")), (4..5).into()),
         },
     );
@@ -224,11 +224,11 @@ fn arithmetic() {
         no_span!("2 < 3 * 1"),
         Expr::Binary {
             lhs: Spanned(Box::new(no_span!("2")), (0..1).into()),
-            op: BinaryOp::Less,
+            op: BinOp::Lt,
             rhs: Spanned(
                 Box::new(Expr::Binary {
                     lhs: Spanned(Box::new(no_span!("3")), (4..5).into()),
-                    op: BinaryOp::Mul,
+                    op: BinOp::Mul,
                     rhs: Spanned(Box::new(no_span!("1")), (8..9).into()),
                 }),
                 (4..9).into(),
@@ -240,11 +240,11 @@ fn arithmetic() {
         no_span!("2 < (3 * 1)"),
         Expr::Binary {
             lhs: Spanned(Box::new(no_span!("2")), (0..1).into()),
-            op: BinaryOp::Less,
+            op: BinOp::Lt,
             rhs: Spanned(
                 Box::new(Expr::Binary {
                     lhs: Spanned(Box::new(no_span!("3")), (5..6).into()),
-                    op: BinaryOp::Mul,
+                    op: BinOp::Mul,
                     rhs: Spanned(Box::new(no_span!("1")), (9..10).into()),
                 }),
                 (5..10).into(),
@@ -256,7 +256,7 @@ fn arithmetic() {
         no_span!("true && false"),
         Expr::Binary {
             lhs: Spanned(Box::new(no_span!("true")), (0..4).into()),
-            op: BinaryOp::And,
+            op: BinOp::And,
             rhs: Spanned(Box::new(no_span!("false")), (8..13).into()),
         },
     );
@@ -265,7 +265,7 @@ fn arithmetic() {
         no_span!("true || false"),
         Expr::Binary {
             lhs: Spanned(Box::new(no_span!("true")), (0..4).into()),
-            op: BinaryOp::Or,
+            op: BinOp::Or,
             rhs: Spanned(Box::new(no_span!("false")), (8..13).into()),
         },
     );
@@ -276,12 +276,12 @@ fn arithmetic() {
             lhs: Spanned(
                 Box::new(Expr::Binary {
                     lhs: Spanned(Box::new(no_span!("true")), (0..4).into()),
-                    op: BinaryOp::And,
+                    op: BinOp::And,
                     rhs: Spanned(Box::new(no_span!("false")), (8..13).into()),
                 }),
                 (0..13).into(),
             ),
-            op: BinaryOp::Or,
+            op: BinOp::Or,
             rhs: Spanned(Box::new(no_span!("true")), (17..21).into()),
         },
     );
@@ -290,11 +290,11 @@ fn arithmetic() {
         no_span!("true || false && true"),
         Expr::Binary {
             lhs: Spanned(Box::new(no_span!("true")), (0..4).into()),
-            op: BinaryOp::Or,
+            op: BinOp::Or,
             rhs: Spanned(
                 Box::new(Expr::Binary {
                     lhs: Spanned(Box::new(no_span!("false")), (8..13).into()),
-                    op: BinaryOp::And,
+                    op: BinOp::And,
                     rhs: Spanned(Box::new(no_span!("true")), (17..21).into()),
                 }),
                 (8..21).into(),
@@ -443,7 +443,7 @@ fn fields() {
                 }),
                 (0..5).into(),
             ),
-            op: BinaryOp::Mul,
+            op: BinOp::Mul,
             rhs: Spanned(
                 Box::new(Expr::Field {
                     expr: Spanned(Box::new(no_span!("y")), (8..9).into()),

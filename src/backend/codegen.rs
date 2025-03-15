@@ -1,13 +1,13 @@
 use super::fmf::{ExprFMF, OpFMF};
 use crate::frontend::lexer::Spanned;
 use crate::inference::Typed;
-use crate::ir::expr::{BinaryOp, DictEntry};
+use crate::ir::expr::{BinOp, DictEntry};
 use crate::ir::r#type::{DictHint, Type};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
-    parse2, parse_quote, BinOp, Error, ExprBinary, ExprField, ExprRange, Index, LitInt,
-    Member, RangeLimits,
+    parse2, parse_quote, Error, ExprBinary, ExprField, ExprRange, Index, LitInt, Member,
+    RangeLimits,
 };
 
 impl From<ExprFMF<'_>> for String {
@@ -401,21 +401,21 @@ impl From<DictHint> for syn::Type {
     }
 }
 
-impl From<BinaryOp> for BinOp {
-    fn from(op: BinaryOp) -> Self {
+impl From<BinOp> for syn::BinOp {
+    fn from(op: BinOp) -> Self {
         match op {
-            BinaryOp::Add => Self::Add(Default::default()),
-            BinaryOp::Sub => Self::Sub(Default::default()),
-            BinaryOp::Mul => Self::Mul(Default::default()),
-            BinaryOp::Div => Self::Div(Default::default()),
-            BinaryOp::Eq => Self::Eq(Default::default()),
-            BinaryOp::NotEq => Self::Ne(Default::default()),
-            BinaryOp::Less => Self::Lt(Default::default()),
-            BinaryOp::Great => Self::Gt(Default::default()),
-            BinaryOp::LessEq => Self::Le(Default::default()),
-            BinaryOp::GreatEq => Self::Ge(Default::default()),
-            BinaryOp::And => Self::And(Default::default()),
-            BinaryOp::Or => Self::Or(Default::default()),
+            BinOp::Add => Self::Add(Default::default()),
+            BinOp::Sub => Self::Sub(Default::default()),
+            BinOp::Mul => Self::Mul(Default::default()),
+            BinOp::Div => Self::Div(Default::default()),
+            BinOp::Eq => Self::Eq(Default::default()),
+            BinOp::Ne => Self::Ne(Default::default()),
+            BinOp::Lt => Self::Lt(Default::default()),
+            BinOp::Gt => Self::Gt(Default::default()),
+            BinOp::Le => Self::Le(Default::default()),
+            BinOp::Ge => Self::Ge(Default::default()),
+            BinOp::And => Self::And(Default::default()),
+            BinOp::Or => Self::Or(Default::default()),
         }
     }
 }

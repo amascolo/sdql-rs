@@ -49,7 +49,7 @@ pub enum Expr<'src> {
     },
     Binary {
         lhs: Spanned<Box<Self>>,
-        op: BinaryOp,
+        op: BinOp,
         rhs: Spanned<Box<Self>>,
     },
     If {
@@ -141,17 +141,17 @@ pub enum UnaryOp {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum BinaryOp {
+pub enum BinOp {
     Add,
     Sub,
     Mul,
     Div,
     Eq,
-    NotEq,
-    Less,
-    Great,
-    LessEq,
-    GreatEq,
+    Ne,
+    Lt,
+    Gt,
+    Le,
+    Ge,
     And,
     Or,
 }
@@ -255,7 +255,7 @@ impl fmt::Display for UnaryOp {
     }
 }
 
-impl fmt::Display for BinaryOp {
+impl fmt::Display for BinOp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::Add => "+",
@@ -263,11 +263,11 @@ impl fmt::Display for BinaryOp {
             Self::Mul => "*",
             Self::Div => "/",
             Self::Eq => "==",
-            Self::NotEq => "!=",
-            Self::Less => "<",
-            Self::Great => ">",
-            Self::LessEq => "<=",
-            Self::GreatEq => ">=",
+            Self::Ne => "!=",
+            Self::Lt => "<",
+            Self::Gt => ">",
+            Self::Le => "<=",
+            Self::Ge => ">=",
             Self::And => "&&",
             Self::Or => "||",
         }

@@ -1,5 +1,5 @@
 use crate::frontend::lexer::{DictHintToken, ScalarType, Spanned, Token};
-use crate::ir::expr::{BinaryOp, DictEntry, Expr, RecordValue, UnaryOp};
+use crate::ir::expr::{BinOp, DictEntry, Expr, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, RecordType, Type};
 use crate::runtime::Date;
 use chumsky::error::Rich;
@@ -295,8 +295,8 @@ where
 
             // Product ops (multiply and divide) have equal precedence
             let op = just(Token::Op("*"))
-                .to(BinaryOp::Mul)
-                .or(just(Token::Op("/")).to(BinaryOp::Div));
+                .to(BinOp::Mul)
+                .or(just(Token::Op("/")).to(BinOp::Div));
             let product = not
                 .clone()
                 .foldl_with(op.then(not).repeated(), |lhs, (op, rhs), e| {
@@ -312,8 +312,8 @@ where
 
             // Sum ops (add and subtract) have equal precedence
             let op = just(Token::Op("+"))
-                .to(BinaryOp::Add)
-                .or(just(Token::Op("-")).to(BinaryOp::Sub));
+                .to(BinOp::Add)
+                .or(just(Token::Op("-")).to(BinOp::Sub));
             let sum =
                 product
                     .clone()
@@ -330,12 +330,12 @@ where
 
             // Comparison ops (equal, not-equal, etc) have equal precedence
             let op = choice((
-                just(Token::Op("==")).to(BinaryOp::Eq),
-                just(Token::Op("!=")).to(BinaryOp::NotEq),
-                just(Token::Op("<=")).to(BinaryOp::LessEq),
-                just(Token::Op(">=")).to(BinaryOp::GreatEq),
-                just(Token::Op("<")).to(BinaryOp::Less),
-                just(Token::Op(">")).to(BinaryOp::Great),
+                just(Token::Op("==")).to(BinOp::Eq),
+                just(Token::Op("!=")).to(BinOp::Ne),
+                just(Token::Op("<=")).to(BinOp::Le),
+                just(Token::Op(">=")).to(BinOp::Ge),
+                just(Token::Op("<")).to(BinOp::Lt),
+                just(Token::Op(">")).to(BinOp::Gt),
             ));
             let compare = sum
                 .clone()
@@ -350,7 +350,7 @@ where
                     )
                 });
 
-            let op = just(Token::Op("&&")).to(BinaryOp::And);
+            let op = just(Token::Op("&&")).to(BinOp::And);
             let and =
                 compare
                     .clone()
@@ -365,7 +365,7 @@ where
                         )
                     });
 
-            let op = just(Token::Op("||")).to(BinaryOp::Or);
+            let op = just(Token::Op("||")).to(BinOp::Or);
             let or = and
                 .clone()
                 .foldl_with(op.then(and).repeated(), |lhs, (op, rhs), e| {
