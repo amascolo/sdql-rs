@@ -6,6 +6,7 @@ mod record;
 mod varchar;
 
 pub use bool::{Bool, FALSE, TRUE};
+pub use csv;
 pub use date::{month_from_int, Date};
 pub use hashmap::HashMap;
 pub use ordered_float::OrderedFloat;
