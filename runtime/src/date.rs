@@ -11,6 +11,14 @@ impl Date {
     pub const fn new(date: time::Date) -> Self {
         Date(date)
     }
+
+    pub const fn from(year: i32, month: u32, day: u8) -> Self {
+        let month: Month = month_from_int(month);
+        match time::Date::from_calendar_date(year, month, day) {
+            Ok(date) => Self::new(date),
+            _ => unreachable!(),
+        }
+    }
 }
 
 impl fmt::Display for Date {
@@ -54,15 +62,11 @@ pub const fn month_from_int(m: u32) -> Month {
 
 #[macro_export]
 macro_rules! date {
-    ($yymmdd:literal) => {{
-        const YEAR: i32 = ($yymmdd / 10000) as i32;
-        const MONTH: time::Month = $crate::month_from_int(($yymmdd / 100) % 100);
-        const DAY: u8 = ($yymmdd % 100) as u8;
-
-        match time::Date::from_calendar_date(YEAR, MONTH, DAY) {
-            Ok(date) => $crate::Date::new(date),
-            _ => unreachable!(),
-        }
+    ($yyyymmdd:literal) => {{
+        const YEAR: i32 = ($yyyymmdd / 10000) as i32;
+        const MONTH: u32 = ($yyyymmdd / 100) % 100;
+        const DAY: u8 = ($yyyymmdd % 100) as u8;
+        $crate::Date::from(YEAR, MONTH, DAY)
     }};
 }
 

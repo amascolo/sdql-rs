@@ -18,14 +18,13 @@ derive_more = { version = "2.0.1", features = ["display"] }
 im-rc = "15.1.0"
 itertools = "0.14.0"
 ordered-float = "4.6.0"
-rayon = "1.10.0"
-quote = "1.0"
-syn = { version = "2.0", features = ["full", "extra-traits"] }
-proc-macro2 = "1.0"
 prettyplease = "0.2"
+proc-macro2 = "1.0"
+quote = "1.0"
+rayon = "1.10.0" # TODO eventually get rid, it's for runtime
+syn = { version = "2.0", features = ["full", "extra-traits"] }
 time = { version = "0.3.37", features = ["parsing"] }
 
-# TODO get rid of rayon and time dependencies that are for runtime
 sdql_runtime = { path = "runtime" }
 
 [dev-dependencies]
