@@ -617,8 +617,10 @@ name = "sdql_runtime"
 version = "0.1.0"
 dependencies = [
  "arrayvec",
+ "csv",
  "derive_more",
  "hashbrown",
+ "ordered-float",
  "rayon",
  "time",
 ]

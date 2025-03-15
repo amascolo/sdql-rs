@@ -13,7 +13,11 @@ use syn::{
 impl From<ExprFMF<'_>> for String {
     fn from(expr: ExprFMF<'_>) -> Self {
         let tks: TokenStream = expr.into();
-        let main_tks = quote! { fn main() { #tks } };
+        let main_tks = quote! {
+            #![feature(stmt_expr_attributes)]
+            use sdql_runtime::*;
+            fn main() { #tks; }
+        };
         let ast = parse2(main_tks).unwrap();
         prettyplease::unparse(&ast)
     }
