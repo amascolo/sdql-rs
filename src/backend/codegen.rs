@@ -6,7 +6,7 @@ use crate::ir::r#type::{DictHint, Type};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
-    parse2, parse_quote, BinOp, Error, ExprBinary, ExprField, ExprRange, Index, LitInt,
+    parse2, parse_quote, BinOp, Error, ExprBinary, ExprField, ExprRange, ExprTuple, Index, LitInt,
     Member, RangeLimits,
 };
 
@@ -44,7 +44,11 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let ident = Ident::new(val, Span::call_site());
                 quote!(#ident)
             }
-            ExprFMF::Bool { val } => quote! { #val },
+            ExprFMF::Bool { val } => {
+                let val = if val { "TRUE" } else { "FALSE" };
+                let ident = Ident::new(val, Span::call_site());
+                quote!(#ident)
+            }
             ExprFMF::Date { val } => format!(
                 "date!({:04}{:02}{:02})",
                 val.0.year(),
@@ -60,7 +64,7 @@ impl From<ExprFMF<'_>> for TokenStream {
             ExprFMF::String {
                 val,
                 max_len: Some(max_len),
-            } => quote! { ArrayString::<#max_len>::from(#val).unwrap() },
+            } => quote! { VarChar::<#max_len>::from(#val).unwrap() },
             ExprFMF::Let { lhs, rhs, cont } => {
                 let lhs_ident = Ident::new(lhs, Span::call_site());
                 let lhs_tks = quote! { #lhs_ident };
@@ -137,7 +141,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let rhs: TokenStream = rhs.into();
                 let lhs = (0..lhs_len).map(Index::from).map(|i| quote! { #lhs.#i });
                 let rhs = (0..rhs_len).map(Index::from).map(|i| quote! { #rhs.#i });
-                quote! { Record::new(#(#lhs),*, #(#rhs),*) }
+                quote! { Record::new((#(#lhs),*, #(#rhs),*)) }
             }
             ExprFMF::FMF {
                 op: OpFMF::Filter,
@@ -264,11 +268,11 @@ impl From<ExprFMF<'_>> for TokenStream {
                         }
                     }
                 };
-                let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
+                let args = gen_args(args);
                 let key: TokenStream = map.key.into();
                 let val: TokenStream = map.val.into();
                 quote! {
-                    .fold(#init, |mut acc, #(#args),*| {
+                    .fold(#init, |mut acc, #args| {
                         acc[&#key] += #val;
                         acc
                     })
@@ -282,6 +286,26 @@ impl From<ExprFMF<'_>> for TokenStream {
             ExprFMF::Unique { expr } => expr.into(), // TODO
             t => todo!("{t:?}"),
         }
+    }
+}
+
+fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
+    match args.len() {
+        0 => unimplemented!(),
+        1 => {
+            let name = &args[0];
+            let ident = Ident::new(name, Span::call_site());
+            syn::Expr::Path(parse_quote! { #ident })
+        }
+        _ => syn::Expr::Tuple(ExprTuple {
+            attrs: Vec::new(),
+            paren_token: Default::default(),
+            elems: args
+                .iter()
+                .map(|name| Ident::new(name, Span::call_site()))
+                .map(|ident: Ident| syn::Expr::Path(parse_quote! { #ident }))
+                .collect(),
+        }),
     }
 }
 
@@ -320,7 +344,7 @@ impl From<&Type<'_>> for syn::Type {
                 max_len: Some(max_len),
             } => {
                 let max_len = LitInt::new(&max_len.to_string(), Span::call_site());
-                parse_quote!(ArrayString<#max_len>)
+                parse_quote!(VarChar<#max_len>)
             }
             Type::Record(_) => parse_quote!(Record),
             Type::Dict { hint, .. } => to_type(*hint),
