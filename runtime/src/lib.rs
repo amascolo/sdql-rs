@@ -11,4 +11,5 @@ pub use date::{month_from_int, Date};
 pub use hashmap::HashMap;
 pub use ordered_float::OrderedFloat;
 pub use record::Record;
+pub use std::str::FromStr;
 pub use varchar::VarChar;
