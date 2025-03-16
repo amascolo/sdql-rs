@@ -16,7 +16,6 @@ let s_h =
 let p_h =
   sum(<i,_> <- range(part.size))
 //    if(ext(`StrContains`, p.p_name, "green")) then
-    if(true) then
       { unique(part.p_partkey(i)) -> < _ = part.p_partkey(i) > }
 
 let ps_h =

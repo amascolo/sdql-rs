@@ -391,33 +391,9 @@
 //     })
 // }
 
-use sdql::rs;
-use std::fs::File;
-use std::io::Write;
-use std::process::Command;
+// TODO
+// use sdql::cli::run_tpch;
 
 fn main() {
-    let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q18.sdql"));
-    let src = &src.replace("datasets/tpch/", "../datasets/tpch_datasets/SF_0.01/");
-    let generated_code = rs!(src);
-
-    File::create("generated/src/main.rs")
-        .unwrap()
-        .write_all(generated_code.as_bytes())
-        .unwrap();
-
-    let output = Command::new("cargo")
-        .arg("run")
-        .current_dir("generated")
-        .output()
-        .unwrap();
-
-    if output.status.success() {
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        println!("{stdout}");
-    } else {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        let stderr = stderr.replace("--> src/main.rs:", "--> generated/src/main.rs:");
-        eprintln!("{stderr}");
-    }
+    todo!();
 }

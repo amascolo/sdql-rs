@@ -179,8 +179,9 @@ impl From<ExprFMF<'_>> for TokenStream {
                 cont: None,
             } => {
                 let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
+                let r#type: syn::Type = (&inner.r#type).into();
                 let inner: TokenStream = inner.into();
-                quote! {.map(|#(#args),*| #inner).sum()}
+                quote! {.map(|#(#args),*| #inner).sum::<#r#type>()}
             }
             ExprFMF::Binary { lhs, op, rhs } => {
                 let lhs = parse2(lhs.into()).unwrap();
@@ -246,7 +247,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                     let lhs: TokenStream = lhs.into();
                     let rhs: TokenStream = rhs.into();
                     match hint {
-                        Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs] },
+                        Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs as usize] },
                         _ => quote! { #lhs[&#rhs] },
                     }
                 }
@@ -285,9 +286,18 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let args = gen_args(args);
                 let key: TokenStream = map.key.into();
                 let val: TokenStream = map.val.into();
+                let key = if let Type::Dict {
+                    hint: Some(DictHint::Vec { .. }),
+                    ..
+                } = inner.r#type
+                {
+                    quote! { #key as usize }
+                } else {
+                    quote! { &#key }
+                };
                 quote! {
                     .fold(#init, |mut acc, #args| {
-                        acc[&#key] += #val;
+                        acc[#key] += #val;
                         acc
                     })
                 }
@@ -363,6 +373,15 @@ impl From<&Type<'_>> for syn::Type {
                     tps.iter().map(|rt| syn::Type::from(&rt.r#type)).collect();
                 parse_quote!(Record<(#(#tps),*,)>)
             }
+            Type::Dict {
+                key: _,
+                val,
+                hint: hint @ Some(DictHint::Vec { .. }),
+            } => {
+                let dict = to_type(*hint);
+                let val = syn::Type::from(&**val);
+                parse_quote!(#dict::<#val>)
+            }
             Type::Dict { key, val, hint } => {
                 let dict = to_type(*hint);
                 let key = syn::Type::from(&**key);
@@ -384,6 +403,15 @@ fn qualified_type(r#type: &Type) -> syn::Type {
         Type::Record(tps) => {
             let tps: Vec<syn::Type> = tps.iter().map(|rt| syn::Type::from(&rt.r#type)).collect();
             parse_quote!(Record::<(#(#tps),*,)>)
+        }
+        Type::Dict {
+            key: _,
+            val,
+            hint: hint @ Some(DictHint::Vec { .. }),
+        } => {
+            let dict = to_type(*hint);
+            let val = syn::Type::from(&**val);
+            parse_quote!(#dict::<#val>)
         }
         Type::Dict { key, val, hint } => {
             let dict = to_type(*hint);
@@ -434,12 +462,39 @@ impl From<BinOp> for syn::BinOp {
 mod tests {
     use crate::rs;
 
-    const LOAD: &str = "load[<l_orderkey: @vec {int -> int}, l_partkey: @vec {int -> int}, l_suppkey: @vec {int -> int}, l_linenumber: @vec {int -> int}, l_quantity: @vec {int -> real}, l_extendedprice: @vec {int -> real}, l_discount: @vec {int -> real}, l_tax: @vec {int -> real}, l_returnflag: @vec {int -> varchar(1)}, l_linestatus: @vec {int -> varchar(1)}, l_shipdate: @vec {int -> date}, l_commitdate: @vec {int -> date}, l_receiptdate: @vec {int -> date}, l_shipinstruct: @vec {int -> varchar(25)}, l_shipmode: @vec {int -> varchar(10)}, l_comment: @vec {int -> varchar(44)}, size: int>](\"datasets/tpch_datasets/SF_0.01/lineitem.tbl\")";
+    #[test]
+    fn tpch_q1() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q1.sdql"));
+        let _ = rs!(src);
+    }
 
     #[test]
-    fn test_load() {
-        let src: &str = &format!("let _ = {LOAD} in 0");
-        let _rs = rs!(src);
-        // println!("{_rs}");
+    fn tpch_q3() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
+        let _ = rs!(src);
+    }
+
+    #[test]
+    fn tpch_q5() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q5.sdql"));
+        let _ = rs!(src);
+    }
+
+    #[test]
+    fn tpch_q6() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q6.sdql"));
+        let _ = rs!(src);
+    }
+
+    #[test]
+    fn tpch_q9() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q9.sdql"));
+        let _ = rs!(src);
+    }
+
+    #[test]
+    fn tpch_q18() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q18.sdql"));
+        let _ = rs!(src);
     }
 }

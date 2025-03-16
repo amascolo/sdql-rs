@@ -1,43 +1,12 @@
-use sdql::rs;
+use sdql::cli::run_tpch;
 
+// FIXME make it fail when it prints output!
 #[test]
-fn tpch_q1() {
-    let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q1.sdql"));
-    let _rs = rs!(src);
-    // println!("{_rs}");
-}
-
-#[test]
-fn tpch_q3() {
-    let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
-    let _rs = rs!(src);
-    // println!("{_rs}");
-}
-
-#[test]
-fn tpch_q5() {
-    let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q5.sdql"));
-    let _rs = rs!(src);
-    // println!("{_rs}");
-}
-
-#[test]
-fn tpch_q6() {
-    let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q6.sdql"));
-    let _rs = rs!(src);
-    // println!("{_rs}");
-}
-
-#[test]
-fn tpch_q9() {
-    let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q9.sdql"));
-    let _rs = rs!(src);
-    // println!("{_rs}");
-}
-
-#[test]
-fn tpch_q18() {
-    let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q18.sdql"));
-    let _rs = rs!(src);
-    // println!("{_rs}");
+fn tpch() {
+    run_tpch(1, "0.01");
+    run_tpch(3, "0.01");
+    run_tpch(5, "0.01");
+    run_tpch(6, "0.01");
+    run_tpch(9, "0.01");
+    run_tpch(18, "0.01");
 }

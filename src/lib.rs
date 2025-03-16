@@ -1,6 +1,7 @@
 #![feature(generic_arg_infer)]
 
 pub mod backend;
+pub mod cli;
 pub mod frontend;
 pub mod inference;
 pub mod ir;
