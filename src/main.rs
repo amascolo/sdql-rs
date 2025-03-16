@@ -397,7 +397,7 @@ use std::io::Write;
 use std::process::Command;
 
 fn main() {
-    let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
+    let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q18.sdql"));
     let src = &src.replace("datasets/tpch/", "../datasets/tpch_datasets/SF_0.01/");
     let generated_code = rs!(src);
 

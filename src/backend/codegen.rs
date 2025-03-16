@@ -15,6 +15,7 @@ impl From<ExprFMF<'_>> for String {
         let tks: TokenStream = expr.into();
         let main_tks = quote! {
             #![feature(stmt_expr_attributes)]
+            #![allow(unused_variables)]
             use sdql_runtime::*;
             fn main() { #tks; }
         };
@@ -168,8 +169,8 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let inner: TokenStream = inner.into();
                 let cont = ExprFMF::from(cont.map(Spanned::unboxed));
                 let cont: TokenStream = cont.into();
-                let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
-                quote! {.filter(|#(&#args),*| #inner)#cont}
+                let args = gen_args(args);
+                quote! {.filter(|&#args| #inner)#cont}
             }
             ExprFMF::FMF {
                 op: OpFMF::Map,
