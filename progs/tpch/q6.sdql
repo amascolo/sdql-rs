@@ -5,5 +5,3 @@ sum(<i,_> <- range(lineitem.size))
       (lineitem.l_quantity(i) < 24.0) && (date(19940101) <= lineitem.l_shipdate(i)) &&
       (lineitem.l_shipdate(i) < date(19950101))) then
     lineitem.l_extendedprice(i) * lineitem.l_discount(i)
-//  else
-//    0
