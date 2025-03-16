@@ -304,10 +304,15 @@ impl From<ExprFMF<'_>> for TokenStream {
 
 fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
     let len = args.len();
-    let mut args = args
-        .into_iter()
-        .map(|arg| Ident::new(arg, Span::call_site()))
-        .map(|arg| parse_quote! { &#arg });
+    let mut args = args.into_iter().map(|arg| {
+        let ident = Ident::new(arg, Span::call_site());
+        // FIXME hack
+        if arg == "i" {
+            parse_quote! { #ident }
+        } else {
+            parse_quote! { &#ident }
+        }
+    });
     match len {
         0 => unimplemented!(),
         1 => args.next().unwrap(),

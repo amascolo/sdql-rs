@@ -398,10 +398,13 @@ use std::process::Command;
 
 fn main() {
     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q1.sdql"));
+    let src = &src.replace("datasets/tpch/", "../datasets/tpch_datasets/SF_0.01/");
     let generated_code = rs!(src);
 
-    let mut tmp_file = File::create("generated/src/main.rs").unwrap();
-    tmp_file.write_all(generated_code.as_bytes()).unwrap();
+    File::create("generated/src/main.rs")
+        .unwrap()
+        .write_all(generated_code.as_bytes())
+        .unwrap();
 
     let output = Command::new("cargo")
         .arg("run")
