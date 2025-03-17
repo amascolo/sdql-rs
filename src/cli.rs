@@ -3,68 +3,63 @@ use std::fs::{self, File};
 use std::io::{self, Write};
 use std::process::Command;
 
-pub fn run_tpch(query: u8, sf: &str) -> Option<()> {
+pub fn run_tpch(query: u8, sf: &str) -> io::Result<()> {
     let path = format!("{}/progs/tpch/q{query}.sdql", env!("CARGO_MANIFEST_DIR"));
-    let src = fs::read_to_string(&path).unwrap().replace(
+    let src = fs::read_to_string(&path)?.replace(
         "datasets/tpch/",
-        &format!("../datasets/tpch_datasets/SF_{sf}/"),
+        &format!("../../datasets/tpch_datasets/SF_{sf}/"),
     );
     let code = rs!(&src);
     run(query, &code)
 }
 
-pub fn run(query: u8, code: &str) -> Option<()> {
+pub fn run(query: u8, code: &str) -> io::Result<()> {
     let name = &format!("q{query}");
-
-    let path = format!("generated/{name}.rs");
-    File::create(path).ok()?.write_all(code.as_bytes()).ok()?;
-
-    create_cargo_toml(&name)?;
+    let path = format!("generated/{name}/{name}.rs");
+    if let Some(parent) = std::path::Path::new(&path).parent() {
+        fs::create_dir_all(parent)?;
+    }
+    File::create(path)?.write_all(code.as_bytes())?;
+    cargo_toml(&name)?;
     cargo_run(name)
 }
 
-fn cargo_run(name: &str) -> Option<()> {
-    let output = cargo_cmd().arg(name).output().ok()?;
+fn cargo_run(name: &str) -> io::Result<()> {
+    let dir_path = &format!("generated/{name}");
+    let output = Command::new("cargo")
+        .current_dir(dir_path)
+        .arg("run")
+        .arg("--release")
+        .arg("--bin")
+        .arg(name)
+        .output()?;
     if output.status.success() {
         let stdout = String::from_utf8_lossy(&output.stdout);
-        io::stdout().write_all(stdout.as_bytes()).ok()
+        io::stdout().write_all(stdout.as_bytes())
     } else {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        let stderr = stderr.replace(&format!("{name}.rs:"), &format!("generated/{name}.rs:"));
-        io::stderr().write_all(stderr.as_bytes()).ok()?;
-        None
+        let stderr = stderr.replace(&format!("{name}.rs:"), &format!("{dir_path}/{name}.rs:"));
+        io::stderr().write_all(stderr.as_bytes())?;
+        Err(io::Error::new(io::ErrorKind::Other, stderr))
     }
 }
 
-fn cargo_cmd() -> Command {
-    let mut cmd = Command::new("cargo");
-    cmd.current_dir("generated")
-        .arg("run")
-        .arg("--release")
-        .arg("--bin");
-    cmd
+fn cargo_toml(name: &str) -> io::Result<()> {
+    let contents = toml_contents(name);
+    let path = format!("generated/{name}/cargo.toml");
+    File::create(path)?.write_all(contents.as_bytes())
 }
 
-fn create_cargo_toml(name: &str) -> Option<()> {
-    let cargo = CARGO_TOML.to_owned() + &bin_toml(&name);
-    let cargo = cargo.as_bytes();
-    File::create(CARGO_PATH).ok()?.write_all(cargo).ok()
-}
-
-const CARGO_PATH: &str = "generated/cargo.toml";
-
-const CARGO_TOML: &str = r#"[package]
-name = "generated"
+fn toml_contents(name: &str) -> String {
+    format!(
+        r#"[package]
+name = "{name}"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-sdql_runtime = { path = "../runtime" }
-"#;
+sdql_runtime = {{ path = "../../runtime" }}
 
-fn bin_toml(name: &str) -> String {
-    format!(
-        r#"
 [[bin]]
 name = "{name}"
 path = "{name}.rs"
