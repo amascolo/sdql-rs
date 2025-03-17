@@ -7,5 +7,5 @@ edition = "2024"
 sdql_runtime = { path = "../runtime" }
 
 [[bin]]
-name = "generated"
-path = "main.rs"
+name = "q18"
+path = "q18.rs"
