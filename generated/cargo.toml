@@ -5,7 +5,3 @@ edition = "2024"
 
 [dependencies]
 sdql_runtime = { path = "../runtime" }
-
-[[bin]]
-name = "q18"
-path = "q18.rs"
