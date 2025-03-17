@@ -14,7 +14,7 @@ pub fn run_tpch(query: u8, sf: &str) -> Option<()> {
 }
 
 pub fn run(code: &str) -> Option<()> {
-    File::create("generated/src/main.rs")
+    File::create("generated/main.rs")
         .ok()?
         .write_all(code.as_bytes())
         .ok()?;
@@ -31,7 +31,7 @@ pub fn run(code: &str) -> Option<()> {
         io::stdout().write_all(stdout.as_bytes()).ok()
     } else {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        let stderr = stderr.replace("src/main.rs:", "generated/src/main.rs:");
+        let stderr = stderr.replace("main.rs:", "generated/main.rs:");
         writeln!(io::stderr(), "{stderr}").ok()?;
         None
     }
