@@ -629,12 +629,12 @@ fn unique() {
 
 #[test]
 fn tpch_q3() {
-    let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
+    let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/3.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
 fn tpch_q6() {
-    let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q6.sdql"));
+    let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/6.sdql"));
     let _ = no_span!(prog);
 }

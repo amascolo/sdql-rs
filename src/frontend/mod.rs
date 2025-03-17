@@ -2,8 +2,8 @@ pub mod lexer;
 mod parser;
 
 use crate::ir::expr::Expr;
-use chumsky::{error::Rich, input::Input, span::SimpleSpan, Parser};
-use lexer::{lexer, Spanned, Token};
+use chumsky::{Parser, error::Rich, input::Input, span::SimpleSpan};
+use lexer::{Spanned, Token, lexer};
 use parser::expr_parser;
 
 #[macro_export]

@@ -1,7 +1,7 @@
 use crate::utils::round;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
-use sdql_runtime::{date, Bool, Date, HashMap, Record};
+use sdql_runtime::{Bool, Date, HashMap, Record, date};
 
 pub mod parallel;
 pub mod sequential;

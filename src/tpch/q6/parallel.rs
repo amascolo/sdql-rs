@@ -1,4 +1,4 @@
-use super::{TypeQ6, _19940101, _19950101};
+use super::{_19940101, _19950101, TypeQ6};
 use crate::tpch::read::read_lineitems;
 use crate::tpch::types::Lineitem;
 use ordered_float::OrderedFloat;

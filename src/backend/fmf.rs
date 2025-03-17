@@ -2,8 +2,8 @@ use crate::frontend::lexer::Spanned;
 use crate::inference::{Typed, TypedExpr};
 use crate::ir::expr::{BinOp, DictEntry, External, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, Field, Type};
-use sdql_runtime::Date;
 use im_rc::vector;
+use sdql_runtime::Date;
 use std::fmt;
 
 #[allow(dead_code)] // TODO remove after using External
@@ -509,7 +509,7 @@ mod tests {
 
     #[test]
     fn tpch_q3() {
-        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/3.sdql"));
         let typed = Typed::from(sdql!(src));
         let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
         assert_eq!(Typed::from(fmf), typed);
@@ -517,7 +517,7 @@ mod tests {
 
     #[test]
     fn tpch_q6() {
-        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q6.sdql"));
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/6.sdql"));
         let typed = Typed::from(sdql!(src));
         let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
         assert_eq!(Typed::from(fmf), typed);

@@ -1,8 +1,8 @@
 use crate::frontend::lexer::Spanned;
 use crate::ir::expr::{BinOp, DictEntry, Expr, External, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, Field, RecordType, Type};
-use sdql_runtime::Date;
 use derive_more::Display;
+use sdql_runtime::Date;
 use std::fmt;
 
 #[derive(Clone, Debug, Display, PartialEq)]
@@ -524,14 +524,14 @@ mod tests {
 
     #[test]
     fn tpch_q3() {
-        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/3.sdql"));
         let expr = sdql!(src);
         assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
     }
 
     #[test]
     fn tpch_q6() {
-        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q6.sdql"));
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/6.sdql"));
         let expr = sdql!(src);
         assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
     }

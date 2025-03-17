@@ -1,5 +1,5 @@
-use sdql_runtime::{Date, VarChar};
 use ordered_float::OrderedFloat;
+use sdql_runtime::{Date, VarChar};
 
 pub type Customer = (
     /* custkey */ Vec<i32>,

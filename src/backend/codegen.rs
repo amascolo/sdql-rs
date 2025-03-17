@@ -6,8 +6,8 @@ use crate::ir::r#type::{DictHint, Type};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
-    parse2, parse_quote, Error, ExprBinary, ExprField, ExprRange, Index, LitInt, Member,
-    RangeLimits,
+    Error, ExprBinary, ExprField, ExprRange, Index, LitInt, Member, RangeLimits, parse_quote,
+    parse2,
 };
 
 impl From<ExprFMF<'_>> for String {
@@ -464,37 +464,37 @@ mod tests {
 
     #[test]
     fn tpch_q1() {
-        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q1.sdql"));
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/1.sdql"));
         let _ = rs!(src);
     }
 
     #[test]
     fn tpch_q3() {
-        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q3.sdql"));
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/3.sdql"));
         let _ = rs!(src);
     }
 
     #[test]
     fn tpch_q5() {
-        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q5.sdql"));
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/5.sdql"));
         let _ = rs!(src);
     }
 
     #[test]
     fn tpch_q6() {
-        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q6.sdql"));
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/6.sdql"));
         let _ = rs!(src);
     }
 
     #[test]
     fn tpch_q9() {
-        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q9.sdql"));
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/9.sdql"));
         let _ = rs!(src);
     }
 
     #[test]
     fn tpch_q18() {
-        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/q18.sdql"));
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/18.sdql"));
         let _ = rs!(src);
     }
 }

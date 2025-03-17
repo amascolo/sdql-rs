@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use sdql::tpch::q3::parallel::q3_query_rayon;
 use sdql::tpch::q3::sequential::q3_query;
 use sdql::tpch::q6::parallel::q6_query_rayon;

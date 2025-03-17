@@ -1,10 +1,10 @@
-use super::TypeQ3;
 use super::_19950315;
+use super::TypeQ3;
 
-use sdql_runtime::{Date, HashMap, Record, VarChar, TRUE};
 use crate::tpch::read::{read_customers, read_lineitems, read_orders};
 use crate::tpch::types::{Customer, Lineitem, Orders};
 use ordered_float::OrderedFloat;
+use sdql_runtime::{Date, HashMap, Record, TRUE, VarChar};
 use std::error::Error;
 
 pub fn q3(sf: &str) -> Result<TypeQ3, Box<dyn Error>> {
