@@ -4,22 +4,22 @@ use std::io::{self, Write};
 use std::path::Path;
 use std::process::Command;
 
-pub fn run_tpch(query: u8, sf: &str) -> io::Result<()> {
-    let path = format!("{}/progs/tpch/{query}.sdql", env!("CARGO_MANIFEST_DIR"));
+pub fn run_tpch(name: u8, sf: &str) -> io::Result<()> {
+    let path = format!("{}/progs/tpch/{name}.sdql", env!("CARGO_MANIFEST_DIR"));
     let src = fs::read_to_string(&path)?.replace(
         "datasets/tpch/",
         &format!("datasets/tpch_datasets/SF_{sf}/"),
     );
     let code = rs!(&src);
-    run(&query.to_string(), &code)
+    run(&name.to_string(), &code)
 }
 
-pub fn run(query: &str, code: &str) -> io::Result<()> {
-    write_if_different(query, code)?;
+pub fn run(name: &str, code: &str) -> io::Result<()> {
+    write_if_different(name, code)?; // avoids triggering recompilation
     let output = Command::new("cargo")
         .arg("run")
         .arg("--bin")
-        .arg(query)
+        .arg(name)
         .output()?;
     if output.status.success() {
         let stdout = String::from_utf8_lossy(&output.stdout);
@@ -31,8 +31,8 @@ pub fn run(query: &str, code: &str) -> io::Result<()> {
     }
 }
 
-fn write_if_different(query: &str, code: &str) -> io::Result<()> {
-    let path = format!("src/bin/{query}.rs");
+fn write_if_different(name: &str, code: &str) -> io::Result<()> {
+    let path = format!("src/bin/{name}.rs");
     let path = Path::new(&path);
     if path.exists() && fs::read(path)? == code.as_bytes() {
         return Ok(());
