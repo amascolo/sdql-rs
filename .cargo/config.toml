@@ -1,0 +1,2 @@
+[alias]
+compile = "run --release --bin main"
