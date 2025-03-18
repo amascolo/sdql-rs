@@ -22,14 +22,10 @@ rayon = "1.10.0" # TODO eventually get rid, it's for runtime
 syn = { version = "2.0", features = ["full", "extra-traits"] }
 time = { version = "0.3.37", features = ["parsing"] }
 
-sdql_runtime = { path = "runtime" }
+sdql_runtime = { path = "runtime" } # TODO optional, only for binaries
 
 [dev-dependencies]
 criterion = "0.5.1"
-
-[[bin]]
-name = "compile"
-path = "src/bin/compile.rs"
 
 [[bench]]
 name = "tpch"
