@@ -39,13 +39,13 @@ fn sdql_static() {
             OrderedFloat<f64>,
             i32,
         )>,
-    > = sdql_static!(include!("tests/results/tpch/SF_0.01/q1.result"));
-    let _ = sdql_static!(include!("tests/results/tpch/SF_0.01/q3.result"));
+    > = sdql_static!(include!("tests/results/tpch/SF_0.01/1.sdql"));
+    let _ = sdql_static!(include!("tests/results/tpch/SF_0.01/3.sdql"));
     let _: HashMap<Record<(VarChar<10>, OrderedFloat<f64>)>, Bool> =
-        sdql_static!(include!("tests/results/tpch/SF_0.01/q5.result"));
-    let _ = sdql_static!(include!("tests/results/tpch/SF_0.01/q6.result"));
+        sdql_static!(include!("tests/results/tpch/SF_0.01/5.sdql"));
+    let _ = sdql_static!(include!("tests/results/tpch/SF_0.01/6.sdql"));
     let _: HashSet<Record<(VarChar<25>, i32, OrderedFloat<f64>)>> =
-        sdql_static!(include!("tests/results/tpch/SF_0.01/q9.result"));
+        sdql_static!(include!("tests/results/tpch/SF_0.01/9.sdql"));
     let _: HashSet<Record<(VarChar<25>, i32, i32, Date, OrderedFloat<f64>, i32)>> =
-        sdql_static!(include!("tests/results/tpch/SF_0.01/q18.result"));
+        sdql_static!(include!("tests/results/tpch/SF_0.01/18.sdql"));
 }
