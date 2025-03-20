@@ -1,4 +1,5 @@
-// use sdql_runtime::*;
+// use sdql::tpch::q3::parallel::q3_rayon;
+// use sdql::tpch::q3::sequential::q3;
 use sdql::tpch::q6::parallel::q6_rayon;
 use sdql::tpch::q6::sequential::q6;
 use sdql::utils::round;
@@ -11,7 +12,7 @@ use sdql_macros::sdql_static;
 //     let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/3.sdql"));
 //     assert_eq!(actual, expected);
 // }
-
+//
 // #[test]
 // fn q3_rayon_works() {
 //     let actual = q3_rayon("0.01").unwrap();

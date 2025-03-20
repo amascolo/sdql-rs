@@ -334,24 +334,22 @@ impl SdqlValue {
                     quote! { (#k_ts, #v_ts) }
                 });
                 quote! {
-                    // TODO remove this
-                    // ::std::collections::HashMap::from([ #( #pairs_ts ),* ])
-                    HashMap::from([ #( #pairs_ts ),* ])
+                    ::sdql_runtime::HashMap::from([ #( #pairs_ts ),* ])
                 }
             }
             SdqlValue::Record(vals) => {
                 // => Record::new((val1, val2, ...))
                 let elems = vals.into_iter().map(|v| v.into_token_stream());
                 quote! {
-                    Record::new(( #( #elems ),* ))
+                    ::sdql_runtime::Record::new(( #( #elems ),* ))
                 }
             }
             SdqlValue::Date(li) => {
                 // => date!(nnnn)
-                quote! { date!(#li) }
+                quote! { ::sdql_runtime::date!(#li) }
             }
-            SdqlValue::Bool(true) => quote! { TRUE },
-            SdqlValue::Bool(false) => quote! { FALSE },
+            SdqlValue::Bool(true) => quote! { ::sdql_runtime::TRUE },
+            SdqlValue::Bool(false) => quote! { ::sdql_runtime::FALSE },
             SdqlValue::Int(li) => quote! { #li },
             SdqlValue::Float(lf) => quote! { ::ordered_float::OrderedFloat(#lf) },
             SdqlValue::NegativeInt(li) => quote! { -(#li) },
