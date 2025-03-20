@@ -49,13 +49,6 @@ fn sdql_static() {
     );
     assert_eq!(q1_from_str, q1);
 
-    let q1_from_src = sdql_static!(include!(
-        "/Users/alex/repos/sdql-rs/tests/results/tpch/SF_0.01/q1_new.result"
-    ));
-    // // FIXME
-    // let q1_from_src = sdql_static!(include!(concat!(
-    //     env!("CARGO_MANIFEST_DIR"),
-    //     "/tests/results/tpch/SF_0.01/q1_new.result"
-    // )));
+    let q1_from_src = sdql_static!(include!("tests/results/tpch/SF_0.01/q1_new.result"));
     assert_eq!(q1_from_src, q1);
 }
