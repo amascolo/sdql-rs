@@ -3,8 +3,10 @@
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{
-    parse::{Parse, ParseStream},
-    parse_macro_input, token, Ident, LitBool, LitFloat, LitInt, LitStr, Token,
+    parse::{Parse, ParseStream, Parser},
+    parse_macro_input,
+    punctuated::Punctuated,
+    token, Error as SynError, Ident, LitBool, LitFloat, LitInt, LitStr, Token,
 };
 
 /// This macro parses a string literal and then interprets its contents
@@ -43,15 +45,162 @@ pub fn sdql_from_str(input: TokenStream) -> TokenStream {
     }
 }
 
-/// The user-facing macro entry point.
+/// The user-facing macro. We'll detect if the input is `include!(...)` or `include!(concat!(...))`,
+/// read the file ourselves, parse it, otherwise fallback to normal DSL parse.
 #[proc_macro]
 pub fn sdql_static(input: TokenStream) -> TokenStream {
-    // Parse the entire input as a single SdqlValue.
-    let parsed = syn::parse_macro_input!(input as SdqlValue);
+    let ts = proc_macro2::TokenStream::from(input);
 
-    // Convert the parsed AST to Rust code.
-    let gen = parsed.into_token_stream();
-    gen.into()
+    // Try to see if we have top-level `include!(...)` usage
+    if let Some(file_tokens) = try_expand_include_manually(&ts) {
+        // If we successfully read the file, parse it as DSL
+        match syn::parse2::<SdqlValue>(file_tokens) {
+            Ok(ast) => {
+                let gen = ast.into_token_stream();
+                return gen.into();
+            }
+            Err(e) => return e.to_compile_error().into(),
+        }
+    }
+
+    // If that didn't work or wasn't recognized, parse the usual DSL from the original tokens
+    match syn::parse2::<SdqlValue>(ts) {
+        Ok(ast) => {
+            let gen = ast.into_token_stream();
+            gen.into()
+        }
+        Err(e) => e.to_compile_error().into(),
+    }
+}
+
+/// Detect if the input is exactly `include!(...)` or `include!(concat!(...))`,
+/// read the file, and return a TokenStream of the file's contents if possible.
+fn try_expand_include_manually(
+    input: &proc_macro2::TokenStream,
+) -> Option<proc_macro2::TokenStream> {
+    // We'll parse the token stream with a small ad-hoc parser to detect:
+    //   IDENT "include"   Punct !   Group(Paren(...))
+    // Then inside that group, either a LitStr or a call to "concat!(...)" of multiple LitStr.
+
+    let mut tokens = input.clone().into_iter().peekable();
+
+    // 1) We expect an ident "include"
+    let ident = match tokens.next()? {
+        proc_macro2::TokenTree::Ident(id) => id,
+        _ => return None,
+    };
+    if ident.to_string() != "include" {
+        return None;
+    }
+
+    // 2) We expect a punct: `!`
+    let _bang = match tokens.next()? {
+        proc_macro2::TokenTree::Punct(p) if p.as_char() == '!' => p,
+        _ => return None,
+    };
+
+    // 3) We expect a group: `( ... )`
+    let group = match tokens.next()? {
+        proc_macro2::TokenTree::Group(g)
+            if g.delimiter() == proc_macro2::Delimiter::Parenthesis =>
+        {
+            g
+        }
+        _ => return None,
+    };
+
+    // 4) We should have no more tokens after that
+    if tokens.peek().is_some() {
+        // There's something else => not recognized
+        return None;
+    }
+
+    // Now parse the inside of the parentheses to see if it's a string literal or concat!(...)
+    let inside_ts = group.stream();
+    let mut inside_iter = inside_ts.clone().into_iter().peekable();
+
+    if let Some(tt) = inside_iter.peek() {
+        // If it's an Ident "concat", parse that specifically
+        if let proc_macro2::TokenTree::Ident(id) = tt {
+            if id == "concat" {
+                // parse `concat!( "part1", "part2", ... )`
+                inside_iter.next(); // consume "concat"
+                                    // expect `!`
+                match inside_iter.next() {
+                    Some(proc_macro2::TokenTree::Punct(p)) if p.as_char() == '!' => {}
+                    _ => return None,
+                }
+                // expect `( ... )`
+                let group_concat = match inside_iter.next() {
+                    Some(proc_macro2::TokenTree::Group(g))
+                        if g.delimiter() == proc_macro2::Delimiter::Parenthesis =>
+                    {
+                        g
+                    }
+                    _ => return None,
+                };
+                // parse a comma-separated list of string literals
+                let concat_parts = parse_concat_args(group_concat.stream())?;
+                let path = concat_parts.join("");
+                // read the file
+                return read_file_as_tokenstream(&path).ok();
+            }
+        }
+    }
+
+    // Otherwise, see if the entire thing is just a single string literal
+    let lit_path = parse_single_str_literal(inside_ts)?;
+    return read_file_as_tokenstream(&lit_path).ok();
+}
+
+/// Helper: parse a single string literal out of the tokens
+fn parse_single_str_literal(ts: proc_macro2::TokenStream) -> Option<String> {
+    let mut iter = ts.into_iter().peekable();
+    let first = iter.next()?;
+    // it must be a string literal
+    match first {
+        proc_macro2::TokenTree::Literal(l) => {
+            // convert to Lit (syn can parse it)
+            let lit_str: LitStr = syn::parse_str(&l.to_string()).ok()?;
+            // ensure no trailing tokens
+            if iter.peek().is_some() {
+                return None;
+            }
+            return Some(lit_str.value());
+        }
+        _ => None,
+    }
+}
+
+/// Helper: parse something like `"foo", "bar", "baz"` inside `concat!(...)`.
+fn parse_concat_args(ts: proc_macro2::TokenStream) -> Option<Vec<String>> {
+    // We'll parse it with syn's Punctuated: multiple lit-str separated by commas
+    let parser = Punctuated::<LitStr, Token![,]>::parse_terminated;
+    let inside = match parser.parse2(ts) {
+        Ok(punct) => punct,
+        Err(_) => return None,
+    };
+    let vals: Vec<String> = inside.into_iter().map(|s| s.value()).collect();
+    Some(vals)
+}
+
+/// Actually read the file from disk at compile time, parse it as tokens
+fn read_file_as_tokenstream(path: &str) -> Result<proc_macro2::TokenStream, SynError> {
+    use std::fs;
+    let content = fs::read_to_string(path).map_err(|e| {
+        SynError::new(
+            proc_macro2::Span::call_site(),
+            format!("Failed reading file {path:?}: {e}"),
+        )
+    })?;
+
+    // Now parse that content as a token stream.
+    content.parse::<proc_macro2::TokenStream>().map_err(|e| {
+        SynError::new(
+            proc_macro2::Span::call_site(),
+            format!("Token parse error: {e}"),
+        )
+    })
 }
 
 /// Internal AST for our DSL. (No derive to avoid issues with Lit*.)

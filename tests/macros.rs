@@ -1,6 +1,6 @@
 use ordered_float::OrderedFloat;
 use sdql_macros::{sdql_from_str, sdql_static};
-use sdql_runtime::{date, Bool, HashMap, Record, FALSE, TRUE};
+use sdql_runtime::{date, HashMap, Record, FALSE, TRUE};
 
 #[test]
 fn sdql_static() {
@@ -37,16 +37,7 @@ fn sdql_static() {
     });
     println!("{q1}");
 
-    let q1_from_str: HashMap<
-        Record<(
-            i32,
-            OrderedFloat<f64>,
-            OrderedFloat<f64>,
-            OrderedFloat<f64>,
-            i32,
-        )>,
-        Bool,
-    > = sdql_from_str!(
+    let q1_from_str = sdql_from_str!(
         "
     {
         <380456, 532348211.649998, 505822441.486102, 526165934.000839, 14876> -> true,
@@ -58,10 +49,13 @@ fn sdql_static() {
     );
     assert_eq!(q1_from_str, q1);
 
-    // FIXME
+    let q1_from_src = sdql_static!(include!(
+        "/Users/alex/repos/sdql-rs/tests/results/tpch/SF_0.01/q1_new.result"
+    ));
+    // // FIXME
     // let q1_from_src = sdql_static!(include!(concat!(
     //     env!("CARGO_MANIFEST_DIR"),
-    //     "/tests/results/tpch/SF_0.01/q1.result"
+    //     "/tests/results/tpch/SF_0.01/q1_new.result"
     // )));
-    // assert_eq!(q1_from_src, q1);
+    assert_eq!(q1_from_src, q1);
 }
