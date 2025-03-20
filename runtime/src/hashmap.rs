@@ -38,6 +38,15 @@ where
     }
 }
 
+impl<K, V, const N: usize> From<[(K, V); N]> for HashMap<K, V>
+where
+    K: Eq + Hash,
+{
+    fn from(arr: [(K, V); N]) -> Self {
+        Self(hashbrown::HashMap::from(arr))
+    }
+}
+
 impl<K, V> HashMap<K, V>
 where
     K: Copy + Eq + Hash,
@@ -151,9 +160,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test() {
-        let mut map: HashMap<(), u8> = HashMap::new();
-        map.insert((), 0);
+    fn add_assign() {
+        let mut map = HashMap::from([((), 0)]);
         assert_eq!(map[&()], 0);
         map[&()] += 1;
         assert_eq!(map[&()], 1);

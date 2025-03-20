@@ -685,9 +685,20 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rayon",
+ "sdql_macro",
  "sdql_runtime",
  "syn",
  "time",
+]
+
+[[package]]
+name = "sdql_macro"
+version = "0.1.0"
+dependencies = [
+ "ordered-float",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
