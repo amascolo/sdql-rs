@@ -685,14 +685,14 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rayon",
- "sdql_macro",
+ "sdql_macros",
  "sdql_runtime",
  "syn",
  "time",
 ]
 
 [[package]]
-name = "sdql_macro"
+name = "sdql_macros"
 version = "0.1.0"
 dependencies = [
  "ordered-float",

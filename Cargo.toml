@@ -31,7 +31,7 @@ sdql_runtime = { path = "runtime" } # TODO optional, only for binaries
 [dev-dependencies]
 criterion = "0.5.1"
 
-sdql_macro = { path = "sdql_macro" }
+sdql_macros = { path = "macros" }
 
 [[bench]]
 name = "tpch"

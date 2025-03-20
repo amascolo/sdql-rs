@@ -1,5 +1,5 @@
 use ordered_float::OrderedFloat;
-use sdql_macro::sdql_static;
+use sdql_macros::sdql_static;
 use sdql_runtime::{date, HashMap, Record, FALSE, TRUE};
 
 #[test]
