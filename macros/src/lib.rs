@@ -4,8 +4,44 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{
     parse::{Parse, ParseStream},
-    token, Ident, LitBool, LitFloat, LitInt, Token,
+    parse_macro_input, token, Ident, LitBool, LitFloat, LitInt, LitStr, Token,
 };
+
+/// This macro parses a string literal and then interprets its contents
+/// as the same DSL tokens your `sdql_static!` expects.
+#[proc_macro]
+pub fn sdql_from_str(input: TokenStream) -> TokenStream {
+    // 1) Parse the macro input as a single string literal
+    let lit_str = parse_macro_input!(input as LitStr);
+
+    // 2) Extract the string contents
+    let dsl_string = lit_str.value();
+
+    // 3) Convert that string into a proc_macro2::TokenStream
+    //    so that we can parse it with the same syn logic that
+    //    `sdql_static!` uses (SdqlValue::parse).
+    let token_stream = match dsl_string.parse::<proc_macro2::TokenStream>() {
+        Ok(ts) => ts,
+        Err(e) => {
+            return syn::Error::new_spanned(
+                lit_str,
+                format!("Could not parse string as tokens: {e}"),
+            )
+            .to_compile_error()
+            .into();
+        }
+    };
+
+    // 4) Now parse that TokenStream as your SdqlValue AST
+    match syn::parse2::<SdqlValue>(token_stream) {
+        Ok(sdql_val) => {
+            // 5) Generate the final Rust code
+            let expanded = sdql_val.into_token_stream();
+            expanded.into()
+        }
+        Err(e) => e.to_compile_error().into(),
+    }
+}
 
 /// The user-facing macro entry point.
 #[proc_macro]

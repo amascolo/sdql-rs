@@ -1,6 +1,6 @@
 use ordered_float::OrderedFloat;
-use sdql_macros::sdql_static;
-use sdql_runtime::{date, HashMap, Record, FALSE, TRUE};
+use sdql_macros::{sdql_from_str, sdql_static};
+use sdql_runtime::{date, Bool, HashMap, Record, FALSE, TRUE};
 
 #[test]
 fn sdql_static() {
@@ -28,4 +28,40 @@ fn sdql_static() {
             TRUE
         )])
     );
+
+    let q1 = sdql_static!({
+        <380456, 532348211.649998, 505822441.486102, 526165934.000839, 14876> -> true,
+        <8971, 12384801.37, 11798257.208, 12282485.056933, 348> -> true,
+        <742802, 1041502841.45, 989737518.634604, 1029418531.52335, 29181> -> true,
+        <381449, 534594445.349999, 507996454.406699, 528524219.358906, 14902> -> true
+    });
+    println!("{q1}");
+
+    let q1_from_str: HashMap<
+        Record<(
+            i32,
+            OrderedFloat<f64>,
+            OrderedFloat<f64>,
+            OrderedFloat<f64>,
+            i32,
+        )>,
+        Bool,
+    > = sdql_from_str!(
+        "
+    {
+        <380456, 532348211.649998, 505822441.486102, 526165934.000839, 14876> -> true,
+        <8971, 12384801.37, 11798257.208, 12282485.056933, 348> -> true,
+        <742802, 1041502841.45, 989737518.634604, 1029418531.52335, 29181> -> true,
+        <381449, 534594445.349999, 507996454.406699, 528524219.358906, 14902> -> true
+    }
+    "
+    );
+    assert_eq!(q1_from_str, q1);
+
+    // FIXME
+    // let q1_from_src = sdql_static!(include!(concat!(
+    //     env!("CARGO_MANIFEST_DIR"),
+    //     "/tests/results/tpch/SF_0.01/q1.result"
+    // )));
+    // assert_eq!(q1_from_src, q1);
 }
