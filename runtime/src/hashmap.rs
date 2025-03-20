@@ -1,8 +1,11 @@
+use crate::Bool;
 use hashbrown::hash_map::rayon::IntoParIter;
 use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelIterator};
 use std::fmt;
 use std::hash::Hash;
 use std::ops::{AddAssign, Deref, DerefMut, Index, IndexMut};
+
+pub type HashSet<T> = HashMap<T, Bool>;
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct HashMap<K, V>(hashbrown::HashMap<K, V>)

@@ -45,7 +45,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sdql_macro"
+name = "sdql_macros"
 version = "0.1.0"
 dependencies = [
  "ordered-float",
