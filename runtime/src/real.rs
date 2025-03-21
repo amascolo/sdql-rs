@@ -1,11 +1,14 @@
-use derive_more::{Add, AddAssign, Sub, SubAssign, Sum};
+use approx::AbsDiffEq;
+use derive_more::{Add, AddAssign, Display, Sub, SubAssign, Sum};
 use ordered_float::{OrderedFloat, PrimitiveFloat};
-use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::ops::Mul;
+use std::str::FromStr;
 
 #[repr(transparent)]
-#[derive(Clone, Copy, Default, PartialEq, PartialOrd, Add, AddAssign, Sub, SubAssign, Sum)]
+#[derive(
+    Clone, Copy, Debug, Display, Default, PartialEq, PartialOrd, Add, AddAssign, Sub, SubAssign, Sum,
+)]
 pub struct Real<T>(OrderedFloat<T>)
 where
     T: PrimitiveFloat,
@@ -40,26 +43,6 @@ where
     }
 }
 
-use std::str::FromStr;
-
-impl<T> fmt::Display for Real<T>
-where
-    T: PrimitiveFloat + fmt::Display,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:.4}", self.0.0)
-    }
-}
-// TODO Debug only needed until we have Record::Display
-impl<T> fmt::Debug for Real<T>
-where
-    T: PrimitiveFloat + fmt::Display,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self}")
-    }
-}
-
 impl<T> FromStr for Real<T>
 where
     T: PrimitiveFloat + FromStr,
@@ -69,5 +52,20 @@ where
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         OrderedFloat::<T>::from_str(s).map(Self)
+    }
+}
+
+impl<T> AbsDiffEq for Real<T>
+where
+    T: PrimitiveFloat + AbsDiffEq,
+{
+    type Epsilon = T::Epsilon;
+
+    fn default_epsilon() -> Self::Epsilon {
+        T::default_epsilon()
+    }
+
+    fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+        self.0.0.abs_diff_eq(&other.0.0, epsilon)
     }
 }

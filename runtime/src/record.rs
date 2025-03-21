@@ -1,8 +1,24 @@
+use approx::AbsDiffEq;
 use std::fmt;
 use std::ops::{AddAssign, Deref};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Record<T: IsTuple>(T);
+
+impl<T> AbsDiffEq for Record<T>
+where
+    T: IsTuple + AbsDiffEq,
+{
+    type Epsilon = T::Epsilon;
+
+    fn default_epsilon() -> Self::Epsilon {
+        T::default_epsilon()
+    }
+
+    fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+        self.0.abs_diff_eq(&other.0, epsilon)
+    }
+}
 
 // TODO should print record names too
 // TODO display inner tuple types, not debug

@@ -1,4 +1,5 @@
 use crate::Bool;
+use approx::AbsDiffEq;
 use hashbrown::hash_map::rayon::IntoParIter;
 use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelIterator};
 use std::fmt;
@@ -165,6 +166,62 @@ where
 {
     fn from_par_iter<T: IntoParallelIterator<Item = (K, V)>>(iter: T) -> Self {
         HashMap(iter.into_par_iter().collect())
+    }
+}
+
+// FIXME keys can be floats
+// impl<K, V> AbsDiffEq for HashMap<K, V>
+// where
+//     K: Eq + Hash,
+//     V: AbsDiffEq,
+//     V::Epsilon: Copy,
+// {
+//     type Epsilon = V::Epsilon;
+//
+//     fn default_epsilon() -> Self::Epsilon {
+//         V::default_epsilon()
+//     }
+//
+//     fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+//         if self.len() != other.len() {
+//             return false;
+//         }
+//
+//         self.iter().all(|(key, value)| {
+//             other
+//                 .get(key)
+//                 .map_or(false, |v| value.abs_diff_eq(v, epsilon))
+//         })
+//     }
+// }
+
+impl<K, V> AbsDiffEq for HashMap<K, V>
+where
+    K: AbsDiffEq + Ord + Eq + Hash,
+    V: AbsDiffEq + Ord,
+    K::Epsilon: Copy,
+    V::Epsilon: Copy,
+{
+    type Epsilon = (K::Epsilon, V::Epsilon);
+
+    fn default_epsilon() -> Self::Epsilon {
+        (K::default_epsilon(), V::default_epsilon())
+    }
+
+    fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+        if self.len() != other.len() {
+            return false;
+        }
+
+        let (k_eps, v_eps) = epsilon;
+
+        let mut self_items: Vec<_> = self.iter().collect();
+        let mut other_items: Vec<_> = other.iter().collect();
+        self_items.sort();
+        other_items.sort();
+
+        Iterator::zip(self_items.iter(), other_items.iter())
+            .all(|((k1, v1), (k2, v2))| k1.abs_diff_eq(k2, k_eps) && v1.abs_diff_eq(v2, v_eps))
     }
 }
 

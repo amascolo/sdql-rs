@@ -1,4 +1,5 @@
 use crate::date;
+use approx::AbsDiffEq;
 use std::fmt;
 use std::ops::AddAssign;
 use time::format_description::well_known::Iso8601;
@@ -81,5 +82,17 @@ impl Default for Date {
 impl AddAssign for Date {
     fn add_assign(&mut self, rhs: Self) {
         *self = rhs; // overwrite dummy
+    }
+}
+
+impl AbsDiffEq for Date {
+    type Epsilon = ();
+
+    fn default_epsilon() -> Self::Epsilon {
+        ()
+    }
+
+    fn abs_diff_eq(&self, other: &Self, _epsilon: Self::Epsilon) -> bool {
+        self.eq(other)
     }
 }
