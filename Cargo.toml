@@ -18,7 +18,7 @@ chumsky = { git = "https://github.com/zesterer/chumsky.git", branch = "main" }
 derive_more = { version = "2.0.1", features = ["display"] }
 im-rc = "15.1.0"
 itertools = "0.14.0"
-ordered-float = "4.6.0"
+ordered-float = "5.0.0"
 prettyplease = "0.2"
 proc-macro2 = "1.0"
 quote = "1.0"
