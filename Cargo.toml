@@ -28,7 +28,7 @@ time = { version = "0.3.40", features = ["parsing"] }
 sdql_runtime = { path = "runtime" } # TODO optional, only for binaries
 
 [dev-dependencies]
-approx = { version = "0.5.1" }
+approx = { package = "approxim", git = "https://github.com/amascolo/approxim", branch = "main" }
 criterion = "0.5.1"
 
 sdql_macros = { path = "macros" }
