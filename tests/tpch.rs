@@ -19,7 +19,6 @@ use sdql_macros::sdql_static;
 //     let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/3.sdql"));
 //     assert_eq!(actual, expected);
 // }
-
 #[test]
 fn q6_works() {
     let actual = q6("0.01").unwrap();

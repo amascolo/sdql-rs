@@ -7,7 +7,7 @@ use std::ops::{AddAssign, Deref, DerefMut, Index, IndexMut};
 
 pub type HashSet<T> = HashMap<T, Bool>;
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Default, PartialEq)]
 pub struct HashMap<K, V>(hashbrown::HashMap<K, V>)
 where
     K: Eq + Hash;
@@ -20,11 +20,21 @@ where
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut entries: Vec<_> = self.iter().collect();
         entries.sort();
-        let entries: Vec<_> = self
-            .iter()
-            .map(|(k, v)| format!("{} -> {}", k, v))
+        let entries: Vec<_> = entries
+            .into_iter()
+            .map(|(k, v)| format!("{k} -> {v}"))
             .collect();
         write!(f, "{{\n    {}\n}}", entries.join(",\n    "))
+    }
+}
+// TODO most likely get rid of this
+impl<K, V> fmt::Debug for HashMap<K, V>
+where
+    K: fmt::Display + Ord + Eq + Hash,
+    V: fmt::Display + Ord,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self}")
     }
 }
 
