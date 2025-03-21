@@ -18,13 +18,12 @@ chumsky = { git = "https://github.com/zesterer/chumsky.git", branch = "main" }
 derive_more = { version = "2.0.1", features = ["display"] }
 im-rc = "15.1.0"
 itertools = "0.14.0"
-ordered-float = "5.0.0"
 prettyplease = "0.2"
 proc-macro2 = "1.0"
 quote = "1.0"
 rayon = "1.10.0" # TODO eventually get rid, it's for runtime
 syn = { version = "2.0", features = ["extra-traits", "full"] }
-time = { version = "0.3.37", features = ["parsing"] }
+time = { version = "0.3.40", features = ["parsing"] }
 
 sdql_runtime = { path = "runtime" } # TODO optional, only for binaries
 

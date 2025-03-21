@@ -31,7 +31,7 @@ impl fmt::Display for Date {
 // TODO Debug only needed until we have Record::Display
 impl fmt::Debug for Date {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }
 

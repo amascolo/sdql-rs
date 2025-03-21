@@ -1,9 +1,8 @@
-use super::{_19950315, TypeQ3};
+use super::{TypeQ3, _19950315};
 use crate::tpch::read::{read_customers, read_lineitems, read_orders};
 use crate::tpch::types::{Customer, Lineitem, Orders};
-use ordered_float::OrderedFloat;
 use rayon::prelude::*;
-use sdql_runtime::{Date, HashMap, Record, TRUE, VarChar};
+use sdql_runtime::{Date, HashMap, Real, Record, VarChar, TRUE};
 use std::error::Error;
 
 pub fn q3_rayon(sf: &str) -> Result<TypeQ3, Box<dyn Error>> {
@@ -55,7 +54,7 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
     // })
     // .collect();
 
-    let l_h: HashMap<Record<(i32, Date, i32)>, OrderedFloat<f64>> = (0../* size */ lineitem.16)
+    let l_h: HashMap<Record<(i32, Date, i32)>, Real<f64>> = (0../* size */ lineitem.16)
         .into_par_iter()
         .filter(|&i| /* shipdate */ lineitem.10[i] > _19950315)
         .filter(|&i| o_h.contains_key(&/* orderkey */ lineitem.0[i]))
@@ -64,7 +63,7 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
                     /* orderkey */ lineitem.0[i],
                     o_h[&/* orderkey */ lineitem.0[i]].0,
                     o_h[&/* orderkey */ lineitem.0[i]].1,
-                ))] += /* extendedprice */ lineitem.5[i] * (OrderedFloat(1.0) - /* discount */ lineitem.6[i]);
+                ))] += /* extendedprice */ lineitem.5[i] * (Real::new(1.0) - /* discount */ lineitem.6[i]);
             acc
         })
         .reduce(HashMap::new, HashMap::sum);

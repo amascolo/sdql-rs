@@ -1,10 +1,9 @@
-use super::_19950315;
 use super::TypeQ3;
+use super::_19950315;
 
 use crate::tpch::read::{read_customers, read_lineitems, read_orders};
 use crate::tpch::types::{Customer, Lineitem, Orders};
-use ordered_float::OrderedFloat;
-use sdql_runtime::{Date, HashMap, Record, TRUE, VarChar};
+use sdql_runtime::{Date, HashMap, Real, Record, VarChar, TRUE};
 use std::error::Error;
 
 pub fn q3(sf: &str) -> Result<TypeQ3, Box<dyn Error>> {
@@ -33,21 +32,20 @@ pub fn q3_query(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> Ty
             acc
         });
 
-    let l_h: HashMap<Record<(i32, Date, i32)>, Record<(OrderedFloat<f64>,)>> =
-        (0../* size */ lineitem.16)
-            .filter(|&i| /* shipdate */ lineitem.10[i] > _19950315)
-            .filter(|&i| o_h.contains_key(&/* orderkey */ lineitem.0[i]))
-            .fold(HashMap::new(), |mut acc, i| {
-                acc[&Record::new((
-                    /* orderkey */ lineitem.0[i],
-                    o_h[&/* orderkey */ lineitem.0[i]].0,
-                    o_h[&/* orderkey */ lineitem.0[i]].1,
-                ))] += Record::new((
-                    /* extendedprice */
-                    lineitem.5[i] * (OrderedFloat(1.0) - /* discount */ lineitem.6[i]),
-                ));
-                acc
-            });
+    let l_h: HashMap<Record<(i32, Date, i32)>, Record<(Real<f64>,)>> = (0../* size */ lineitem.16)
+        .filter(|&i| /* shipdate */ lineitem.10[i] > _19950315)
+        .filter(|&i| o_h.contains_key(&/* orderkey */ lineitem.0[i]))
+        .fold(HashMap::new(), |mut acc, i| {
+            acc[&Record::new((
+                /* orderkey */ lineitem.0[i],
+                o_h[&/* orderkey */ lineitem.0[i]].0,
+                o_h[&/* orderkey */ lineitem.0[i]].1,
+            ))] += Record::new((
+                /* extendedprice */
+                lineitem.5[i] * (Real::new(1.0) - /* discount */ lineitem.6[i]),
+            ));
+            acc
+        });
 
     l_h.into_iter()
         .map(|(key, val)| (Record::new((key.0, key.1, key.2, val.0)), TRUE))

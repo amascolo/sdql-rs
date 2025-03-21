@@ -680,7 +680,6 @@ dependencies = [
  "derive_more",
  "im-rc",
  "itertools 0.14.0",
- "ordered-float",
  "prettyplease",
  "proc-macro2",
  "quote",
@@ -695,7 +694,6 @@ dependencies = [
 name = "sdql_macros"
 version = "0.1.0"
 dependencies = [
- "ordered-float",
  "proc-macro2",
  "quote",
  "syn",
