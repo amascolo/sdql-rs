@@ -169,32 +169,6 @@ where
     }
 }
 
-// FIXME keys can be floats
-// impl<K, V> AbsDiffEq for HashMap<K, V>
-// where
-//     K: Eq + Hash,
-//     V: AbsDiffEq,
-//     V::Epsilon: Copy,
-// {
-//     type Epsilon = V::Epsilon;
-//
-//     fn default_epsilon() -> Self::Epsilon {
-//         V::default_epsilon()
-//     }
-//
-//     fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
-//         if self.len() != other.len() {
-//             return false;
-//         }
-//
-//         self.iter().all(|(key, value)| {
-//             other
-//                 .get(key)
-//                 .map_or(false, |v| value.abs_diff_eq(v, epsilon))
-//         })
-//     }
-// }
-
 impl<K, V> AbsDiffEq for HashMap<K, V>
 where
     K: AbsDiffEq + Ord + Eq + Hash,

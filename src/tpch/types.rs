@@ -1,4 +1,4 @@
-use sdql_runtime::{Date, Real, VarChar};
+use sdql_runtime::{Date, OrderedFloat, VarChar};
 
 pub type Customer = (
     /* custkey */ Vec<i32>,
@@ -6,7 +6,7 @@ pub type Customer = (
     /* address */ Vec<VarChar<40>>,
     /* nationkey */ Vec<i32>,
     /* phone */ Vec<VarChar<15>>,
-    /* acctbal */ Vec<Real<f64>>,
+    /* acctbal */ Vec<OrderedFloat<f64>>,
     /* mktsegment */ Vec<VarChar<10>>,
     /* comment */ Vec<VarChar<117>>,
     /* size */ usize,
@@ -16,7 +16,7 @@ pub type Orders = (
     /* orderkey */ Vec<i32>,
     /* custkey */ Vec<i32>,
     /* orderstatus */ Vec<VarChar<1>>,
-    /* totalprice */ Vec<Real<f64>>,
+    /* totalprice */ Vec<OrderedFloat<f64>>,
     /* orderdate */ Vec<Date>,
     /* orderpriority */ Vec<VarChar<15>>,
     /* clerk */ Vec<VarChar<15>>,
@@ -30,10 +30,10 @@ pub type Lineitem = (
     /* partkey */ Vec<i32>,
     /* suppkey */ Vec<i32>,
     /* linenumber */ Vec<i32>,
-    /* quantity */ Vec<Real<f64>>,
-    /* extendedprice */ Vec<Real<f64>>,
-    /* discount */ Vec<Real<f64>>,
-    /* tax */ Vec<Real<f64>>,
+    /* quantity */ Vec<OrderedFloat<f64>>,
+    /* extendedprice */ Vec<OrderedFloat<f64>>,
+    /* discount */ Vec<OrderedFloat<f64>>,
+    /* tax */ Vec<OrderedFloat<f64>>,
     /* returnflag */ Vec<VarChar<1>>,
     /* linestatus */ Vec<VarChar<1>>,
     /* shipdate */ Vec<Date>,

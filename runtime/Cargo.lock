@@ -23,10 +23,12 @@ dependencies = [
 [[package]]
 name = "approxim"
 version = "0.6.3"
-source = "git+https://github.com/amascolo/approxim?branch=main#addeaa0fa2fa876e3abc023e4e143fc6fc7892de"
+source = "git+https://github.com/amascolo/approxim?branch=tuple#aa084c247554d7ada6c943d4be6c7d85b11b8d4b"
 dependencies = [
  "approx-derive",
  "num-traits",
+ "ordered-float",
+ "paste",
 ]
 
 [[package]]
@@ -131,9 +133,9 @@ checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 
 [[package]]
 name = "foldhash"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0d2fde1f7b3d48b8395d5f2de76c18a528bd6a9cdde438df747bfcba3e05d6f"
+checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
 
 [[package]]
 name = "hashbrown"
@@ -192,6 +194,12 @@ checksum = "e2c1f9f56e534ac6a9b8a4600bdf0f530fb393b5f393e7b4d03489c3cf0c3f01"
 dependencies = [
  "num-traits",
 ]
+
+[[package]]
+name = "paste"
+version = "1.0.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "powerfmt"

@@ -351,9 +351,9 @@ impl SdqlValue {
             SdqlValue::Bool(true) => quote! { ::sdql_runtime::TRUE },
             SdqlValue::Bool(false) => quote! { ::sdql_runtime::FALSE },
             SdqlValue::Int(li) => quote! { #li },
-            SdqlValue::Float(lf) => quote! { ::sdql_runtime::Real::new(#lf) },
+            SdqlValue::Float(lf) => quote! { ::sdql_runtime::OrderedFloat(#lf) },
             SdqlValue::NegativeInt(li) => quote! { -(#li) },
-            SdqlValue::NegativeFloat(lf) => quote! { ::sdql_runtime::Real::new(-#lf) },
+            SdqlValue::NegativeFloat(lf) => quote! { ::sdql_runtime::OrderedFloat(-#lf) },
             SdqlValue::StringLit(ls) => quote! { VarChar::from(#ls).unwrap() },
         }
     }

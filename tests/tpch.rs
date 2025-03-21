@@ -9,16 +9,14 @@ use sdql_macros::sdql_static;
 fn q3_works() {
     let actual = q3("0.01").unwrap();
     let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/3.sdql"));
-    // FIXME
-    // assert_abs_diff_eq!(actual, expected, epsilon = (1e-4, ()));
+    assert_abs_diff_eq!(actual, expected, epsilon = ((0, (), 0, 1e-4), ()));
 }
 
 #[test]
 fn q3_rayon_works() {
     let actual = q3_rayon("0.01").unwrap();
     let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/3.sdql"));
-    // FIXME
-    // assert_abs_diff_eq!(actual, expected, epsilon = (1e-4, ()));
+    assert_abs_diff_eq!(actual, expected, epsilon = ((0, (), 0, 1e-4), ()));
 }
 
 #[test]
