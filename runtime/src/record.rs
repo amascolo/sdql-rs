@@ -56,24 +56,32 @@ where
 }
 
 pub trait IsTuple {}
+
 macro_rules! impl_is_tuple {
-    ($($name:ident),*) => {
-        impl<$($name),*> IsTuple for ($($name,)*) {}
+    () => {
+        impl IsTuple for () {}
+    };
+
+    ($($idx:tt),+) => {
+        paste::paste! {
+            impl<$( [<T $idx>], )+> IsTuple for ($( [<T $idx>], )+) {}
+        }
     };
 }
+
 impl_is_tuple!();
-impl_is_tuple!(T1);
-impl_is_tuple!(T1, T2);
-impl_is_tuple!(T1, T2, T3);
-impl_is_tuple!(T1, T2, T3, T4);
-impl_is_tuple!(T1, T2, T3, T4, T5);
-impl_is_tuple!(T1, T2, T3, T4, T5, T6);
-impl_is_tuple!(T1, T2, T3, T4, T5, T6, T7);
-impl_is_tuple!(T1, T2, T3, T4, T5, T6, T7, T8);
-impl_is_tuple!(T1, T2, T3, T4, T5, T6, T7, T8, T9);
-impl_is_tuple!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10);
-impl_is_tuple!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11);
-impl_is_tuple!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12);
+impl_is_tuple!(0);
+impl_is_tuple!(0, 1);
+impl_is_tuple!(0, 1, 2);
+impl_is_tuple!(0, 1, 2, 3);
+impl_is_tuple!(0, 1, 2, 3, 4);
+impl_is_tuple!(0, 1, 2, 3, 4, 5);
+impl_is_tuple!(0, 1, 2, 3, 4, 5, 6);
+impl_is_tuple!(0, 1, 2, 3, 4, 5, 6, 7);
+impl_is_tuple!(0, 1, 2, 3, 4, 5, 6, 7, 8);
+impl_is_tuple!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+impl_is_tuple!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+impl_is_tuple!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
 
 macro_rules! impl_add_assign {
     () => {
@@ -82,31 +90,33 @@ macro_rules! impl_add_assign {
         }
     };
 
-    ($($T:ident),*; $($idx:tt),*) => {
-        impl<$($T),*> AddAssign for Record<($($T,)*)>
-        where
-            $($T: AddAssign),*
-        {
-            fn add_assign(&mut self, rhs: Self) {
-                $(self.0.$idx += rhs.0.$idx;)*
+    ($($idx:tt),+) => {
+        paste::paste! {
+            impl<$( [<T $idx>], )+> AddAssign for Record<($( [<T $idx>], )+)>
+            where
+                $( [<T $idx>]: AddAssign, )+
+            {
+                fn add_assign(&mut self, rhs: Self) {
+                    $( self.0.$idx += rhs.0.$idx; )+
+                }
             }
         }
     };
 }
 
 impl_add_assign!();
-impl_add_assign!(T1; 0);
-impl_add_assign!(T1, T2; 0, 1);
-impl_add_assign!(T1, T2, T3; 0, 1, 2);
-impl_add_assign!(T1, T2, T3, T4; 0, 1, 2, 3);
-impl_add_assign!(T1, T2, T3, T4, T5; 0, 1, 2, 3, 4);
-impl_add_assign!(T1, T2, T3, T4, T5, T6; 0, 1, 2, 3, 4, 5);
-impl_add_assign!(T1, T2, T3, T4, T5, T6, T7; 0, 1, 2, 3, 4, 5, 6);
-impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8; 0, 1, 2, 3, 4, 5, 6, 7);
-impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8, T9; 0, 1, 2, 3, 4, 5, 6, 7, 8);
-impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-impl_add_assign!(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+impl_add_assign!(0);
+impl_add_assign!(0, 1);
+impl_add_assign!(0, 1, 2);
+impl_add_assign!(0, 1, 2, 3);
+impl_add_assign!(0, 1, 2, 3, 4);
+impl_add_assign!(0, 1, 2, 3, 4, 5);
+impl_add_assign!(0, 1, 2, 3, 4, 5, 6);
+impl_add_assign!(0, 1, 2, 3, 4, 5, 6, 7);
+impl_add_assign!(0, 1, 2, 3, 4, 5, 6, 7, 8);
+impl_add_assign!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+impl_add_assign!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+impl_add_assign!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
 
 #[cfg(test)]
 mod tests {
