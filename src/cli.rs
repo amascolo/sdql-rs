@@ -1,17 +1,28 @@
 use crate::rs;
 use std::fs::{self, File};
+use std::hash::{DefaultHasher, Hash, Hasher};
 use std::io::{self, Write};
 use std::path::Path;
 use std::process::Command;
 
-pub fn run_tpch(name: u8, sf: &str) -> io::Result<()> {
-    let path = format!("{}/progs/tpch/{name}.sdql", env!("CARGO_MANIFEST_DIR"));
+pub fn run_tpch(query: u8, sf: &str) -> io::Result<()> {
+    let path = format!("{}/progs/tpch/{query}.sdql", env!("CARGO_MANIFEST_DIR"));
     let src = fs::read_to_string(&path)?.replace(
         "datasets/tpch/",
         &format!("datasets/tpch_datasets/SF_{sf}/"),
     );
     let code = rs!(&src);
-    run(&name.to_string(), &code)
+    let name = filename(&code);
+    run(&name, &code)
+}
+
+pub fn filename(code: &str) -> String {
+    let hash = {
+        let mut hasher = DefaultHasher::new();
+        code.hash(&mut hasher);
+        hasher.finish()
+    };
+    format!("{hash:x}")
 }
 
 pub fn run(name: &str, code: &str) -> io::Result<()> {
