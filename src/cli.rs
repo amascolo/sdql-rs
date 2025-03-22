@@ -18,6 +18,7 @@ pub fn run(name: &str, code: &str) -> io::Result<()> {
     write_if_different(name, code)?; // avoids triggering recompilation
     let output = Command::new("cargo")
         .arg("run")
+        .arg("--quiet")
         .arg("--bin")
         .arg(name)
         .output()?;

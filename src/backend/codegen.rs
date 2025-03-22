@@ -19,7 +19,7 @@ impl From<ExprFMF<'_>> for String {
             #![feature(stmt_expr_attributes)]
             #![allow(unused_variables)]
             use sdql_runtime::*;
-            fn main() { #tks; }
+            fn main() { println!("{:?}", { #tks })}
         };
         let ast = parse2(main_tks).unwrap();
         prettyplease::unparse(&ast)

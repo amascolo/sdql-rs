@@ -1,11 +1,22 @@
 use arrayvec::{ArrayString, CapacityError};
-use derive_more::Display;
+use std::fmt;
 use std::ops::{AddAssign, Deref};
 use std::str::FromStr;
 
-#[derive(Clone, Copy, Debug, Display, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[display("{_0}")]
+#[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct VarChar<const CAP: usize>(ArrayString<CAP>);
+
+impl<const CAP: usize> fmt::Display for VarChar<CAP> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "\"{}\"", self.0)
+    }
+}
+// TODO Debug only needed until we have Record::Display
+impl<const CAP: usize> fmt::Debug for VarChar<CAP> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self}")
+    }
+}
 
 impl<const CAP: usize> VarChar<CAP> {
     pub fn from(s: &str) -> Result<Self, CapacityError<&str>> {
