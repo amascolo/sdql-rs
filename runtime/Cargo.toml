@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-approx = { package = "approxim", git = "https://github.com/amascolo/approxim", branch = "tuple", features = ["ordered-float", "tuple_impl"] }
+approx = { package = "approxim", version = "0.6.4", features = ["ordered-float", "tuple_impl"] }
 arrayvec = "0.7.6"
 csv = "1.3.1"
 derive_more = { version = "2.0.1", features = ["add", "add_assign", "mul", "display", "sum"] }
