@@ -1,11 +1,25 @@
 use approx::AbsDiffEq;
 use derive_more::Display;
+use serde::{Deserialize, Serialize};
 use std::ops::{AddAssign, Deref};
 
 pub const FALSE: Bool = Bool(false);
 pub const TRUE: Bool = Bool(true);
 
-#[derive(Clone, Copy, Debug, Display, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Display,
+    Default,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Deserialize,
+    Serialize,
+)]
 #[display("{_0}")]
 pub struct Bool(bool);
 

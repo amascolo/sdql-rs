@@ -2,13 +2,14 @@ use crate::Bool;
 use approx::AbsDiffEq;
 use hashbrown::hash_map::rayon::IntoParIter;
 use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelIterator};
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::hash::Hash;
 use std::ops::{AddAssign, Deref, DerefMut, Index, IndexMut};
 
 pub type HashSet<T> = HashMap<T, Bool>;
 
-#[derive(Clone, Default, PartialEq)]
+#[derive(Clone, Default, PartialEq, Deserialize, Serialize)]
 pub struct HashMap<K, V>(hashbrown::HashMap<K, V>)
 where
     K: Eq + Hash;

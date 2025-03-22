@@ -1,9 +1,10 @@
 use arrayvec::{ArrayString, CapacityError};
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::ops::{AddAssign, Deref};
 use std::str::FromStr;
 
-#[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 pub struct VarChar<const CAP: usize>(ArrayString<CAP>);
 
 impl<const CAP: usize> fmt::Display for VarChar<CAP> {

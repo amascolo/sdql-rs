@@ -1,11 +1,12 @@
 use crate::date;
 use approx::AbsDiffEq;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::ops::AddAssign;
 use time::format_description::well_known::Iso8601;
-use time::Month;
+use time::{format_description, Month};
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 pub struct Date(pub time::Date);
 
 impl Date {
@@ -24,9 +25,9 @@ impl Date {
 
 impl fmt::Display for Date {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0.format(&Iso8601::DATE).unwrap())
-        // TODO display it in SDQL syntax
-        // write!(f, "date({})", self.0.format(&Iso8601::DATE).unwrap())
+        let description = format_description::parse("[year][month][day]").unwrap();
+        let yyyymmdd = self.0.format(&description).unwrap();
+        write!(f, "date({yyyymmdd})")
     }
 }
 // TODO Debug only needed until we have Record::Display

@@ -2,7 +2,13 @@ use sdql::cli::run_tpch;
 
 #[test]
 fn tpch_q1() {
-    assert!(run_tpch(1, "0.01").is_ok());
+    let Ok(_actual) = run_tpch(1, "0.01") else {
+        panic!()
+    };
+    // TODO
+    // let expected = sdql_static!(include!("results/tpch/SF_0.01/3.sdql"));
+    // let expected = include_str!("results/tpch/SF_0.01/1.sdql");
+    // assert_eq!(actual, expected);
 }
 
 #[test]

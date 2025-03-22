@@ -1,8 +1,11 @@
 use approx::AbsDiffEq;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::ops::{AddAssign, Deref};
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(
+    Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord, Deserialize, Serialize,
+)]
 pub struct Record<T: IsTuple>(T);
 
 impl<T> AbsDiffEq for Record<T>
