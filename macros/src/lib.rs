@@ -354,7 +354,7 @@ impl SdqlValue {
             SdqlValue::Float(lf) => quote! { ::sdql_runtime::OrderedFloat(#lf) },
             SdqlValue::NegativeInt(li) => quote! { -(#li) },
             SdqlValue::NegativeFloat(lf) => quote! { ::sdql_runtime::OrderedFloat(-#lf) },
-            SdqlValue::StringLit(ls) => quote! { VarChar::from(#ls).unwrap() },
+            SdqlValue::StringLit(ls) => quote! { ::sdql_runtime::VarChar::from(#ls).unwrap() },
         }
     }
 }
