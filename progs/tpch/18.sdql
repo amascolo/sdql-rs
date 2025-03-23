@@ -35,4 +35,4 @@ let result_h =
       { o_h(lineitem.l_orderkey(i)) -> < _ = lineitem.l_quantity(i) > }
 
 sum(<k,v> <- result_h)
-  { unique(concat(k,v)) -> 1 }
+  { unique(concat(k,v)) -> true }

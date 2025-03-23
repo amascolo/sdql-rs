@@ -1,7 +1,6 @@
+use sdql::tpch::types::{TypeQ1, TypeQ18, TypeQ3, TypeQ5, TypeQ6, TypeQ9};
 use sdql_macros::sdql_static;
-use sdql_runtime::{
-    date, Bool, Date, HashMap, HashSet, OrderedFloat, Record, VarChar, FALSE, TRUE,
-};
+use sdql_runtime::{date, HashMap, OrderedFloat, Record, FALSE, TRUE};
 
 #[test]
 fn sdql_static() {
@@ -29,24 +28,10 @@ fn sdql_static() {
             TRUE
         )])
     );
-
-    let _: HashSet<
-        Record<(
-            VarChar<1>,
-            VarChar<1>,
-            i32,
-            OrderedFloat<f64>,
-            OrderedFloat<f64>,
-            OrderedFloat<f64>,
-            i32,
-        )>,
-    > = sdql_static!(include!("tests/results/tpch/SF_0.01/1.sdql"));
-    let _ = sdql_static!(include!("tests/results/tpch/SF_0.01/3.sdql"));
-    let _: HashMap<Record<(VarChar<10>, OrderedFloat<f64>)>, Bool> =
-        sdql_static!(include!("tests/results/tpch/SF_0.01/5.sdql"));
-    let _ = sdql_static!(include!("tests/results/tpch/SF_0.01/6.sdql"));
-    let _: HashSet<Record<(VarChar<25>, i32, OrderedFloat<f64>)>> =
-        sdql_static!(include!("tests/results/tpch/SF_0.01/9.sdql"));
-    let _: HashSet<Record<(VarChar<25>, i32, i32, Date, OrderedFloat<f64>, i32)>> =
-        sdql_static!(include!("tests/results/tpch/SF_0.01/18.sdql"));
+    let _: TypeQ1 = sdql_static!(include!("tests/results/tpch/SF_0.01/1.sdql"));
+    let _: TypeQ3 = sdql_static!(include!("tests/results/tpch/SF_0.01/3.sdql"));
+    let _: TypeQ5 = sdql_static!(include!("tests/results/tpch/SF_0.01/5.sdql"));
+    let _: TypeQ6 = sdql_static!(include!("tests/results/tpch/SF_0.01/6.sdql"));
+    let _: TypeQ9 = sdql_static!(include!("tests/results/tpch/SF_0.01/9.sdql"));
+    let _: TypeQ18 = sdql_static!(include!("tests/results/tpch/SF_0.01/18.sdql"));
 }

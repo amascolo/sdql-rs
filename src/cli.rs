@@ -5,7 +5,7 @@ use std::io::{self, Write};
 use std::path::Path;
 use std::process::Command;
 
-pub fn run_tpch(query: u8, sf: &str) -> io::Result<String> {
+pub fn run_tpch(query: u8, sf: &str) -> io::Result<Vec<u8>> {
     let path = format!("{}/progs/tpch/{query}.sdql", env!("CARGO_MANIFEST_DIR"));
     let src = fs::read_to_string(&path)?.replace(
         "datasets/tpch/",
@@ -25,7 +25,7 @@ pub fn filename(code: &str) -> String {
     format!("{hash:x}")
 }
 
-pub fn run(name: &str, code: &str) -> io::Result<String> {
+pub fn run(name: &str, code: &str) -> io::Result<Vec<u8>> {
     write_if_different(name, code)?; // avoids triggering recompilation
     let output = Command::new("cargo")
         .arg("run")
@@ -34,8 +34,7 @@ pub fn run(name: &str, code: &str) -> io::Result<String> {
         .arg(name)
         .output()?;
     if output.status.success() {
-        let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-        Ok(stdout)
+        Ok(output.stdout)
     } else {
         let stderr = String::from_utf8_lossy(&output.stderr);
         io::stderr().write_all(stderr.as_bytes())?;

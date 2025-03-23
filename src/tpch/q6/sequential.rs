@@ -1,7 +1,6 @@
-use super::TypeQ6;
 use super::{_19940101, _19950101};
 use crate::tpch::read::read_lineitems;
-use crate::tpch::types::Lineitem;
+use crate::tpch::types::{Lineitem, TypeQ6};
 use sdql_runtime::OrderedFloat;
 use std::error::Error;
 

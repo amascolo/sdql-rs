@@ -34,10 +34,10 @@ let l_h =
         <
           nation = ps_h(< _ = lineitem.l_partkey(i), _ = lineitem.l_suppkey(i) >)(0),
 //           o_year =  o_h(lineitem.l_orderkey(i)) / 10000
-           o_year =  o_h(lineitem.l_orderkey(i))
+           o_year =  0
         > ->
          < um_profit = lineitem.l_extendedprice(i) * (1.0 - lineitem.l_discount(i)) - ps_h(< _ = lineitem.l_partkey(i), _ = lineitem.l_suppkey(i) >)(1) * lineitem.l_quantity(i) >
       }
 
 sum(<k,v> <- l_h)
-  { unique(concat(k,v)) -> 1 }
+  { unique(concat(k,v)) -> true }

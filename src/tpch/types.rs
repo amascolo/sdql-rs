@@ -1,4 +1,35 @@
-use sdql_runtime::{Date, OrderedFloat, VarChar};
+use sdql_runtime::{Date, HashSet, OrderedFloat, Record, VarChar};
+
+pub type TypeQ1 = HashSet<
+    Record<(
+        VarChar<1>,
+        VarChar<1>,
+        OrderedFloat<f64>,
+        OrderedFloat<f64>,
+        OrderedFloat<f64>,
+        OrderedFloat<f64>,
+        i32,
+    )>,
+>;
+
+pub type TypeQ3 = HashSet<Record<(i32, Date, i32, OrderedFloat<f64>)>>;
+
+pub type TypeQ5 = HashSet<Record<(VarChar<25>, OrderedFloat<f64>)>>;
+
+pub type TypeQ6 = OrderedFloat<f64>;
+
+pub type TypeQ9 = HashSet<Record<(VarChar<25>, i32, OrderedFloat<f64>)>>;
+
+pub type TypeQ18 = HashSet<
+    Record<(
+        VarChar<25>,
+        i32,
+        i32,
+        Date,
+        OrderedFloat<f64>,
+        OrderedFloat<f64>,
+    )>,
+>;
 
 pub type Customer = (
     /* custkey */ Vec<i32>,

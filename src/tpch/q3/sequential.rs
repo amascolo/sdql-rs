@@ -1,8 +1,7 @@
-use super::TypeQ3;
 use super::_19950315;
 
 use crate::tpch::read::{read_customers, read_lineitems, read_orders};
-use crate::tpch::types::{Customer, Lineitem, Orders};
+use crate::tpch::types::{Customer, Lineitem, Orders, TypeQ3};
 use sdql_runtime::{Date, HashMap, OrderedFloat, Record, VarChar, TRUE};
 use std::error::Error;
 
