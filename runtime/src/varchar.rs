@@ -1,3 +1,4 @@
+use approx::AbsDiffEq;
 use arrayvec::{ArrayString, CapacityError};
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -44,5 +45,17 @@ impl<const CAP: usize> Deref for VarChar<CAP> {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl<const CAP: usize> AbsDiffEq for VarChar<CAP> {
+    type Epsilon = ();
+
+    fn default_epsilon() -> Self::Epsilon {
+        ()
+    }
+
+    fn abs_diff_eq(&self, other: &Self, _epsilon: Self::Epsilon) -> bool {
+        self.eq(other)
     }
 }
