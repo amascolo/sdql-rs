@@ -49,6 +49,8 @@ pub enum Token<'src> {
     External,
     Promote,
     Unique,
+    Backtick(&'src str),
+    Ext,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -100,6 +102,8 @@ impl fmt::Display for Token<'_> {
             Token::External => write!(f, "external"),
             Token::Promote => write!(f, "promote"),
             Token::Unique => write!(f, "unique"),
+            Token::Backtick(s) => write!(f, "`{s}`"),
+            Token::Ext => write!(f, "ext"),
         }
     }
 }
@@ -139,6 +143,11 @@ pub(super) fn lexer<'src>()
         .ignore_then(none_of('"').repeated().to_slice())
         .then_ignore(just('"'))
         .map(Token::Str);
+
+    let backtick = just('`')
+        .ignore_then(none_of('`').repeated().to_slice())
+        .then_ignore(just('`'))
+        .map(Token::Backtick);
 
     let arrows = just("<-").or(just("->")).map(Token::Arrow);
     let at = just("@").map(|_| Token::At);
@@ -191,12 +200,14 @@ pub(super) fn lexer<'src>()
         "external" => Token::External,
         "promote" => Token::Promote,
         "unique" => Token::Unique,
+        "ext" => Token::Ext,
         _ => Token::Ident(ident),
     });
 
     let token = real
         .or(integer)
         .or(str_)
+        .or(backtick)
         .or(arrows)
         .or(op)
         .or(at)

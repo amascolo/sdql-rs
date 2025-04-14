@@ -381,7 +381,25 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
                 val: TypedExpr::Concat { lhs, rhs },
             }
         }
-        Expr::External { func, args: _ } => match func {},
+        Expr::External { func, args } => {
+            let r#type = match func {
+                External::StrContains => Type::Bool,
+            };
+            let args: Vec<_> = args
+                .into_iter()
+                .map(|expr| {
+                    let typed = infer_spanned(expr.boxed(), ctx);
+                    Typed {
+                        val: typed.val.unboxed(),
+                        r#type: typed.r#type,
+                    }
+                })
+                .collect();
+            Typed {
+                r#type,
+                val: TypedExpr::External { func, args },
+            }
+        }
         Expr::Promote { promo, expr } => {
             let expr = infer_spanned(expr, ctx);
             Typed {

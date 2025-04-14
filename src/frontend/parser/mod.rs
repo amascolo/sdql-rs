@@ -457,7 +457,25 @@ where
                 )
             });
 
-        // let external = todo!();
+        let args = expr
+            .clone()
+            .separated_by(just(Token::Ctrl(',')))
+            .collect::<Vec<_>>();
+        let external = just(Token::Ext)
+            .ignore_then(
+                select! { Token::Backtick(s) => s }
+                    .then(just(Token::Ctrl(',')).ignore_then(args))
+                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+            )
+            .map_with(|(ext, args), e| {
+                Spanned(
+                    Expr::External {
+                        func: ext.parse().unwrap(),
+                        args,
+                    },
+                    e.span(),
+                )
+            });
 
         let promote = just(Token::Promote)
             .ignore_then(type_.delimited_by(just(Token::Ctrl('[')), just(Token::Ctrl(']'))))
@@ -480,7 +498,7 @@ where
             .or(sum)
             .or(let_)
             .or(concat)
-            // .or(external) // TODO
+            .or(external)
             .or(promote)
             .boxed()
     })

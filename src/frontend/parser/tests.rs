@@ -1,5 +1,5 @@
 use super::*;
-use crate::ir::expr::{BinOp, DictEntry, Expr};
+use crate::ir::expr::{BinOp, DictEntry, Expr, External};
 use crate::ir::r#type::DictHint;
 use crate::no_span;
 use sdql_runtime::date;
@@ -601,10 +601,25 @@ fn concat() {
     );
 }
 
-// #[test]
-// fn external() {
-//     todo!()
-// }
+#[test]
+fn external() {
+    assert_eq!(
+        no_span!("ext(`StrContains`, p.p_name, \"green\")"),
+        Expr::External {
+            func: External::StrContains,
+            args: vec![
+                Spanned(
+                    Expr::Field {
+                        expr: Spanned(Box::new(no_span!("p")), (19..20).into()),
+                        field: "p_name".into(),
+                    },
+                    (19..27).into(),
+                ),
+                Spanned(no_span!("\"green\""), (29..36).into()),
+            ],
+        }
+    );
+}
 
 #[test]
 fn promote() {
@@ -628,13 +643,37 @@ fn unique() {
 }
 
 #[test]
+fn tpch_q1() {
+    let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/1.sdql"));
+    let _ = no_span!(prog);
+}
+
+#[test]
 fn tpch_q3() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/3.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
+fn tpch_q5() {
+    let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/5.sdql"));
+    let _ = no_span!(prog);
+}
+
+#[test]
 fn tpch_q6() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/6.sdql"));
+    let _ = no_span!(prog);
+}
+
+#[test]
+fn tpch_q9() {
+    let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/9.sdql"));
+    let _ = no_span!(prog);
+}
+
+#[test]
+fn tpch_q18() {
+    let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/18.sdql"));
     let _ = no_span!(prog);
 }

@@ -3,6 +3,7 @@ use crate::ir::r#type::{DictHint, Field, Type};
 use derive_more::Display;
 use sdql_runtime::Date;
 use std::fmt;
+use strum_macros::EnumString;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expr<'src> {
@@ -95,8 +96,11 @@ pub enum Expr<'src> {
     },
 }
 
-#[derive(Clone, Debug, Display, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum External {}
+#[derive(Clone, Debug, strum_macros::Display, EnumString, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum External {
+    #[strum(serialize = "StrContains")]
+    StrContains,
+}
 
 #[derive(Clone, Debug, Display, PartialEq)]
 #[display("{name} = {val}")]

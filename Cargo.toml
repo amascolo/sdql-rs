@@ -24,9 +24,11 @@ proc-macro2 = "1.0"
 quote = "1.0"
 rayon = "1.10.0" # TODO eventually get rid, it's for runtime
 syn = { version = "2.0", features = ["extra-traits", "full"] }
+strum = "0.27.1"
 time = { version = "0.3.40", features = ["parsing"] }
 
-sdql_runtime = { path = "runtime" } # TODO optional, only for binaries
+sdql_runtime = { path = "runtime" }
+strum_macros = "0.27.1" # TODO optional, only for binaries
 
 [dev-dependencies]
 approx = { package = "approxim", version = "0.6.4", features = ["ordered-float", "tuple_impl"] }
