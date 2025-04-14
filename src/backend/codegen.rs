@@ -318,11 +318,15 @@ impl From<ExprFMF<'_>> for TokenStream {
                 args,
             } => {
                 let [arg0, arg1]: [_; 2] = args.try_into().unwrap();
-                let _arg0: TokenStream = arg0.clone().into();
-                let _arg1: TokenStream = arg1.clone().into();
-                // FIXME
-                quote! { true }
-                // quote! { #arg0.contains(&#arg1) }
+                let arg0: TokenStream = arg0.clone().into();
+                let Typed {
+                    val: Spanned(ExprFMF::String { val, max_len: _ }, _),
+                    r#type: _,
+                } = arg1
+                else {
+                    unreachable!()
+                };
+                quote! { #arg0.contains(&#val) }
             }
             ExprFMF::External {
                 func: External::Year,
