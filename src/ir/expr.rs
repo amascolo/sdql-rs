@@ -100,6 +100,7 @@ pub enum Expr<'src> {
 pub enum External {
     #[strum(serialize = "StrContains")]
     StrContains,
+    Year,
 }
 
 #[derive(Clone, Debug, Display, PartialEq)]

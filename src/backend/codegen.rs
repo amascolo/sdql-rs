@@ -1,7 +1,7 @@
 use super::fmf::{ExprFMF, OpFMF};
 use crate::frontend::lexer::Spanned;
 use crate::inference::Typed;
-use crate::ir::expr::{BinOp, DictEntry};
+use crate::ir::expr::{BinOp, DictEntry, External};
 use crate::ir::r#type::{DictHint, Type};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
@@ -313,6 +313,27 @@ impl From<ExprFMF<'_>> for TokenStream {
                 quote! { Record::new((#(#vals),*,)) }
             }
             ExprFMF::Dom { .. } => unimplemented!(),
+            ExprFMF::External {
+                func: External::StrContains,
+                args,
+            } => {
+                let [arg0, arg1]: [_; 2] = args.try_into().unwrap();
+                let _arg0: TokenStream = arg0.clone().into();
+                let _arg1: TokenStream = arg1.clone().into();
+                // FIXME
+                quote! { true }
+                // quote! { #arg0.contains(&#arg1) }
+            }
+            ExprFMF::External {
+                func: External::Year,
+                args,
+            } => {
+                let [arg]: [_; 1] = args.try_into().unwrap();
+                let arg: TokenStream = arg.clone().into();
+                quote! { #arg.year() }
+            }
+            #[allow(unreachable_patterns)] // handy if you are adding more
+            ExprFMF::External { func, args: _ } => todo!("{func}"),
             ExprFMF::Unique { expr } => expr.into(), // TODO
             t => todo!("{t:?}"),
         }

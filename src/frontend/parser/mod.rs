@@ -470,7 +470,9 @@ where
             .map_with(|(ext, args), e| {
                 Spanned(
                     Expr::External {
-                        func: ext.parse().unwrap(),
+                        func: ext
+                            .parse()
+                            .expect(&format!("missing external enum variant `{ext}`")),
                         args,
                     },
                     e.span(),

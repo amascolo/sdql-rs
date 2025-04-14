@@ -15,7 +15,7 @@ let s_h =
 
 let p_h =
   sum(<i,_> <- range(part.size))
-//    if(ext(`StrContains`, p.p_name, "green")) then
+    if(ext(`StrContains`, part.p_name, "green")) then
       { unique(part.p_partkey(i)) -> < _ = part.p_partkey(i) > }
 
 let ps_h =
@@ -33,8 +33,7 @@ let l_h =
       {
         <
           nation = ps_h(< _ = lineitem.l_partkey(i), _ = lineitem.l_suppkey(i) >)(0),
-//           o_year =  o_h(lineitem.l_orderkey(i)) / 10000
-           o_year =  0
+          o_year = ext(`Year`, o_h(lineitem.l_orderkey(i)))
         > ->
          < um_profit = lineitem.l_extendedprice(i) * (1.0 - lineitem.l_discount(i)) - ps_h(< _ = lineitem.l_partkey(i), _ = lineitem.l_suppkey(i) >)(1) * lineitem.l_quantity(i) >
       }

@@ -2,7 +2,7 @@ use crate::date;
 use approx::AbsDiffEq;
 use serde::{Deserialize, Serialize};
 use std::fmt;
-use std::ops::AddAssign;
+use std::ops::{AddAssign, Deref};
 use time::format_description::well_known::Iso8601;
 use time::{format_description, Month};
 
@@ -20,6 +20,14 @@ impl Date {
             Ok(date) => Self::new(date),
             _ => unreachable!(),
         }
+    }
+}
+
+impl Deref for Date {
+    type Target = time::Date;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
