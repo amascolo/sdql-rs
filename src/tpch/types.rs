@@ -12,6 +12,19 @@ pub type TypeQ1 = HashSet<
     )>,
 >;
 
+pub type TypeQ2 = HashSet<
+    Record<(
+        OrderedFloat<f64>,
+        VarChar<25>,
+        VarChar<25>,
+        i32,
+        VarChar<25>,
+        VarChar<15>,
+        VarChar<40>,
+        VarChar<101>,
+    )>,
+>;
+
 pub type TypeQ3 = HashSet<Record<(i32, Date, i32, OrderedFloat<f64>)>>;
 
 pub type TypeQ5 = HashSet<Record<(VarChar<25>, OrderedFloat<f64>)>>;

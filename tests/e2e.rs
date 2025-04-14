@@ -1,6 +1,6 @@
 use approx::assert_abs_diff_eq;
 use sdql::cli::run_tpch;
-use sdql::tpch::types::{TypeQ1, TypeQ18, TypeQ3, TypeQ5, TypeQ6, TypeQ9};
+use sdql::tpch::types::{TypeQ1, TypeQ18, TypeQ2, TypeQ3, TypeQ5, TypeQ6, TypeQ9};
 use sdql_macros::sdql_static;
 
 #[test]
@@ -12,6 +12,18 @@ fn tpch_q1() {
         actual,
         expected,
         epsilon = (((), (), 1e-4, 1e-4, 1e-4, 1e-4, 0), ())
+    );
+}
+
+#[test]
+fn tpch_q2() {
+    let buffer = run_tpch(2, "0.01").unwrap();
+    let actual: TypeQ2 = bincode::deserialize(&buffer).unwrap();
+    let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/2.sdql"));
+    assert_abs_diff_eq!(
+        actual,
+        expected,
+        epsilon = ((1e-4, (), (), 0, (), (), (), ()), ())
     );
 }
 
