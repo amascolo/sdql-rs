@@ -98,6 +98,10 @@ pub enum Expr<'src> {
 
 #[derive(Clone, Debug, strum_macros::Display, EnumString, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum External {
+    #[strum(serialize = "FirstIndex")]
+    FirstIndex,
+    #[strum(serialize = "LastIndex")]
+    LastIndex,
     #[strum(serialize = "StrContains")]
     StrContains,
     #[strum(serialize = "StrEndsWith")]

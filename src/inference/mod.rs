@@ -383,6 +383,8 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
         }
         Expr::External { func, args } => {
             let r#type = match func {
+                External::FirstIndex => Type::Int,
+                External::LastIndex => Type::Int,
                 External::StrContains => Type::Bool,
                 External::StrEndsWith => Type::Bool,
                 External::Year => Type::Int,
