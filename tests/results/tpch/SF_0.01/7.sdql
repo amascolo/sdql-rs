@@ -1,0 +1,6 @@
+{
+    <"FRANCE", "GERMANY", 1995, 268068.5774> -> true,
+    <"FRANCE", "GERMANY", 1996, 303862.298> -> true,
+    <"GERMANY", "FRANCE", 1995, 621159.4882> -> true,
+    <"GERMANY", "FRANCE", 1996, 379095.8854> -> true
+}
