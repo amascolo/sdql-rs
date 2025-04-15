@@ -330,7 +330,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 func: External::StrContains,
                 args,
             } => {
-                let [arg0, arg1]: [_; 2] = args.try_into().unwrap();
+                let [arg0, arg1]: [_; _] = args.try_into().unwrap();
                 let arg0: TokenStream = arg0.clone().into();
                 let Typed {
                     val: Spanned(ExprFMF::String { val, max_len: _ }, _),

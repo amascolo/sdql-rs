@@ -381,6 +381,46 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
                 val: TypedExpr::Concat { lhs, rhs },
             }
         }
+        Expr::External {
+            func: External::SubString,
+            args,
+        } => {
+            let [string, start, end]: [_; _] = args.clone().try_into().unwrap();
+            let start = match start.0 {
+                Expr::Int { val } => val.into(),
+                Expr::Long { val } => val,
+                _ => unimplemented!(),
+            };
+            let end = match end.0 {
+                Expr::Int { val } => val.into(),
+                Expr::Long { val } => val,
+                _ => unimplemented!(),
+            };
+            let r#type = match Typed::from(string).r#type {
+                Type::String { max_len: None } => Type::String { max_len: None },
+                Type::String { max_len: Some(_) } => Type::String {
+                    max_len: Some(end - start),
+                },
+                _ => panic!(),
+            };
+            let args: Vec<_> = args
+                .into_iter()
+                .map(|expr| {
+                    let typed = infer_spanned(expr.boxed(), ctx);
+                    Typed {
+                        val: typed.val.unboxed(),
+                        r#type: typed.r#type,
+                    }
+                })
+                .collect();
+            Typed {
+                r#type,
+                val: TypedExpr::External {
+                    func: External::SubString,
+                    args,
+                },
+            }
+        }
         Expr::External { func, args } => {
             let r#type = match func {
                 External::FirstIndex => Type::Int,
@@ -388,6 +428,7 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
                 External::StrContains => Type::Bool,
                 External::StrEndsWith => Type::Bool,
                 External::StrStartsWith => Type::Bool,
+                External::SubString => unreachable!(),
                 External::Size => Type::Int,
                 External::Year => Type::Int,
             };
