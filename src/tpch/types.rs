@@ -85,6 +85,8 @@ pub type TypeQ18 = HashSet<
     )>,
 >;
 
+pub type TypeQ19 = HashSet<Record<(OrderedFloat<f64>,)>>;
+
 pub type Customer = (
     /* custkey */ Vec<i32>,
     /* name */ Vec<VarChar<25>>,

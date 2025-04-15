@@ -1,10 +1,11 @@
 use approx::assert_abs_diff_eq;
 use sdql::cli::run_tpch;
 use sdql::tpch::types::{
-    TypeQ1, TypeQ10, TypeQ11, TypeQ12, TypeQ13, TypeQ14, TypeQ15, TypeQ16, TypeQ17, TypeQ18, TypeQ2,
-    TypeQ3, TypeQ4, TypeQ5, TypeQ6, TypeQ7, TypeQ8, TypeQ9,
+    TypeQ1, TypeQ10, TypeQ11, TypeQ12, TypeQ13, TypeQ14, TypeQ15, TypeQ16, TypeQ17, TypeQ18, TypeQ19,
+    TypeQ2, TypeQ3, TypeQ4, TypeQ5, TypeQ6, TypeQ7, TypeQ8, TypeQ9,
 };
 use sdql_macros::sdql_static;
+use sdql_runtime::{HashMap, OrderedFloat, Record, TRUE};
 
 #[test]
 fn tpch_q1() {
@@ -164,4 +165,14 @@ fn tpch_q18() {
     let actual: TypeQ18 = bincode::deserialize(&buffer).unwrap();
     let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/18.sdql"));
     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 0, (), 1e-4, 1e-4), ()));
+}
+
+#[test]
+fn tpch_q19() {
+    // let buffer = run_tpch(19, "0.01").unwrap();
+    // let actual: TypeQ19 = bincode::deserialize(&buffer).unwrap();
+    // FIXME
+    // let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/19.sdql"));
+    let _expected: TypeQ19 = HashMap::from([(Record::new((OrderedFloat(22923.028),)), TRUE)]);
+    // assert_abs_diff_eq!(actual, expected, epsilon = ((1e-4,), ()));
 }
