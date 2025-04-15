@@ -1,7 +1,8 @@
 use approx::assert_abs_diff_eq;
 use sdql::cli::run_tpch;
 use sdql::tpch::types::{
-    TypeQ1, TypeQ10, TypeQ18, TypeQ2, TypeQ3, TypeQ4, TypeQ5, TypeQ6, TypeQ7, TypeQ8, TypeQ9,
+    TypeQ1, TypeQ10, TypeQ11, TypeQ18, TypeQ2, TypeQ3, TypeQ4, TypeQ5, TypeQ6, TypeQ7, TypeQ8,
+    TypeQ9,
 };
 use sdql_macros::sdql_static;
 
@@ -89,7 +90,7 @@ fn tpch_q9() {
 // FIXME overflows if I switch the order of expected and actual (!)
 #[test]
 fn tpch_q10() {
-    let expected: TypeQ10 = sdql_static!(include!("tests/results/tpch/SF_0.01/10.sdql")); // FIXME round to 4dp
+    let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/10.sdql")); // FIXME round to 4dp
     let buffer = run_tpch(10, "0.01").unwrap();
     let actual: TypeQ10 = bincode::deserialize(&buffer).unwrap();
     assert_abs_diff_eq!(
@@ -97,6 +98,15 @@ fn tpch_q10() {
         expected,
         epsilon = ((0, (), 1e-4, 1e-4, (), (), (), ()), ())
     );
+}
+
+#[test]
+fn tpch_q11() {
+    // FIXME
+    // let buffer = run_tpch(11, "0.01").unwrap();
+    // let actual: TypeQ11 = bincode::deserialize(&buffer).unwrap();
+    let _expected: TypeQ11 = sdql_static!(include!("tests/results/tpch/SF_0.01/11.sdql"));
+    // assert_abs_diff_eq!(actual, expected, epsilon = ((0, 1e-4), ()));
 }
 
 #[test]
