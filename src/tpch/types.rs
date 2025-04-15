@@ -70,6 +70,8 @@ pub type TypeQ15 = HashSet<
     )>,
 >;
 
+pub type TypeQ16 = HashSet<Record<(VarChar<10>, VarChar<25>, i32, i32)>>;
+
 pub type TypeQ18 = HashSet<
     Record<(
         VarChar<25>,

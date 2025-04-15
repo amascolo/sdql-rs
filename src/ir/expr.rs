@@ -108,6 +108,8 @@ pub enum External {
     StrStartsWith,
     #[strum(serialize = "StrEndsWith")]
     StrEndsWith,
+    #[strum(serialize = "Size")]
+    Size,
     #[strum(serialize = "Year")]
     Year,
 }

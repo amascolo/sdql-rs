@@ -388,6 +388,7 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
                 External::StrContains => Type::Bool,
                 External::StrEndsWith => Type::Bool,
                 External::StrStartsWith => Type::Bool,
+                External::Size => Type::Int,
                 External::Year => Type::Int,
             };
             let args: Vec<_> = args
