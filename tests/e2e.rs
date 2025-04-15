@@ -86,17 +86,17 @@ fn tpch_q9() {
     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 1e-4), ()));
 }
 
+// FIXME overflows if I switch the order of expected and actual (!)
 #[test]
 fn tpch_q10() {
+    let expected: TypeQ10 = sdql_static!(include!("tests/results/tpch/SF_0.01/10.sdql")); // FIXME round to 4dp
     let buffer = run_tpch(10, "0.01").unwrap();
-    let _actual: TypeQ10 = bincode::deserialize(&buffer).unwrap();
-    // FIXME
-    // let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/10.sdql"));
-    // assert_abs_diff_eq!(
-    //     actual,
-    //     expected,
-    //     epsilon = ((0, (), 1e-4, 1e-4, (), (), (), ()), ())
-    // );
+    let actual: TypeQ10 = bincode::deserialize(&buffer).unwrap();
+    assert_abs_diff_eq!(
+        actual,
+        expected,
+        epsilon = ((0, (), 1e-4, 1e-4, (), (), (), ()), ())
+    );
 }
 
 #[test]
