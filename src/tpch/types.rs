@@ -60,6 +60,16 @@ pub type TypeQ13 = HashSet<Record<(i32, i32)>>;
 
 pub type TypeQ14 = OrderedFloat<f64>;
 
+pub type TypeQ15 = HashSet<
+    Record<(
+        i32,
+        VarChar<25>,
+        VarChar<40>,
+        VarChar<15>,
+        OrderedFloat<f64>,
+    )>,
+>;
+
 pub type TypeQ18 = HashSet<
     Record<(
         VarChar<25>,
