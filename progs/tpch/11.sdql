@@ -22,4 +22,4 @@ let ps_t =
 
 sum(<ps_partkey,ps_supplycost> <- ps_t(1))
   if(ps_t(0) < ps_supplycost) then
-    { < _ = ps_partkey, _ = ps_supplycost > -> 1 }
+    { < _ = ps_partkey, _ = ps_supplycost > -> true }
