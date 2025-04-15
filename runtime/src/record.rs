@@ -1,7 +1,8 @@
 use approx::AbsDiffEq;
 use serde::{Deserialize, Serialize};
 use std::fmt;
-use std::ops::{AddAssign, Deref};
+use std::iter::Sum;
+use std::ops::{Add, AddAssign, Deref};
 
 #[derive(
     Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord, Deserialize, Serialize,
@@ -55,6 +56,20 @@ where
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+// TODO this was required for TPCH Q14 but we can make it variadic
+impl<T, U> Sum for Record<(T, U)>
+where
+    T: Sum + Add<Output = T>,
+    U: Sum + Add<Output = U>,
+{
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        Self::new(iter.map(|Record((a, b))| (a, b)).fold(
+            (T::sum(std::iter::empty()), U::sum(std::iter::empty())),
+            |(acc_a, acc_b), (a, b)| (acc_a + a, acc_b + b),
+        ))
     }
 }
 

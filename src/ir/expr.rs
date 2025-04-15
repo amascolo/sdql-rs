@@ -104,6 +104,8 @@ pub enum External {
     LastIndex,
     #[strum(serialize = "StrContains")]
     StrContains,
+    #[strum(serialize = "StrStartsWith")]
+    StrStartsWith,
     #[strum(serialize = "StrEndsWith")]
     StrEndsWith,
     #[strum(serialize = "Year")]

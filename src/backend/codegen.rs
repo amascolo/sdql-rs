@@ -313,6 +313,19 @@ impl From<ExprFMF<'_>> for TokenStream {
                 quote! { Record::new((#(#vals),*,)) }
             }
             ExprFMF::Dom { .. } => unimplemented!(),
+            ExprFMF::If { r#if, then, r#else } => {
+                let r#if: Typed<Spanned<ExprFMF>> = r#if.map(Spanned::unboxed);
+                let then: Typed<Spanned<ExprFMF>> = then.map(Spanned::unboxed);
+                let r#else: Option<Typed<Spanned<ExprFMF>>> =
+                    r#else.map(|r#else| r#else.map(Spanned::unboxed));
+                let r#if: TokenStream = r#if.into();
+                let then: TokenStream = then.into();
+                let r#else: Option<TokenStream> = r#else.map(|r#else| r#else.into());
+                match r#else {
+                    None => quote! { if #r#if { #then } },
+                    Some(r#else) => quote! { if #r#if { #then } else { #r#else } },
+                }
+            }
             ExprFMF::External {
                 func: External::StrContains,
                 args,
@@ -329,11 +342,26 @@ impl From<ExprFMF<'_>> for TokenStream {
                 quote! { #arg0.contains(&#val) }
             }
             ExprFMF::External {
-                func: External::StrEndsWith,
+                func: External::StrStartsWith,
                 args,
             } => {
                 let [arg0, arg1]: [_; 2] = args.try_into().unwrap();
                 let arg0: TokenStream = arg0.clone().into();
+                let Typed {
+                    val: Spanned(ExprFMF::String { val, max_len: _ }, _),
+                    r#type: _,
+                } = arg1
+                else {
+                    unreachable!()
+                };
+                quote! { #arg0.starts_with(&#val) }
+            }
+            ExprFMF::External {
+                func: External::StrEndsWith,
+                args,
+            } => {
+                let [arg0, arg1]: [_; 2] = args.try_into().unwrap();
+                let arg0: TokenStream = arg0.into();
                 let Typed {
                     val: Spanned(ExprFMF::String { val, max_len: _ }, _),
                     r#type: _,
