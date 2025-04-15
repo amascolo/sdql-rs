@@ -661,6 +661,12 @@ fn tpch_q3() {
 }
 
 #[test]
+fn tpch_q4() {
+    let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/4.sdql"));
+    let _ = no_span!(prog);
+}
+
+#[test]
 fn tpch_q5() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/5.sdql"));
     let _ = no_span!(prog);

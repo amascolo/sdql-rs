@@ -27,6 +27,8 @@ pub type TypeQ2 = HashSet<
 
 pub type TypeQ3 = HashSet<Record<(i32, Date, i32, OrderedFloat<f64>)>>;
 
+pub type TypeQ4 = HashSet<Record<(VarChar<25>, i32)>>;
+
 pub type TypeQ5 = HashSet<Record<(VarChar<25>, OrderedFloat<f64>)>>;
 
 pub type TypeQ6 = OrderedFloat<f64>;
