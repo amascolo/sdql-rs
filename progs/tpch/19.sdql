@@ -47,7 +47,7 @@ let res =
   sum(<i,_> <- range(lineitem.size))
     let p_brand = p_h(lineitem.l_partkey(i))(0)
     if(
-      (p_h(lineitem.l_partkey(i)) != {})
+      (dom(p_h)(lineitem.l_partkey(i)))
       && ((lineitem.l_shipmode(i) == "AIR") || (lineitem.l_shipmode(i) == "AIR REG"))
       && (lineitem.l_shipinstruct(i) == "DELIVER IN PERSON")
       && (

@@ -16,23 +16,23 @@ let n_h =
 
 let s_h =
   sum(<i,_> <- range(supplier.size))
-    if(n_h(supplier.s_nationkey(i)) != {}) then
+    if(dom(n_h)(supplier.s_nationkey(i))) then
       { unique(supplier.s_suppkey(i)) -> < _ = supplier.s_suppkey(i) > }
 
 let l_h =
   sum(<i,_> <- range(lineitem.size))
     if(
       (date(19940101) <= lineitem.l_shipdate(i)) && (lineitem.l_shipdate(i) < date(19950101))
-      && (p_h(lineitem.l_partkey(i)) != {}) && (s_h(lineitem.l_suppkey(i)) != {})
+      && (dom(p_h)(lineitem.l_partkey(i))) && (dom(s_h)(lineitem.l_suppkey(i)))
       ) then
       { unique(< _ = lineitem.l_partkey(i), _ = lineitem.l_suppkey(i) >) -> 0.5 * lineitem.l_quantity(i) }
 
 let ps_h =
   sum(<i,_> <- range(partsupp.size))
     let key = <_ = partsupp.ps_partkey(i), _ = partsupp.ps_suppkey(i) >
-    if((l_h(key) != {}) && (l_h(key) < partsupp.ps_availqty(i))) then
+    if((dom(l_h)(key)) && (l_h(key) < partsupp.ps_availqty(i))) then
       { unique(partsupp.ps_suppkey(i)) -> < _ = partsupp.ps_suppkey(i) > }
 
 sum(<i,_> <- range(supplier.size))
-  if(ps_h(supplier.s_suppkey(i)) != {}) then
+  if(dom(ps_h)(supplier.s_suppkey(i))) then
     { unique(< _ = supplier.s_name(i), _ = supplier.s_address(i) >) -> 1 }

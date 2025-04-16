@@ -699,13 +699,12 @@ mod tests {
         assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
     }
 
-    // FIXME
-    // #[test]
-    // fn tpch_q17() {
-    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/17.sdql"));
-    //     let expr = sdql!(src);
-    //     assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
-    // }
+    #[test]
+    fn tpch_q17() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/17.sdql"));
+        let expr = sdql!(src);
+        assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
+    }
 
     #[test]
     fn tpch_q18() {
@@ -714,29 +713,26 @@ mod tests {
         assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
     }
 
-    // FIXME
-    // #[test]
-    // fn tpch_q19() {
-    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/19.sdql"));
-    //     let expr = sdql!(src);
-    //     assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
-    // }
+    #[test]
+    fn tpch_q19() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/19.sdql"));
+        let expr = sdql!(src);
+        assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
+    }
 
-    // FIXME
-    // #[test]
-    // fn tpch_q20() {
-    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/20.sdql"));
-    //     let expr = sdql!(src);
-    //     assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
-    // }
+    #[test]
+    fn tpch_q20() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/20.sdql"));
+        let expr = sdql!(src);
+        assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
+    }
 
-    // FIXME
-    // #[test]
-    // fn tpch_q21() {
-    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/21.sdql"));
-    //     let expr = sdql!(src);
-    //     assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
-    // }
+    #[test]
+    fn tpch_q21() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/21.sdql"));
+        let expr = sdql!(src);
+        assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
+    }
 
     // FIXME
     // #[test]
