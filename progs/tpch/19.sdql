@@ -53,15 +53,15 @@ let res =
       && (
            (
              (p_brand == "Brand#12")
-             && (1 <= lineitem.l_quantity(i)) && (lineitem.l_quantity(i) <= 11)
+             && (1.0 <= lineitem.l_quantity(i)) && (lineitem.l_quantity(i) <= 11.0)
            )
            || (
              (p_brand == "Brand#23")
-             && (10 <= lineitem.l_quantity(i)) && (lineitem.l_quantity(i) <= 20)
+             && (10.0 <= lineitem.l_quantity(i)) && (lineitem.l_quantity(i) <= 20.0)
            )
            || (
              (p_brand == "Brand#34")
-             && (20 <= lineitem.l_quantity(i)) && (lineitem.l_quantity(i) <= 30)
+             && (20.0 <= lineitem.l_quantity(i)) && (lineitem.l_quantity(i) <= 30.0)
            )
       )
     ) then

@@ -168,12 +168,12 @@ fn tpch_q18() {
 
 #[test]
 fn tpch_q19() {
-    // let buffer = run_tpch(19, "0.01").unwrap();
-    // let actual: TypeQ19 = bincode::deserialize(&buffer).unwrap();
+    let buffer = run_tpch(19, "0.01").unwrap();
+    let actual: TypeQ19 = bincode::deserialize(&buffer).unwrap();
     // FIXME
     // let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/19.sdql"));
-    let _expected: TypeQ19 = HashMap::from([(Record::new((OrderedFloat(22923.028),)), TRUE)]);
-    // assert_abs_diff_eq!(actual, expected, epsilon = ((1e-4,), ()));
+    let expected = HashMap::from([(Record::new((OrderedFloat(22923.028),)), TRUE)]);
+    assert_abs_diff_eq!(actual, expected, epsilon = ((1e-4,), ()));
 }
 
 #[test]
