@@ -468,6 +468,7 @@ fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
             || arg == "brazil_volume"
             || arg == "idx_special"
             || arg == "idx_requests"
+            || arg == "key"
         {
             parse_quote! { #ident }
         } else {
