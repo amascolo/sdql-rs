@@ -185,9 +185,33 @@ impl From<ExprFMF<'_>> for TokenStream {
                 cont: None,
             } => {
                 let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
+                let fn_args = if args.len() > 1 {
+                    quote! { (#(#args),*) }
+                } else {
+                    quote! { #(#args),* }
+                };
                 let r#type: syn::Type = (&inner.r#type).into();
                 let inner: TokenStream = inner.into();
-                quote! {.map(|#(#args),*| #inner).sum::<#r#type>()}
+                quote! {.map(|#fn_args| #inner).sum::<#r#type>()}
+            }
+            ExprFMF::FMF {
+                op: OpFMF::Map,
+                args,
+                inner,
+                cont: Some(cont),
+            } => {
+                let args: Vec<_> = args
+                    .iter()
+                    .map(|name| Ident::new(name, Span::call_site()))
+                    .collect();
+                let fn_args = if args.len() > 1 {
+                    quote! { (#(#args),*) }
+                } else {
+                    quote! { #(#args),* }
+                };
+                let inner: TokenStream = inner.into();
+                let cont: TokenStream = cont.into();
+                quote! {.map(|#fn_args| (#(#args),*, #inner))#cont}
             }
             ExprFMF::Binary { lhs, op, rhs } => {
                 let lhs = parse2(lhs.into()).unwrap();
