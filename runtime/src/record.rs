@@ -59,6 +59,15 @@ where
     }
 }
 
+// TODO we can make it variadic
+impl<T> Sum for Record<(T,)>
+where
+    T: Sum,
+{
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        Record((iter.map(|Record((t,))| t).sum(),))
+    }
+}
 // TODO this was required for TPCH Q14 but we can make it variadic
 impl<T, U> Sum for Record<(T, U)>
 where
@@ -72,6 +81,7 @@ where
         ))
     }
 }
+// TODO this was required for TPCH Q11 but we can make it variadic
 
 pub trait IsTuple {}
 

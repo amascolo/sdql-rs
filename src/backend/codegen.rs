@@ -336,6 +336,13 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let vals = vals.into_iter().map(|rv| TokenStream::from(rv.val));
                 quote! { Record::new((#(#vals),*,)) }
             }
+            ExprFMF::Dict { map, hint } if map.len() == 1 => {
+                let [entry]: [_; 1] = map.try_into().unwrap();
+                let r#type = to_type(hint);
+                let key: TokenStream = entry.key.into();
+                let val: TokenStream = entry.val.into();
+                quote! { #r#type::from([(#key, #val)]) }
+            }
             ExprFMF::Dom { .. } => unimplemented!(),
             ExprFMF::If { r#if, then, r#else } => {
                 let r#if: Typed<Spanned<ExprFMF>> = r#if.map(Spanned::unboxed);
@@ -369,7 +376,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 func: External::StrStartsWith,
                 args,
             } => {
-                let [arg0, arg1]: [_; 2] = args.try_into().unwrap();
+                let [arg0, arg1]: [_; _] = args.try_into().unwrap();
                 let arg0: TokenStream = arg0.clone().into();
                 let Typed {
                     val: Spanned(ExprFMF::String { val, max_len: _ }, _),
@@ -384,7 +391,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 func: External::StrEndsWith,
                 args,
             } => {
-                let [arg0, arg1]: [_; 2] = args.try_into().unwrap();
+                let [arg0, arg1]: [_; _] = args.try_into().unwrap();
                 let arg0: TokenStream = arg0.into();
                 let Typed {
                     val: Spanned(ExprFMF::String { val, max_len: _ }, _),
@@ -399,7 +406,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 func: External::Year,
                 args,
             } => {
-                let [arg]: [_; 1] = args.try_into().unwrap();
+                let [arg]: [_; _] = args.try_into().unwrap();
                 let arg: TokenStream = arg.clone().into();
                 quote! { #arg.year() }
             }

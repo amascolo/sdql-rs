@@ -6,7 +6,8 @@ use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::hash::Hash;
-use std::ops::{AddAssign, Deref, DerefMut, Index, IndexMut};
+use std::iter::Sum;
+use std::ops::{Add, AddAssign, Deref, DerefMut, Index, IndexMut};
 
 pub type HashSet<T> = HashMap<T, Bool>;
 
@@ -63,6 +64,7 @@ where
     }
 }
 
+// TODO get rid of this since we have the sum trait?
 impl<K, V> HashMap<K, V>
 where
     K: Copy + Eq + Hash,
@@ -71,6 +73,33 @@ where
     pub fn sum(mut self, other: Self) -> Self {
         self += other;
         self
+    }
+}
+
+impl<K, V> Sum for HashMap<K, V>
+where
+    K: Copy + Eq + Hash,
+    V: AddAssign + DefaultRef,
+{
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(HashMap::new(), |mut acc, item| {
+            acc += item;
+            acc
+        })
+    }
+}
+
+impl<K, V> Add for HashMap<K, V>
+where
+    K: Copy + Eq + Hash,
+    V: AddAssign + DefaultRef,
+{
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let mut result = self;
+        result += rhs;
+        result
     }
 }
 
