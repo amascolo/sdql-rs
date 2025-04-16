@@ -74,11 +74,10 @@ fn tpch_q7() {
 
 #[test]
 fn tpch_q8() {
-    // FIXME
-    // let buffer = run_tpch(8, "0.01").unwrap();
-    // let actual: TypeQ8 = bincode::deserialize(&buffer).unwrap();
-    let _expected: TypeQ8 = sdql_static!(include!("tests/results/tpch/SF_0.01/8.sdql"));
-    // assert_abs_diff_eq!(actual, expected, epsilon = ((0, 0), ()));
+    let buffer = run_tpch(8, "0.01").unwrap();
+    let actual: TypeQ8 = bincode::deserialize(&buffer).unwrap();
+    let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/8.sdql"));
+    assert_abs_diff_eq!(actual, expected, epsilon = ((0, 1e-4), ()));
 }
 
 #[test]

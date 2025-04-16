@@ -35,7 +35,7 @@ pub type TypeQ6 = OrderedFloat<f64>;
 
 pub type TypeQ7 = HashSet<Record<(VarChar<25>, VarChar<25>, i32, OrderedFloat<f64>)>>;
 
-pub type TypeQ8 = HashSet<Record<(i32, i32)>>;
+pub type TypeQ8 = HashSet<Record<(i32, OrderedFloat<f64>)>>;
 
 pub type TypeQ9 = HashSet<Record<(VarChar<25>, i32, OrderedFloat<f64>)>>;
 
