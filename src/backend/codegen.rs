@@ -1,7 +1,7 @@
 use super::fmf::{ExprFMF, OpFMF};
 use crate::frontend::lexer::Spanned;
 use crate::inference::Typed;
-use crate::ir::expr::{BinOp, DictEntry, External};
+use crate::ir::expr::{BinOp, DictEntry, External, UnaryOp};
 use crate::ir::r#type::{DictHint, Type};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
@@ -403,6 +403,36 @@ impl From<ExprFMF<'_>> for TokenStream {
                 quote! { #arg0.ends_with(&#val) }
             }
             ExprFMF::External {
+                func: External::FirstIndex,
+                args,
+            } => {
+                let [arg0, arg1]: [_; _] = args.try_into().unwrap();
+                let arg0: TokenStream = arg0.clone().into();
+                let Typed {
+                    val: Spanned(ExprFMF::String { val, max_len: _ }, _),
+                    r#type: _,
+                } = arg1
+                else {
+                    unreachable!()
+                };
+                quote! { #arg0.find(&#val).map(|i| i as i32).unwrap_or(-1) }
+            }
+            ExprFMF::External {
+                func: External::LastIndex,
+                args,
+            } => {
+                let [arg0, arg1]: [_; _] = args.try_into().unwrap();
+                let arg0: TokenStream = arg0.clone().into();
+                let Typed {
+                    val: Spanned(ExprFMF::String { val, max_len: _ }, _),
+                    r#type: _,
+                } = arg1
+                else {
+                    unreachable!()
+                };
+                quote! { #arg0.rfind(&#val).map(|i| i as i32).unwrap_or(-1) }
+            }
+            ExprFMF::External {
                 func: External::Year,
                 args,
             } => {
@@ -413,6 +443,13 @@ impl From<ExprFMF<'_>> for TokenStream {
             #[allow(unreachable_patterns)] // handy if you are adding more
             ExprFMF::External { func, args: _ } => todo!("{func}"),
             ExprFMF::Unique { expr } => expr.into(), // TODO
+            ExprFMF::Unary {
+                op: UnaryOp::Neg,
+                expr,
+            } => {
+                let expr: TokenStream = expr.into();
+                quote! { -#expr }
+            }
             t => todo!("{t:?}"),
         }
     }
@@ -429,6 +466,8 @@ fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
             || arg == "orderyear"
             || arg == "volume"
             || arg == "brazil_volume"
+            || arg == "idx_special"
+            || arg == "idx_requests"
         {
             parse_quote! { #ident }
         } else {
