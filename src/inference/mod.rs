@@ -396,7 +396,7 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
                 Expr::Long { val } => val,
                 _ => unimplemented!(),
             };
-            let r#type = match Typed::from(string).r#type {
+            let r#type = match infer_spanned(string.boxed(), ctx).r#type {
                 Type::String { max_len: None } => Type::String { max_len: None },
                 Type::String { max_len: Some(_) } => Type::String {
                     max_len: Some(end - start),
@@ -734,11 +734,10 @@ mod tests {
         assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
     }
 
-    // FIXME
-    // #[test]
-    // fn tpch_q22() {
-    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/22.sdql"));
-    //     let expr = sdql!(src);
-    //     assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
-    // }
+    #[test]
+    fn tpch_q22() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/22.sdql"));
+        let expr = sdql!(src);
+        assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
+    }
 }
