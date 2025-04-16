@@ -1,4 +1,5 @@
-use crate::Bool;
+use crate::bool::Bool;
+use crate::default::DefaultRef;
 use approx::AbsDiffEq;
 use hashbrown::hash_map::rayon::IntoParIter;
 use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelIterator};
@@ -65,7 +66,7 @@ where
 impl<K, V> HashMap<K, V>
 where
     K: Copy + Eq + Hash,
-    V: AddAssign + Default,
+    V: AddAssign + DefaultRef,
 {
     pub fn sum(mut self, other: Self) -> Self {
         self += other;
@@ -76,7 +77,7 @@ where
 impl<K, V> AddAssign for HashMap<K, V>
 where
     K: Copy + Eq + Hash,
-    V: AddAssign + Default,
+    V: AddAssign + DefaultRef,
 {
     fn add_assign(&mut self, other: Self) {
         for (key, val) in other {
@@ -108,18 +109,19 @@ where
 impl<K, V> Index<&K> for HashMap<K, V>
 where
     K: Eq + Hash,
+    V: DefaultRef,
 {
     type Output = V;
 
     fn index(&self, key: &K) -> &Self::Output {
-        &self.0[key]
+        self.0.get(key).unwrap_or_else(|| V::default_ref())
     }
 }
 
 impl<K, V> IndexMut<&K> for HashMap<K, V>
 where
     K: Copy + Eq + Hash,
-    V: Default,
+    V: DefaultRef,
 {
     fn index_mut(&mut self, key: &K) -> &mut Self::Output {
         self.entry(*key).or_default()

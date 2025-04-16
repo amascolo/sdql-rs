@@ -415,8 +415,8 @@ fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
     let len = args.len();
     let mut args = args.into_iter().map(|arg| {
         let ident = Ident::new(arg, Span::call_site());
-        // FIXME hack
-        if arg == "i" {
+        // FIXME hardcoded - should be determined by arg type?
+        if arg == "i" || arg == "avg" {
             parse_quote! { #ident }
         } else {
             parse_quote! { &#ident }

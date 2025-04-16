@@ -1,5 +1,6 @@
 mod bool;
 mod date;
+mod default;
 mod hashmap;
 mod load;
 mod record;
