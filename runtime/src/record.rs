@@ -41,6 +41,7 @@ impl<T> Record<T>
 where
     T: IsTuple,
 {
+    // TODO make const
     pub fn new(value: T) -> Self {
         Record(value)
     }
