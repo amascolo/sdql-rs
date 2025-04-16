@@ -416,7 +416,13 @@ fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
     let mut args = args.into_iter().map(|arg| {
         let ident = Ident::new(arg, Span::call_site());
         // FIXME hardcoded - should be determined by arg type?
-        if arg == "i" || arg == "avg" {
+        if arg == "i"
+            || arg == "avg"
+            || arg == "orderdate"
+            || arg == "orderyear"
+            || arg == "volume"
+            || arg == "brazil_volume"
+        {
             parse_quote! { #ident }
         } else {
             parse_quote! { &#ident }
