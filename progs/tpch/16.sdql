@@ -4,8 +4,11 @@ let supplier = load[<s_suppkey: @vec {int -> int}, s_name: @vec {int -> varchar(
 
 let p_h =
   sum(<i,_> <- range(part.size))
+  //      FIXME
+    let cond = ext(`StrStartsWith`, part.p_type(i), "MEDIUM POLISHED")
     if(
       (part.p_brand(i) != "Brand#45") &&
+      cond &&
 //      (!ext(`StrStartsWith`, part.p_type(i), "MEDIUM POLISHED")) &&
       (
         (part.p_size(i) ==  49) ||
@@ -23,7 +26,10 @@ let p_h =
 let s_h =
   sum(<i,_> <- range(supplier.size))
     let idx_customer = ext(`FirstIndex`, supplier.s_comment(i), "Customer")
+//    FIXME
 //    if((idx_customer != -1) && (idx_customer + 8 <= ext(`FirstIndex`, supplier.s_comment(i), "Complaints"))) then
+    let idx_complaints = ext(`FirstIndex`, supplier.s_comment(i), "Complaints")
+    if((idx_customer != -1) && (idx_customer + 8 <= idx_complaints)) then
       { unique(supplier.s_suppkey(i)) -> < _ = supplier.s_suppkey(i) > }
 
 let ps_h =
@@ -39,4 +45,4 @@ let ps_h =
     }
 
 sum(<k,v> <- ps_h)
-  { unique(concat(k, < _ = ext(`Size`, v) >)) -> 1 }
+  { unique(concat(k, < _ = ext(`Size`, v) >)) -> true }
