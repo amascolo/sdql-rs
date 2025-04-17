@@ -8,7 +8,7 @@ let suppkey_to_revenue =
 
 // FIXME
 // let max_revenue = sum(<_,v> <- suppkey_to_revenue) promote[max_sum](v)
-let max_revenue = 1161099.4636
+let max_revenue = 1161099.4635999997
 
 let suppkey_to_supp =
   sum(<i,_> <- range(supplier.size))
