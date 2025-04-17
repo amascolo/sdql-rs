@@ -1,0 +1,62 @@
+use std::{
+    cell::RefCell,
+    ops::{AddAssign, Index, IndexMut},
+    rc::Rc,
+};
+
+#[derive(Debug, PartialEq)]
+pub struct VecDict<T> {
+    vec: Rc<RefCell<Vec<T>>>,
+    proxy: Proxy<T>,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Proxy<T> {
+    vec: Rc<RefCell<Vec<T>>>,
+    key: RefCell<Option<T>>,
+}
+
+impl<T> VecDict<T> {
+    pub fn new(vec: Vec<T>) -> Self {
+        let vec = Rc::new(RefCell::new(vec));
+        let proxy = Proxy {
+            vec: vec.clone(),
+            key: RefCell::new(None),
+        };
+        VecDict { vec, proxy }
+    }
+}
+
+impl<T> Index<T> for VecDict<T> {
+    type Output = Proxy<T>;
+
+    fn index(&self, _index: T) -> &Self::Output {
+        unimplemented!()
+    }
+}
+
+impl<T> IndexMut<T> for VecDict<T> {
+    fn index_mut(&mut self, index: T) -> &mut Proxy<T> {
+        self.proxy.key.replace(Some(index));
+        &mut self.proxy
+    }
+}
+
+impl<T, U> AddAssign<U> for Proxy<T> {
+    fn add_assign(&mut self, _rhs: U) {
+        let key = self.key.take().unwrap();
+        self.vec.borrow_mut().push(key);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::VecDict;
+
+    #[test]
+    fn add_assign() {
+        let mut vd: VecDict<()> = VecDict::new(vec![]);
+        vd[()] += 1;
+        assert_eq!(vd, VecDict::new(vec![()]));
+    }
+}
