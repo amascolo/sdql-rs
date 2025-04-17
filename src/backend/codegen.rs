@@ -320,7 +320,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                         let Some(hint) = hint else { unreachable!() };
                         match hint {
                             DictHint::Vec { .. } => {
-                                let r#type = syn::Type::from(&map.val.r#type);
+                                let r#type = qualified_type(&map.val.r#type);
                                 quote! { vec![#r#type::default(); #capacity] }
                             }
                             _ => quote! { #r#type::with_capacity(#capacity) },
@@ -508,6 +508,9 @@ fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
             || arg == "idx_customer"
             || arg == "idx_complaints"
             || arg == "v_hashmap"
+            || arg == "l"
+            || arg == "l2_size"
+            || arg == "l3_size"
         {
             parse_quote! { #ident }
         } else {
