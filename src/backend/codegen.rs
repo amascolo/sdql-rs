@@ -266,9 +266,16 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let ExprFMF::Dom { expr } = *val else {
                     unreachable!()
                 };
+                let hint = match &expr.r#type {
+                    Type::Dict { hint, .. } => hint.clone(),
+                    _ => panic!(),
+                };
                 let lhs: TokenStream = expr.into();
                 let rhs: TokenStream = rhs.into();
-                quote! { #lhs.contains_key(&#rhs) }
+                match hint {
+                    Some(DictHint::Vec { .. }) => quote! { #lhs.contains(&#rhs) },
+                    _ => quote! { #lhs.contains_key(&#rhs) },
+                }
             }
             ExprFMF::Get { lhs, rhs } => match lhs.r#type {
                 Type::Record(_) => match *rhs.val.0 {
