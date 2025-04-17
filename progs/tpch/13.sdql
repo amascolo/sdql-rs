@@ -15,4 +15,4 @@ let c_h =
     { < custkey = if(dom(o_h)(customer.c_custkey(i))) then o_h(customer.c_custkey(i)) else 0 > -> < count = 1 > }
 
 sum(<k,v> <- c_h)
-  { concat(k, v) -> 1 }
+  { concat(k, v) -> true }
