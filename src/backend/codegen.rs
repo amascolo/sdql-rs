@@ -213,6 +213,20 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let cont: TokenStream = cont.into();
                 quote! {.map(|#fn_args| (#(#args),*, #inner))#cont}
             }
+            ExprFMF::Unary {
+                op: UnaryOp::Neg,
+                expr,
+            } => {
+                let expr: TokenStream = expr.into();
+                quote! { -#expr }
+            }
+            ExprFMF::Unary {
+                op: UnaryOp::Not,
+                expr,
+            } => {
+                let expr: TokenStream = expr.into();
+                quote! { !#expr }
+            }
             ExprFMF::Binary { lhs, op, rhs } => {
                 let lhs = parse2(lhs.into()).unwrap();
                 let rhs = parse2(rhs.into()).unwrap();
@@ -433,6 +447,14 @@ impl From<ExprFMF<'_>> for TokenStream {
                 quote! { #arg0.rfind(&#val).map(|i| i as i32).unwrap_or(-1) }
             }
             ExprFMF::External {
+                func: External::Size,
+                args,
+            } => {
+                let [arg]: [_; _] = args.try_into().unwrap();
+                let arg: TokenStream = arg.clone().into();
+                quote! { #arg.len() as i32 }
+            }
+            ExprFMF::External {
                 func: External::Year,
                 args,
             } => {
@@ -443,13 +465,6 @@ impl From<ExprFMF<'_>> for TokenStream {
             #[allow(unreachable_patterns)] // handy if you are adding more
             ExprFMF::External { func, args: _ } => todo!("{func}"),
             ExprFMF::Unique { expr } => expr.into(), // TODO
-            ExprFMF::Unary {
-                op: UnaryOp::Neg,
-                expr,
-            } => {
-                let expr: TokenStream = expr.into();
-                quote! { -#expr }
-            }
             t => todo!("{t:?}"),
         }
     }
@@ -469,6 +484,10 @@ fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
             || arg == "idx_special"
             || arg == "idx_requests"
             || arg == "key"
+            || arg == "cond"
+            || arg == "idx_customer"
+            || arg == "idx_complaints"
+            || arg == "v_hashmap"
         {
             parse_quote! { #ident }
         } else {

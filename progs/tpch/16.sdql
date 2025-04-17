@@ -44,5 +44,6 @@ let ps_h =
       { partsupp.ps_suppkey(i) -> 1 }
     }
 
-sum(<k,v> <- ps_h)
-  { unique(concat(k, < _ = ext(`Size`, v) >)) -> true }
+// FIXME rename v_hashmap to v
+sum(<k,v_hashmap> <- ps_h)
+  { unique(concat(k, < _ = ext(`Size`, v_hashmap) >)) -> true }
