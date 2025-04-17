@@ -110,6 +110,11 @@ impl_is_tuple!(0, 1, 2, 3, 4, 5, 6, 7, 8);
 impl_is_tuple!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
 impl_is_tuple!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 impl_is_tuple!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+// note: we can create records this size, but underlying tuples won't have traits
+impl_is_tuple!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+impl_is_tuple!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13);
+impl_is_tuple!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
+impl_is_tuple!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
 
 macro_rules! impl_add_assign {
     () => {
@@ -150,6 +155,7 @@ impl_add_assign!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
 mod tests {
     use super::*;
 
+    #[rustfmt::skip]
     #[test]
     fn is_tuple() {
         let _ = Record(());
@@ -164,7 +170,11 @@ mod tests {
         let _ = Record(((), (), (), (), (), (), (), (), ()));
         let _ = Record(((), (), (), (), (), (), (), (), (), ()));
         let _ = Record(((), (), (), (), (), (), (), (), (), (), ()));
-        let _ = Record(((), (), (), (), (), (), (), (), (), (), (), ()));
+        // note: we can create records this size, but underlying tuples won't have traits
+        let _ = Record(((), (), (), (), (), (), (), (), (), (), (), (), ()));
+        let _ = Record(((), (), (), (), (), (), (), (), (), (), (), (), (), ()));
+        let _ = Record(((), (), (), (), (), (), (), (), (), (), (), (), (), (), ()));
+        let _ = Record(((), (), (), (), (), (), (), (), (), (), (), (), (), (), (), ()));
     }
 
     #[test]
