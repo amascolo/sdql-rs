@@ -194,8 +194,8 @@ fn tpch_q21() {
 
 #[test]
 fn tpch_q22() {
-    // let buffer = run_tpch(22, "0.01").unwrap();
-    // let actual: TypeQ22 = bincode::deserialize(&buffer).unwrap();
-    let _expected: TypeQ22 = sdql_static!(include!("tests/results/tpch/SF_0.01/22.sdql"));
-    // assert_abs_diff_eq!(actual, expected, epsilon = ((0, 0, 1e-4), ()));
+    let buffer = run_tpch(22, "0.01").unwrap();
+    let actual: TypeQ22 = bincode::deserialize(&buffer).unwrap();
+    let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/22.sdql"));
+    assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 1e-4), ()));
 }

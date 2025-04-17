@@ -436,7 +436,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 args,
             } => {
                 let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-                let arg0: TokenStream = arg0.clone().into();
+                let arg0: TokenStream = arg0.into();
                 let Typed {
                     val: Spanned(ExprFMF::String { val, max_len: _ }, _),
                     r#type: _,
@@ -445,6 +445,26 @@ impl From<ExprFMF<'_>> for TokenStream {
                     unreachable!()
                 };
                 quote! { #arg0.rfind(&#val).map(|i| i as i32).unwrap_or(-1) }
+            }
+            ExprFMF::External {
+                func: External::SubString,
+                args,
+            } => {
+                let [string, start, end]: [_; _] = args.try_into().unwrap();
+                let string: TokenStream = string.into();
+                let start: usize = match start.val.0 {
+                    ExprFMF::Int { val } => val.try_into(),
+                    ExprFMF::Long { val } => val.try_into(),
+                    _ => unimplemented!(),
+                }
+                .unwrap();
+                let end: usize = match end.val.0 {
+                    ExprFMF::Int { val } => val.try_into(),
+                    ExprFMF::Long { val } => val.try_into(),
+                    _ => unimplemented!(),
+                }
+                .unwrap();
+                quote! { VarChar::<{ #end - #start }>::from(&(#string)[#start..#end]).unwrap() }
             }
             ExprFMF::External {
                 func: External::Size,

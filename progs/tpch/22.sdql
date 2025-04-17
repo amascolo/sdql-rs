@@ -8,17 +8,17 @@ let o_h =
 let fused =
   sum(<i,_> <- range(customer.size))
     let cond = (
-                 (0.0 < customer.c_acctbal(i)) // &&
-//                 (
-//                   // FIXME remove unnecessary parentheses
-//                   (ext(`StrStartsWith`, customer.c_phone(i), "13")) ||
-//                   (ext(`StrStartsWith`, customer.c_phone(i), "31")) ||
-//                   (ext(`StrStartsWith`, customer.c_phone(i), "23")) ||
-//                   (ext(`StrStartsWith`, customer.c_phone(i), "29")) ||
-//                   (ext(`StrStartsWith`, customer.c_phone(i), "30")) ||
-//                   (ext(`StrStartsWith`, customer.c_phone(i), "18")) ||
-//                   (ext(`StrStartsWith`, customer.c_phone(i), "17"))
-//                 )
+                 (0.0 < customer.c_acctbal(i)) &&
+                 (
+                   // FIXME remove unnecessary parentheses
+                   (ext(`StrStartsWith`, customer.c_phone(i), "13")) ||
+                   (ext(`StrStartsWith`, customer.c_phone(i), "31")) ||
+                   (ext(`StrStartsWith`, customer.c_phone(i), "23")) ||
+                   (ext(`StrStartsWith`, customer.c_phone(i), "29")) ||
+                   (ext(`StrStartsWith`, customer.c_phone(i), "30")) ||
+                   (ext(`StrStartsWith`, customer.c_phone(i), "18")) ||
+                   (ext(`StrStartsWith`, customer.c_phone(i), "17"))
+                 )
                ) in
     < total = if(cond) then customer.c_acctbal(i) else 0.0, count = if(cond) then 1.0 else 0.0 >
 
@@ -28,17 +28,17 @@ let res =
   sum(<i,_> <- range(customer.size))
     if(
       (avg < customer.c_acctbal(i)) &&
-      (!o_h(customer.c_custkey(i))) // &&
-//      (
-//        // FIXME remove unnecessary parentheses
-//        (ext(`StrStartsWith`, customer.c_phone(i), "13")) ||
-//        (ext(`StrStartsWith`, customer.c_phone(i), "31")) ||
-//        (ext(`StrStartsWith`, customer.c_phone(i), "23")) ||
-//        (ext(`StrStartsWith`, customer.c_phone(i), "29")) ||
-//        (ext(`StrStartsWith`, customer.c_phone(i), "30")) ||
-//        (ext(`StrStartsWith`, customer.c_phone(i), "18")) ||
-//        (ext(`StrStartsWith`, customer.c_phone(i), "17"))
-//      )
+      (o_h(customer.c_custkey(i)) == 0) &&
+      (
+        // FIXME remove unnecessary parentheses
+        (ext(`StrStartsWith`, customer.c_phone(i), "13")) ||
+        (ext(`StrStartsWith`, customer.c_phone(i), "31")) ||
+        (ext(`StrStartsWith`, customer.c_phone(i), "23")) ||
+        (ext(`StrStartsWith`, customer.c_phone(i), "29")) ||
+        (ext(`StrStartsWith`, customer.c_phone(i), "30")) ||
+        (ext(`StrStartsWith`, customer.c_phone(i), "18")) ||
+        (ext(`StrStartsWith`, customer.c_phone(i), "17"))
+      )
     ) then
       { < cntrycode = ext(`SubString`, customer.c_phone(i), 0, 2) > -> < numcust = 1, totacctbal = customer.c_acctbal(i) > }
 
