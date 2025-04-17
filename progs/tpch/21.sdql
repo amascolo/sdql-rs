@@ -47,12 +47,18 @@ let l3_indexed =
 
 let l1_probed =
   sum(<i,_> <- range(lineitem.size))
+//  TODO rempve
+    let l2_size = ext(`Size`, l2_indexed(lineitem.l_orderkey(i)))
+    let l3_size = ext(`Size`, l3_indexed(lineitem.l_orderkey(i)))
     if(
       (lineitem.l_commitdate(i) < lineitem.l_receiptdate(i)) &&
       (dom(su_probed)(lineitem.l_suppkey(i))) &&
-      (dom(ord_indexed)(lineitem.l_orderkey(i))) // &&
+      (dom(ord_indexed)(lineitem.l_orderkey(i))) &&
+//      FIXME
 //      (1 < ext(`Size`, l2_indexed(lineitem.l_orderkey(i)))) &&
 //      (ext(`Size`, l3_indexed(lineitem.l_orderkey(i))) <= 1)
+      (1 < l2_size) &&
+      (l3_size <= 1)
     ) then
       { < name = su_probed(lineitem.l_suppkey(i)) > -> < numwait = 1> }
 
