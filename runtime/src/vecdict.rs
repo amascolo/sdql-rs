@@ -51,7 +51,7 @@ impl<T, U> AddAssign<U> for Proxy<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::VecDict;
+    use super::*;
 
     #[test]
     fn add_assign() {
