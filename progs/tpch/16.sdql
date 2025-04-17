@@ -4,8 +4,8 @@ let supplier = load[<s_suppkey: @vec {int -> int}, s_name: @vec {int -> varchar(
 
 let p_h =
   sum(<i,_> <- range(part.size))
-  //      FIXME
-    let cond = ext(`StrStartsWith`, part.p_type(i), "MEDIUM POLISHED")
+  //      FIXME (also remove extra brackets)
+    let cond = !(ext(`StrStartsWith`, part.p_type(i), "MEDIUM POLISHED"))
     if(
       (part.p_brand(i) != "Brand#45") &&
       cond &&
