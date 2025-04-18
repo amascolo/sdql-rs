@@ -26,6 +26,10 @@ impl<T> VecDict<T> {
         };
         VecDict { vec, proxy }
     }
+
+    pub fn len(&self) -> usize {
+        self.vec.borrow().len()
+    }
 }
 
 impl<T, U> From<U> for VecDict<T>
