@@ -5,13 +5,13 @@ use std::{
     rc::Rc,
 };
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct VecDict<T> {
     vec: Rc<RefCell<Vec<T>>>,
     proxy: Proxy<T>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct Proxy<T> {
     vec: Rc<RefCell<Vec<T>>>,
     key: RefCell<Option<T>>,
