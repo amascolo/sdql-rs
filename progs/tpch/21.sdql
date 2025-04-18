@@ -51,7 +51,7 @@ let l3_indexed =
 
 let l1_probed =
   sum(<i,_> <- range(lineitem.size))
-//  TODO rempve
+//  TODO remove
     let l2_size = ext(`Size`, l2_indexed(lineitem.l_orderkey(i)))
     let l3_size = ext(`Size`, l3_indexed(lineitem.l_orderkey(i)))
     if(
