@@ -1,4 +1,5 @@
 #![feature(generic_arg_infer)]
+#![feature(let_chains)]
 
 pub mod backend;
 pub mod cli;

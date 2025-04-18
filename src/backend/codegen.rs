@@ -513,6 +513,60 @@ fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
     }
 }
 
+fn split<'src>(
+    expr: Typed<'src, Spanned<ExprFMF<'src>>>,
+) -> (
+    Vec<Typed<'src, Spanned<ExprFMF<'src>>>>,
+    Typed<'src, Spanned<ExprFMF<'src>>>,
+) {
+    if let ExprFMF::Dict { map, hint: _ } = &expr.val.0
+        && map.len() != 1
+    {
+        unimplemented!()
+    }
+
+    if let ExprFMF::Dict { map, hint } = expr.val.0 {
+        let [DictEntry { key, val }]: [_; _] = map.try_into().unwrap();
+
+        // { ... -> @!vec { ... } }
+        if let ExprFMF::Dict { map: _, hint } = &val.val.0
+            && !matches!(hint, Some(DictHint::Vec { .. }))
+        {
+            let (mut lhs, rhs) = split(val);
+            lhs.insert(0, key);
+            return (lhs, rhs);
+        }
+
+        // { ... -> @vec { ... -> 1 } }
+        if let ExprFMF::Dict { map, hint } = &val.val.0
+            && {
+                let DictEntry { key: _, val } = map.iter().next().unwrap();
+                matches!(val.val.0, ExprFMF::Int { val: 1 })
+                    && matches!(hint, Some(DictHint::Vec { .. }))
+            }
+        {
+            let ExprFMF::Dict { map, hint: _ } = val.val.0 else {
+                unreachable!()
+            };
+            let [DictEntry { key: rhs, val: _ }]: [_; _] = map.try_into().unwrap();
+            return (vec![key], rhs);
+        }
+
+        // @vec { < ... > -> 1 }
+        if matches!(key.val.0, ExprFMF::Record { .. })
+            && matches!(val.val.0, ExprFMF::Int { val: 1 })
+            && matches!(hint, Some(DictHint::Vec { .. }))
+        {
+            return (vec![], key);
+        }
+
+        // { ... }
+        return (vec![key], val);
+    }
+
+    (vec![], expr)
+}
+
 fn initialise(r#type: &Type) -> TokenStream {
     match r#type {
         Type::Dict {
