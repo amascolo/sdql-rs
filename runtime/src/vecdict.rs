@@ -28,6 +28,15 @@ impl<T> VecDict<T> {
     }
 }
 
+impl<T, U> From<U> for VecDict<T>
+where
+    U: Into<Vec<T>>,
+{
+    fn from(value: U) -> Self {
+        Self::new(value.into())
+    }
+}
+
 impl<T> Index<T> for VecDict<T> {
     type Output = Proxy<T>;
 

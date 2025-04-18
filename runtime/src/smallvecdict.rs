@@ -36,7 +36,18 @@ where
             vec: vec.clone(),
             key: RefCell::new(None),
         };
-        SmallVecDict { vec, proxy }
+        Self { vec, proxy }
+    }
+}
+
+impl<T, U> From<U> for SmallVecDict<T>
+where
+    T: Array,
+    <T as Array>::Item: Debug + Clone + Eq + Default,
+    U: Into<SmallVec<T>>,
+{
+    fn from(value: U) -> Self {
+        Self::new(value.into())
     }
 }
 

@@ -47,20 +47,21 @@ where
     K: Eq + Hash,
 {
     pub fn new() -> Self {
-        HashMap(hashbrown::HashMap::new())
+        Self(hashbrown::HashMap::new())
     }
 
     pub fn with_capacity(capacity: usize) -> Self {
-        HashMap(hashbrown::HashMap::with_capacity(capacity))
+        Self(hashbrown::HashMap::with_capacity(capacity))
     }
 }
 
-impl<K, V, const N: usize> From<[(K, V); N]> for HashMap<K, V>
+impl<K, V, T> From<T> for HashMap<K, V>
 where
     K: Eq + Hash,
+    T: Into<hashbrown::HashMap<K, V>>,
 {
-    fn from(arr: [(K, V); N]) -> Self {
-        Self(hashbrown::HashMap::from(arr))
+    fn from(value: T) -> Self {
+        Self(value.into())
     }
 }
 
