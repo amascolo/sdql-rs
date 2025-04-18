@@ -6,17 +6,17 @@ use std::{
     rc::Rc,
 };
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct SmallVecDict<T>
 where
     T: Array,
-    <T as Array>::Item: Debug + PartialEq + Default,
+    <T as Array>::Item: Debug + Clone + Eq + Default,
 {
     vec: Rc<RefCell<SmallVec<T>>>,
     proxy: Proxy<T>,
 }
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct Proxy<T>
 where
     T: Array,
@@ -28,7 +28,7 @@ where
 impl<T> SmallVecDict<T>
 where
     T: Array,
-    <T as Array>::Item: Debug + PartialEq + Default,
+    <T as Array>::Item: Debug + Clone + Eq + Default,
 {
     pub fn new(vec: SmallVec<T>) -> Self {
         let vec = Rc::new(RefCell::new(vec));
@@ -43,7 +43,7 @@ where
 impl<T, U> Index<U> for SmallVecDict<T>
 where
     T: Array<Item = U>,
-    <T as Array>::Item: Debug + PartialEq + Default,
+    <T as Array>::Item: Debug + Clone + Eq + Default,
 {
     type Output = Proxy<T>;
 
@@ -55,7 +55,7 @@ where
 impl<T, U> IndexMut<U> for SmallVecDict<T>
 where
     T: Array<Item = U>,
-    <T as Array>::Item: Debug + PartialEq + Default,
+    <T as Array>::Item: Debug + Clone + Eq + Default,
 {
     fn index_mut(&mut self, index: U) -> &mut Proxy<T> {
         self.proxy.key.replace(Some(index));
@@ -76,7 +76,7 @@ where
 impl<T> IntoIterator for SmallVecDict<T>
 where
     T: Array,
-    <T as Array>::Item: Debug + PartialEq + Default,
+    <T as Array>::Item: Debug + Clone + Eq + Default,
 {
     type Item = T::Item;
     type IntoIter = <SmallVec<T> as IntoIterator>::IntoIter;
