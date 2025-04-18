@@ -643,132 +643,133 @@ fn unique() {
 }
 
 #[test]
-fn tpch_q1() {
+fn tpch_1() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/1.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q2() {
+fn tpch_2() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/2.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q3() {
+fn tpch_3() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/3.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q4() {
+fn tpch_4() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/4.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q5() {
+fn tpch_5() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/5.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q6() {
+fn tpch_6() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/6.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q7() {
+fn tpch_7() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/7.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q8() {
+fn tpch_8() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/8.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q9() {
+fn tpch_9() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/9.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q10() {
+fn tpch_10() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/10.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q11() {
+fn tpch_11() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/11.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q12() {
+fn tpch_12() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/12.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q13() {
+fn tpch_13() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/13.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q14() {
+fn tpch_14() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/14.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q15() {
+fn tpch_15() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/15.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q16() {
+fn tpch_16() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/16.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q17() {
+fn tpch_17() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/17.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q18() {
+fn tpch_18() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/18.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q19() {
+fn tpch_19() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/19.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q20() {
+fn tpch_20() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/20.sdql"));
     let _ = no_span!(prog);
 }
 
 #[test]
-fn tpch_q21() {
+fn tpch_21() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/21.sdql"));
     let _ = no_span!(prog);
 }
+
 #[test]
-fn tpch_q22() {
+fn tpch_22() {
     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/22.sdql"));
     let _ = no_span!(prog);
 }
