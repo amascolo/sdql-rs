@@ -310,30 +310,12 @@ impl From<ExprFMF<'_>> for TokenStream {
                 inner,
                 cont: None,
             } => {
-                let ExprFMF::Dict { map, hint } = *inner.val.0 else {
+                let init = initialise(&inner.r#type);
+                let ExprFMF::Dict { map, hint: _ } = *inner.val.0 else {
                     unimplemented!()
                 };
                 let map: Result<[DictEntry<_, _>; _], _> = map.try_into();
                 let Ok([map]) = map else { unimplemented!() };
-                let r#type = qualified_type(&inner.r#type);
-                let capacity = match hint {
-                    None => None,
-                    Some(hint) => hint.capacity(),
-                };
-                let init = match capacity {
-                    None => quote! { #r#type::new() },
-                    Some(capacity) => {
-                        let capacity = LitInt::new(&capacity.to_string(), Span::call_site());
-                        let Some(hint) = hint else { unreachable!() };
-                        match hint {
-                            DictHint::Vec { .. } => {
-                                let r#type = qualified_type(&map.val.r#type);
-                                quote! { vec![#r#type::default(); #capacity] }
-                            }
-                            _ => quote! { #r#type::with_capacity(#capacity) },
-                        }
-                    }
-                };
                 let args = gen_args(args);
                 let key: TokenStream = map.key.into();
                 let val: TokenStream = map.val.into();
@@ -528,6 +510,50 @@ fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
         0 => unimplemented!(),
         1 => args.next().unwrap(),
         _ => parse_quote! { (#(#args),*) },
+    }
+}
+
+fn initialise(r#type: &Type) -> TokenStream {
+    match r#type {
+        Type::Dict {
+            key: _,
+            val: _,
+            hint:
+                Some(
+                    DictHint::HashDict {
+                        capacity: Some(capacity),
+                    }
+                    | DictHint::SortDict {
+                        capacity: Some(capacity),
+                    },
+                ),
+        } => {
+            let qual_type = qualified_type(&r#type);
+            let capacity = LitInt::new(&capacity.to_string(), Span::call_site());
+            quote! { #qual_type::with_capacity(#capacity) }
+        }
+        Type::Dict {
+            key: _,
+            val,
+            hint: Some(DictHint::Vec {
+                capacity: Some(capacity),
+            }),
+        } => {
+            let qual_type = qualified_type(val);
+            let capacity = LitInt::new(&capacity.to_string(), Span::call_site());
+            quote! { vec![#qual_type::default(); #capacity] }
+        }
+        Type::Dict {
+            key: _,
+            val: _,
+            hint: Some(DictHint::VecDict {
+                capacity: Some(_capacity),
+            }),
+        } => todo!(),
+        _ => {
+            let qual_type = qualified_type(&r#type);
+            quote! { #qual_type::default() }
+        }
     }
 }
 
