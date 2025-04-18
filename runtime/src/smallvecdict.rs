@@ -73,14 +73,42 @@ where
     }
 }
 
+impl<T> IntoIterator for SmallVecDict<T>
+where
+    T: Array,
+    <T as Array>::Item: Debug + PartialEq,
+{
+    type Item = T::Item;
+    type IntoIter = <SmallVec<T> as IntoIterator>::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let SmallVecDict { vec, proxy } = self;
+        drop(proxy);
+        Rc::try_unwrap(vec).unwrap().into_inner().into_iter()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use itertools::assert_equal;
+    use smallvec::smallvec;
 
     #[test]
     fn add_assign() {
-        let mut vd: SmallVecDict<[(); 4]> = SmallVecDict::new(vec![].into());
+        let mut vd: SmallVecDict<[_; 4]> = SmallVecDict::new(smallvec![]);
         vd[()] += 1;
-        assert_eq!(vd, SmallVecDict::new(vec![()].into()));
+        assert_eq!(vd, SmallVecDict::new(smallvec![()]));
+        vd[()] += 2;
+        assert_eq!(vd, SmallVecDict::new(smallvec![(), ()]));
+        vd[()] += ();
+        assert_eq!(vd, SmallVecDict::new(smallvec![(), (), ()]));
+    }
+
+    #[test]
+    fn into_iter() {
+        let vec = smallvec![1, 2, 3];
+        let vd: SmallVecDict<[_; 4]> = SmallVecDict::new(vec.clone());
+        assert_equal(vd.into_iter(), vec.into_iter());
     }
 }

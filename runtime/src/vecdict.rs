@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::{
     cell::RefCell,
     ops::{AddAssign, Index, IndexMut},
@@ -49,14 +50,40 @@ impl<T, U> AddAssign<U> for Proxy<T> {
     }
 }
 
+impl<T> IntoIterator for VecDict<T>
+where
+    T: Debug,
+{
+    type Item = T;
+    type IntoIter = <Vec<T> as IntoIterator>::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let VecDict { vec, proxy } = self;
+        drop(proxy);
+        Rc::try_unwrap(vec).unwrap().into_inner().into_iter()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use itertools::assert_equal;
 
     #[test]
     fn add_assign() {
-        let mut vd: VecDict<()> = VecDict::new(vec![]);
+        let mut vd = VecDict::new(vec![]);
         vd[()] += 1;
         assert_eq!(vd, VecDict::new(vec![()]));
+        vd[()] += 2;
+        assert_eq!(vd, VecDict::new(vec![(), ()]));
+        vd[()] += ();
+        assert_eq!(vd, VecDict::new(vec![(), (), ()]));
+    }
+
+    #[test]
+    fn into_iter() {
+        let vec = vec![1, 2, 3];
+        let vd = VecDict::new(vec.clone());
+        assert_equal(vd.into_iter(), vec.into_iter());
     }
 }
