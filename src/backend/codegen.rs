@@ -311,12 +311,28 @@ impl From<ExprFMF<'_>> for TokenStream {
                 cont: None,
             } => {
                 let init = initialise(&inner.r#type);
+                let args = gen_args(args);
+                // TODO
+                // let (lhs, rhs) = split(inner.clone().map(Spanned::unboxed));
+                // let lhs: TokenStream = lhs
+                //     .into_iter()
+                //     .map(TokenStream::from)
+                //     // FIXME zip with a sequence of hints and then [#ts as usize] if DictHint::Vec
+                //     .map(|ts| quote! { [&#ts] })
+                //     .flatten()
+                //     .collect();
+                // let rhs: TokenStream = rhs.into();
+                // quote! {
+                //     .fold(#init, |mut acc, #args| {
+                //         acc #lhs += #rhs;
+                //         acc
+                //     })
+                // }
                 let ExprFMF::Dict { map, hint: _ } = *inner.val.0 else {
                     unimplemented!()
                 };
                 let map: Result<[DictEntry<_, _>; _], _> = map.try_into();
                 let Ok([map]) = map else { unimplemented!() };
-                let args = gen_args(args);
                 let key: TokenStream = map.key.into();
                 let val: TokenStream = map.val.into();
                 let key = if let Type::Dict {
