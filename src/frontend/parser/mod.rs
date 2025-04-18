@@ -26,9 +26,10 @@ where
                 let capacity = capacity.map(|c| c.try_into().unwrap());
                 match hint {
                     DictHintToken::HashDict => DictHint::HashDict { capacity },
-                    DictHintToken::SortDict => DictHint::SortDict { capacity },
                     DictHintToken::SmallVecDict => DictHint::SmallVecDict { capacity },
+                    DictHintToken::SortDict => DictHint::SortDict { capacity },
                     DictHintToken::Vec => DictHint::Vec { capacity },
+                    DictHintToken::VecDict => DictHint::VecDict { capacity },
                 }
             })
             .boxed();

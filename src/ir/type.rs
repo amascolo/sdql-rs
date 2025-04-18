@@ -64,18 +64,20 @@ impl<'src> RecordType<'src> {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum DictHint {
     HashDict { capacity: Option<usize> },
-    SortDict { capacity: Option<usize> },
     SmallVecDict { capacity: Option<usize> },
+    SortDict { capacity: Option<usize> },
     Vec { capacity: Option<usize> },
+    VecDict { capacity: Option<usize> },
 }
 
 impl DictHint {
     pub fn capacity(self) -> Option<usize> {
         match self {
             DictHint::HashDict { capacity }
-            | DictHint::SortDict { capacity }
             | DictHint::SmallVecDict { capacity }
-            | DictHint::Vec { capacity } => capacity,
+            | DictHint::SortDict { capacity }
+            | DictHint::Vec { capacity }
+            | DictHint::VecDict { capacity } => capacity,
         }
     }
 }
@@ -142,18 +144,15 @@ impl fmt::Display for DictHint {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let hint = match self {
             Self::HashDict { .. } => "hashdict",
-            Self::SortDict { .. } => "sortdict",
             Self::SmallVecDict { .. } => "smallvecdict",
+            Self::SortDict { .. } => "sortdict",
             Self::Vec { .. } => "vec",
+            Self::VecDict { .. } => "vecdict",
         };
-        let capacity = match self {
-            Self::HashDict { capacity }
-            | Self::SortDict { capacity }
-            | Self::SmallVecDict { capacity }
-            | Self::Vec { capacity } => capacity
-                .map(|capacity| format!("({capacity})"))
-                .unwrap_or_default(),
-        };
+        let capacity = self
+            .capacity()
+            .map(|capacity| format!("({capacity})"))
+            .unwrap_or_default();
         write!(f, "{hint}{capacity}")
     }
 }

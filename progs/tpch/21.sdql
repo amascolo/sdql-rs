@@ -20,9 +20,8 @@ let ord_indexed =
 
 let l2_indexed =
   sum(<i,_> <- range(lineitem.size))
-//    TODO @smallvecdict(0)
-//    @vec(6000000) { lineitem.l_orderkey(i) -> @smallvecdict(0) { lineitem.l_suppkey(i) -> 1 } }
-      @vec(6000000) { lineitem.l_orderkey(i) -> { lineitem.l_suppkey(i) -> 1 } }
+    // TODO @smallvecdict(0) => @vecdict
+    @vec(6000000) { lineitem.l_orderkey(i) -> @smallvecdict(0) { lineitem.l_suppkey(i) -> 1 } }
 
 let l3_indexed =
   sum(<i,_> <- range(lineitem.size))
@@ -45,9 +44,8 @@ let l3_indexed =
       l_comment=lineitem.l_comment(i)
     >
     if(lineitem.l_commitdate(i) < lineitem.l_receiptdate(i)) then
-//      TODO @smallvecdict(0)
-//      @vec(6000000) { lineitem.l_orderkey(i) -> @smallvecdict(0) { lineitem.l_suppkey(i) -> 1 } }
-      @vec(6000000) { lineitem.l_orderkey(i) -> { lineitem.l_suppkey(i) -> 1 } }
+      // TODO @smallvecdict(0) => @vecdict
+      @vec(6000000) { lineitem.l_orderkey(i) -> @smallvecdict(0) { lineitem.l_suppkey(i) -> 1 } }
 
 let l1_probed =
   sum(<i,_> <- range(lineitem.size))

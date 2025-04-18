@@ -574,19 +574,33 @@ impl From<&Type<'_>> for syn::Type {
                 parse_quote!(Record<(#(#tps),*,)>)
             }
             Type::Dict {
-                key: _,
+                key,
                 val,
-                hint: hint @ Some(DictHint::Vec { .. }),
+                hint: hint @ (None | Some(DictHint::HashDict { .. } | DictHint::SortDict { .. })),
             } => {
-                let dict = to_type(*hint);
-                let val = syn::Type::from(&**val);
-                parse_quote!(#dict::<#val>)
-            }
-            Type::Dict { key, val, hint } => {
                 let dict = to_type(*hint);
                 let key = syn::Type::from(&**key);
                 let val = syn::Type::from(&**val);
                 parse_quote!(#dict<#key, #val>)
+            }
+            Type::Dict {
+                key: _,
+                val,
+                hint: Some(hint @ DictHint::SmallVecDict { .. }),
+            } => {
+                let dict = to_type(Some(*hint));
+                let val = syn::Type::from(&**val);
+                let capacity = hint.capacity();
+                parse_quote!(#dict<[#val; #capacity]>)
+            }
+            Type::Dict {
+                key: _,
+                val,
+                hint: hint @ Some(DictHint::Vec { .. } | DictHint::VecDict { .. }),
+            } => {
+                let dict = to_type(*hint);
+                let val = syn::Type::from(&**val);
+                parse_quote!(#dict<#val>)
             }
         }
     }
@@ -605,19 +619,33 @@ fn qualified_type(r#type: &Type) -> syn::Type {
             parse_quote!(Record::<(#(#tps),*,)>)
         }
         Type::Dict {
-            key: _,
+            key,
             val,
-            hint: hint @ Some(DictHint::Vec { .. }),
+            hint: hint @ (None | Some(DictHint::HashDict { .. } | DictHint::SortDict { .. })),
         } => {
-            let dict = to_type(*hint);
-            let val = syn::Type::from(&**val);
-            parse_quote!(#dict::<#val>)
-        }
-        Type::Dict { key, val, hint } => {
             let dict = to_type(*hint);
             let key = syn::Type::from(&**key);
             let val = syn::Type::from(&**val);
             parse_quote!(#dict::<#key, #val>)
+        }
+        Type::Dict {
+            key: _,
+            val,
+            hint: Some(hint @ DictHint::SmallVecDict { .. }),
+        } => {
+            let dict = to_type(Some(*hint));
+            let val = syn::Type::from(&**val);
+            let capacity = hint.capacity();
+            parse_quote!(#dict::<[#val; #capacity]>)
+        }
+        Type::Dict {
+            key: _,
+            val,
+            hint: hint @ Some(DictHint::Vec { .. } | DictHint::VecDict { .. }),
+        } => {
+            let dict = to_type(*hint);
+            let val = syn::Type::from(&**val);
+            parse_quote!(#dict::<#val>)
         }
         _ => r#type.into(),
     }
@@ -635,6 +663,7 @@ impl From<DictHint> for syn::Type {
             DictHint::SortDict { capacity: _ } => parse_quote!(SortDict),
             DictHint::SmallVecDict { capacity: _ } => parse_quote!(SmallVecDict),
             DictHint::Vec { capacity: _ } => parse_quote!(Vec),
+            DictHint::VecDict { capacity: _ } => parse_quote!(VecDict),
         }
     }
 }

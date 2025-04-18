@@ -67,9 +67,10 @@ pub enum ScalarType {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum DictHintToken {
     HashDict,
-    SortDict,
     SmallVecDict,
+    SortDict,
     Vec,
+    VecDict,
 }
 
 impl fmt::Display for Token<'_> {
@@ -95,6 +96,7 @@ impl fmt::Display for Token<'_> {
             Token::DictHint(DictHintToken::SortDict) => write!(f, "sortdict"),
             Token::DictHint(DictHintToken::SmallVecDict) => write!(f, "smallvecdict"),
             Token::DictHint(DictHintToken::Vec) => write!(f, "vec"),
+            Token::DictHint(DictHintToken::VecDict) => write!(f, "vecdict"),
             Token::Dom => write!(f, "dom"),
             Token::Load => write!(f, "load"),
             Token::Type(t) => write!(f, "{t}"),
@@ -191,10 +193,11 @@ pub(super) fn lexer<'src>()
         "sum" => Token::Sum,
         "range" => Token::Range,
         "hashdict" => Token::DictHint(DictHintToken::HashDict),
-        "sortdict" => Token::DictHint(DictHintToken::SortDict),
         "smallvecdict" => Token::DictHint(DictHintToken::SmallVecDict),
-        "dom" => Token::Dom,
+        "sortdict" => Token::DictHint(DictHintToken::SortDict),
         "vec" => Token::DictHint(DictHintToken::Vec),
+        "vecdict" => Token::DictHint(DictHintToken::VecDict),
+        "dom" => Token::Dom,
         "load" => Token::Load,
         "concat" => Token::Concat,
         "external" => Token::External,
