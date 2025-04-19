@@ -1,6 +1,6 @@
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use smallvec::{smallvec, Array, SmallVec};
-use std::fmt::Debug;
+use std::fmt::{Debug, Display, Formatter};
 use std::{
     cell::RefCell,
     ops::{AddAssign, Index, IndexMut},
@@ -111,6 +111,16 @@ where
         let SmallVecDict { vec, proxy } = self;
         drop(proxy);
         Rc::try_unwrap(vec).unwrap().into_inner().into_iter()
+    }
+}
+
+impl<T> Display for SmallVecDict<T>
+where
+    T: Array,
+    <T as Array>::Item: Debug + Clone + Eq,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.vec.borrow())
     }
 }
 

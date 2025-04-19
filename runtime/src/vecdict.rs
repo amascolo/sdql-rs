@@ -1,5 +1,5 @@
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::fmt::Debug;
+use std::fmt::{Debug, Display, Formatter};
 use std::{
     cell::RefCell,
     ops::{AddAssign, Index, IndexMut},
@@ -81,6 +81,15 @@ where
         let Self { vec, proxy } = self;
         drop(proxy);
         Rc::try_unwrap(vec).unwrap().into_inner().into_iter()
+    }
+}
+
+impl<T> Display for VecDict<T>
+where
+    T: Debug,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.vec.borrow())
     }
 }
 
