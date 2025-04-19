@@ -1,5 +1,5 @@
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use smallvec::{Array, SmallVec};
+use smallvec::{smallvec, Array, SmallVec};
 use std::fmt::Debug;
 use std::{
     cell::RefCell,
@@ -7,17 +7,17 @@ use std::{
     rc::Rc,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SmallVecDict<T>
 where
     T: Array,
-    <T as Array>::Item: Debug + Clone + Eq + Default,
+    <T as Array>::Item: Debug + Clone + Eq,
 {
     vec: Rc<RefCell<SmallVec<T>>>,
     proxy: Proxy<T>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Proxy<T>
 where
     T: Array,
@@ -29,7 +29,7 @@ where
 impl<T> SmallVecDict<T>
 where
     T: Array,
-    <T as Array>::Item: Debug + Clone + Eq + Default,
+    <T as Array>::Item: Debug + Clone + Eq,
 {
     pub fn new(vec: SmallVec<T>) -> Self {
         let vec = Rc::new(RefCell::new(vec));
@@ -45,10 +45,20 @@ where
     }
 }
 
+impl<T> Default for SmallVecDict<T>
+where
+    T: Array,
+    <T as Array>::Item: Debug + Clone + Eq,
+{
+    fn default() -> Self {
+        Self::new(smallvec![])
+    }
+}
+
 impl<T, U> From<U> for SmallVecDict<T>
 where
     T: Array,
-    <T as Array>::Item: Debug + Clone + Eq + Default,
+    <T as Array>::Item: Debug + Clone + Eq,
     U: Into<SmallVec<T>>,
 {
     fn from(value: U) -> Self {
@@ -59,7 +69,7 @@ where
 impl<T, U> Index<U> for SmallVecDict<T>
 where
     T: Array<Item = U>,
-    <T as Array>::Item: Debug + Clone + Eq + Default,
+    <T as Array>::Item: Debug + Clone + Eq,
 {
     type Output = Proxy<T>;
 
@@ -71,7 +81,7 @@ where
 impl<T, U> IndexMut<U> for SmallVecDict<T>
 where
     T: Array<Item = U>,
-    <T as Array>::Item: Debug + Clone + Eq + Default,
+    <T as Array>::Item: Debug + Clone + Eq,
 {
     fn index_mut(&mut self, index: U) -> &mut Proxy<T> {
         self.proxy.key.replace(Some(index));
@@ -92,7 +102,7 @@ where
 impl<T> IntoIterator for SmallVecDict<T>
 where
     T: Array,
-    <T as Array>::Item: Debug + Clone + Eq + Default,
+    <T as Array>::Item: Debug + Clone + Eq,
 {
     type Item = T::Item;
     type IntoIter = <SmallVec<T> as IntoIterator>::IntoIter;
@@ -107,7 +117,7 @@ where
 impl<T> Serialize for SmallVecDict<T>
 where
     T: Array,
-    T::Item: Serialize + Debug + Clone + Eq + Default,
+    T::Item: Serialize + Debug + Clone + Eq,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -120,7 +130,7 @@ where
 impl<'de, T> Deserialize<'de> for SmallVecDict<T>
 where
     T: Array,
-    T::Item: Deserialize<'de> + Debug + Clone + Eq + Default,
+    T::Item: Deserialize<'de> + Debug + Clone + Eq,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -139,7 +149,7 @@ mod tests {
 
     #[test]
     fn add_assign() {
-        let mut vd: SmallVecDict<[_; 4]> = SmallVecDict::new(smallvec![]);
+        let mut vd: SmallVecDict<[_; 4]> = SmallVecDict::default();
         vd[()] += 1;
         assert_eq!(vd, SmallVecDict::new(smallvec![()]));
         vd[()] += 2;

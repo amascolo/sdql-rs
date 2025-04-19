@@ -6,13 +6,13 @@ use std::{
     rc::Rc,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VecDict<T> {
     vec: Rc<RefCell<Vec<T>>>,
     proxy: Proxy<T>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Proxy<T> {
     vec: Rc<RefCell<Vec<T>>>,
     key: RefCell<Option<T>>,
@@ -30,6 +30,12 @@ impl<T> VecDict<T> {
 
     pub fn len(&self) -> usize {
         self.vec.borrow().len()
+    }
+}
+
+impl<T> Default for VecDict<T> {
+    fn default() -> Self {
+        Self::new(vec![])
     }
 }
 
@@ -110,7 +116,7 @@ mod tests {
 
     #[test]
     fn add_assign() {
-        let mut vd = VecDict::new(vec![]);
+        let mut vd = VecDict::default();
         vd[()] += 1;
         assert_eq!(vd, VecDict::new(vec![()]));
         vd[()] += 2;
