@@ -3,6 +3,7 @@ use crate::frontend::lexer::Spanned;
 use crate::inference::Typed;
 use crate::ir::expr::{BinOp, DictEntry, External, UnaryOp};
 use crate::ir::r#type::{DictHint, Type};
+use itertools::Itertools;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
@@ -312,41 +313,26 @@ impl From<ExprFMF<'_>> for TokenStream {
             } => {
                 let init = initialise(&inner.r#type);
                 let args = gen_args(args);
-                // TODO
-                // let (lhs, rhs) = split(inner.clone().map(Spanned::unboxed));
-                // let lhs: TokenStream = lhs
-                //     .into_iter()
-                //     .map(TokenStream::from)
-                //     // FIXME zip with a sequence of hints and then [#ts as usize] if DictHint::Vec
-                //     .map(|ts| quote! { [&#ts] })
-                //     .flatten()
-                //     .collect();
-                // let rhs: TokenStream = rhs.into();
-                // quote! {
-                //     .fold(#init, |mut acc, #args| {
-                //         acc #lhs += #rhs;
-                //         acc
-                //     })
-                // }
-                let ExprFMF::Dict { map, hint: _ } = *inner.val.0 else {
-                    unimplemented!()
-                };
-                let map: Result<[DictEntry<_, _>; _], _> = map.try_into();
-                let Ok([map]) = map else { unimplemented!() };
-                let key: TokenStream = map.key.into();
-                let val: TokenStream = map.val.into();
-                let key = if let Type::Dict {
-                    hint: Some(DictHint::Vec { .. }),
-                    ..
-                } = inner.r#type
-                {
-                    quote! { #key as usize }
-                } else {
-                    quote! { &#key }
-                };
+                let inner = inner.map(Spanned::unboxed);
+                let hints = hints(&inner);
+                let (lhs, rhs) = split(inner);
+                let lhs: TokenStream = lhs
+                    .into_iter()
+                    .map(TokenStream::from)
+                    .zip_eq(hints)
+                    .map(|(ts, hint)| {
+                        if let Some(DictHint::Vec { .. }) = hint {
+                            quote! { [#ts as usize] }
+                        } else {
+                            quote! { [&#ts] }
+                        }
+                    })
+                    .flatten()
+                    .collect();
+                let rhs: TokenStream = rhs.into();
                 quote! {
                     .fold(#init, |mut acc, #args| {
-                        acc[#key] += #val;
+                        acc #lhs += #rhs;
                         acc
                     })
                 }
@@ -527,6 +513,22 @@ fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
         1 => args.next().unwrap(),
         _ => parse_quote! { (#(#args),*) },
     }
+}
+
+fn hints<'src>(mut expr: &Typed<'src, Spanned<ExprFMF<'src>>>) -> Vec<Option<DictHint>> {
+    let mut hints = Vec::new();
+
+    while let ExprFMF::Dict { map, hint } = &expr.val.0 {
+        if map.len() != 1 {
+            unimplemented!();
+        }
+        let DictEntry { val, .. } = map.iter().next().unwrap();
+        hints.push(*hint);
+        expr = val;
+    }
+
+    hints.reverse();
+    hints
 }
 
 fn split<'src>(

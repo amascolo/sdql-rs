@@ -760,6 +760,7 @@ dependencies = [
  "csv",
  "derive_more",
  "im-rc",
+ "itertools 0.14.0",
  "prettyplease",
  "proc-macro2",
  "quote",
