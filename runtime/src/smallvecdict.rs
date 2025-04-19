@@ -7,17 +7,15 @@ use std::{
     rc::Rc,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SmallVecDict<T>
 where
     T: Array,
-    <T as Array>::Item: Debug + Clone + Eq,
 {
     vec: Rc<RefCell<SmallVec<T>>>,
     proxy: Proxy<T>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct Proxy<T>
 where
     T: Array,
@@ -29,7 +27,6 @@ where
 impl<T> SmallVecDict<T>
 where
     T: Array,
-    <T as Array>::Item: Debug + Clone + Eq,
 {
     pub fn new(vec: SmallVec<T>) -> Self {
         let vec = Rc::new(RefCell::new(vec));
@@ -48,7 +45,6 @@ where
 impl<T> Default for SmallVecDict<T>
 where
     T: Array,
-    <T as Array>::Item: Debug + Clone + Eq,
 {
     fn default() -> Self {
         Self::new(smallvec![])
@@ -58,7 +54,6 @@ where
 impl<T, U> From<U> for SmallVecDict<T>
 where
     T: Array,
-    <T as Array>::Item: Debug + Clone + Eq,
     U: Into<SmallVec<T>>,
 {
     fn from(value: U) -> Self {
@@ -69,7 +64,6 @@ where
 impl<T, U> Index<U> for SmallVecDict<T>
 where
     T: Array<Item = U>,
-    <T as Array>::Item: Debug + Clone + Eq,
 {
     type Output = Proxy<T>;
 
@@ -81,7 +75,6 @@ where
 impl<T, U> IndexMut<U> for SmallVecDict<T>
 where
     T: Array<Item = U>,
-    <T as Array>::Item: Debug + Clone + Eq,
 {
     fn index_mut(&mut self, index: U) -> &mut Proxy<T> {
         self.proxy.key.replace(Some(index));
@@ -102,7 +95,7 @@ where
 impl<T> IntoIterator for SmallVecDict<T>
 where
     T: Array,
-    <T as Array>::Item: Debug + Clone + Eq,
+    <T as Array>::Item: Debug,
 {
     type Item = T::Item;
     type IntoIter = <SmallVec<T> as IntoIterator>::IntoIter;
@@ -114,10 +107,50 @@ where
     }
 }
 
+impl<T> Clone for SmallVecDict<T>
+where
+    T: Array,
+    <T as Array>::Item: Clone,
+{
+    fn clone(&self) -> Self {
+        Self::new(self.vec.borrow().clone())
+    }
+}
+
+impl<T> PartialEq for SmallVecDict<T>
+where
+    T: Array,
+    <T as Array>::Item: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        *self.vec.borrow() == *other.vec.borrow()
+    }
+}
+
+impl<T> Eq for SmallVecDict<T>
+where
+    T: Array,
+    <T as Array>::Item: Eq,
+{
+}
+
+impl<T> Debug for SmallVecDict<T>
+where
+    T: Array + Debug,
+    <T as Array>::Item: Debug,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SmallVecDict")
+            .field("vec", &self.vec)
+            .field("proxy", &self.proxy)
+            .finish()
+    }
+}
+
 impl<T> Display for SmallVecDict<T>
 where
     T: Array,
-    <T as Array>::Item: Debug + Clone + Eq,
+    <T as Array>::Item: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.vec.borrow())
@@ -127,7 +160,7 @@ where
 impl<T> Serialize for SmallVecDict<T>
 where
     T: Array,
-    T::Item: Serialize + Debug + Clone + Eq,
+    T::Item: Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -140,7 +173,7 @@ where
 impl<'de, T> Deserialize<'de> for SmallVecDict<T>
 where
     T: Array,
-    T::Item: Deserialize<'de> + Debug + Clone + Eq,
+    T::Item: Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

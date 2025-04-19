@@ -6,13 +6,12 @@ use std::{
     rc::Rc,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VecDict<T> {
     vec: Rc<RefCell<Vec<T>>>,
     proxy: Proxy<T>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct Proxy<T> {
     vec: Rc<RefCell<Vec<T>>>,
     key: RefCell<Option<T>>,
@@ -84,6 +83,36 @@ where
     }
 }
 
+impl<T> Clone for VecDict<T>
+where
+    T: Clone,
+{
+    fn clone(&self) -> Self {
+        Self::new(self.vec.borrow().clone())
+    }
+}
+
+impl<T> PartialEq for VecDict<T>
+where
+    T: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        *self.vec.borrow() == *other.vec.borrow()
+    }
+}
+
+impl<T> Debug for VecDict<T>
+where
+    T: Debug,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("VecDict")
+            .field("vec", &self.vec)
+            .field("proxy", &self.proxy)
+            .finish()
+    }
+}
+
 impl<T> Display for VecDict<T>
 where
     T: Debug,
@@ -95,7 +124,7 @@ where
 
 impl<T> Serialize for VecDict<T>
 where
-    T: Serialize + Clone,
+    T: Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -107,7 +136,7 @@ where
 
 impl<'de, T> Deserialize<'de> for VecDict<T>
 where
-    T: Deserialize<'de> + Clone,
+    T: Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
