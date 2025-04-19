@@ -320,12 +320,12 @@ impl From<ExprFMF<'_>> for TokenStream {
                     .into_iter()
                     .map(TokenStream::from)
                     .zip_eq(hints)
-                    .map(|(ts, hint)| {
-                        if let Some(DictHint::Vec { .. }) = hint {
-                            quote! { [#ts as usize] }
-                        } else {
-                            quote! { [&#ts] }
+                    .map(|(ts, hint)| match hint {
+                        Some(DictHint::SmallVecDict { .. } | DictHint::VecDict { .. }) => {
+                            quote! { [#ts] }
                         }
+                        Some(DictHint::Vec { .. }) => quote! { [#ts as usize] },
+                        _ => quote! { [&#ts] },
                     })
                     .flatten()
                     .collect();
@@ -527,7 +527,6 @@ fn hints<'src>(mut expr: &Typed<'src, Spanned<ExprFMF<'src>>>) -> Vec<Option<Dic
         expr = val;
     }
 
-    hints.reverse();
     hints
 }
 
