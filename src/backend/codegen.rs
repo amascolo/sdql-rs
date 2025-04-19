@@ -274,7 +274,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let lhs: TokenStream = expr.into();
                 let rhs: TokenStream = rhs.into();
                 match hint {
-                    Some(DictHint::Vec { .. }) => quote! { #lhs.contains(&#rhs) },
+                    Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs as usize] != 0 },
                     _ => quote! { #lhs.contains_key(&#rhs) },
                 }
             }
