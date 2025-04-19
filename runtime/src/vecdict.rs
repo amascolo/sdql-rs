@@ -1,3 +1,4 @@
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::Debug;
 use std::{
     cell::RefCell,
@@ -24,7 +25,7 @@ impl<T> VecDict<T> {
             vec: vec.clone(),
             key: RefCell::new(None),
         };
-        VecDict { vec, proxy }
+        Self { vec, proxy }
     }
 
     pub fn len(&self) -> usize {
@@ -71,9 +72,34 @@ where
     type IntoIter = <Vec<T> as IntoIterator>::IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        let VecDict { vec, proxy } = self;
+        let Self { vec, proxy } = self;
         drop(proxy);
         Rc::try_unwrap(vec).unwrap().into_inner().into_iter()
+    }
+}
+
+impl<T> Serialize for VecDict<T>
+where
+    T: Serialize + Clone,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.vec.borrow().serialize(serializer)
+    }
+}
+
+impl<'de, T> Deserialize<'de> for VecDict<T>
+where
+    T: Deserialize<'de> + Clone,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let vec = Vec::<T>::deserialize(deserializer)?;
+        Ok(Self::new(vec))
     }
 }
 

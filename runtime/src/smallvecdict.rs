@@ -1,3 +1,4 @@
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use smallvec::{Array, SmallVec};
 use std::fmt::Debug;
 use std::{
@@ -100,6 +101,33 @@ where
         let SmallVecDict { vec, proxy } = self;
         drop(proxy);
         Rc::try_unwrap(vec).unwrap().into_inner().into_iter()
+    }
+}
+
+impl<T> Serialize for SmallVecDict<T>
+where
+    T: Array,
+    T::Item: Serialize + Debug + Clone + Eq + Default,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.vec.borrow().serialize(serializer)
+    }
+}
+
+impl<'de, T> Deserialize<'de> for SmallVecDict<T>
+where
+    T: Array,
+    T::Item: Deserialize<'de> + Debug + Clone + Eq + Default,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let vec = SmallVec::<T>::deserialize(deserializer)?;
+        Ok(Self::new(vec))
     }
 }
 
