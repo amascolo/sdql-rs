@@ -502,6 +502,8 @@ fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
             || arg == "l"
             || arg == "l2_size"
             || arg == "l3_size"
+            || arg == "l_shipmode"
+            || arg == "c"
         {
             parse_quote! { #ident }
         } else {
