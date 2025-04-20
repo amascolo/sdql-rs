@@ -107,6 +107,7 @@ pub enum ExprFMF<'src> {
 #[derive(Clone, Debug, PartialEq)]
 pub enum OpFMF {
     Filter,
+    FlatMap,
     Map,
     Fold,
 }
@@ -147,6 +148,7 @@ impl fmt::Display for OpFMF {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             OpFMF::Filter => "filter",
+            OpFMF::FlatMap => "flat_map",
             OpFMF::Map => "map",
             OpFMF::Fold => "fold",
         }
@@ -181,7 +183,32 @@ fn from<'src>(
     expr.map(|spanned| {
         spanned.map(|expr| {
             match expr {
-                TypedExpr::Sum { .. } if !ctx.is_empty() => unreachable!(),
+                TypedExpr::Sum {
+                    key,
+                    val,
+                    head,
+                    body,
+                } if !ctx.is_empty() => {
+                    let head = Typed::from(head);
+                    let body_ctx = ctx + &vector![key, val];
+                    let body = from(body.map(Spanned::unboxed), &body_ctx).map(Spanned::boxed);
+                    let inner = ExprFMF::Sum {
+                        key,
+                        val,
+                        head,
+                        body,
+                    };
+                    let inner = Typed {
+                        val: Spanned(inner, span).boxed(),
+                        r#type,
+                    };
+                    ExprFMF::FMF {
+                        op: OpFMF::FlatMap,
+                        args: ctx.clone(),
+                        inner,
+                        cont: None,
+                    }
+                }
                 TypedExpr::Sum {
                     key,
                     val: "_",

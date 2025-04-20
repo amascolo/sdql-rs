@@ -180,6 +180,42 @@ impl From<ExprFMF<'_>> for TokenStream {
                 quote! {.filter(|&#args| #inner)#cont}
             }
             ExprFMF::FMF {
+                op: OpFMF::FlatMap,
+                args,
+                inner,
+                cont: None,
+            } => {
+                let ExprFMF::Sum {
+                    key,
+                    val,
+                    head,
+                    body,
+                } = *inner.val.0
+                else {
+                    unreachable!()
+                };
+                let key = Ident::new(key, Span::call_site());
+                let val = Ident::new(val, Span::call_site());
+                let args: Vec<_> = args
+                    .iter()
+                    .map(|name| Ident::new(name, Span::call_site()))
+                    .collect();
+                let head: TokenStream = head.into();
+                let body: TokenStream = body.into();
+                let fn_args = if args.len() > 1 {
+                    quote! { (#(#args),*) }
+                } else {
+                    quote! { #(#args),* }
+                };
+                quote! {
+                    .flat_map(|#fn_args| {
+                        #head
+                        .iter()
+                        .map(move |(#key, #val)| (#(#args),*, #key, #val) )
+                    })#body
+                }
+            }
+            ExprFMF::FMF {
                 op: OpFMF::Map,
                 args,
                 inner,
@@ -502,8 +538,6 @@ fn gen_args(args: im_rc::Vector<&str>) -> syn::Expr {
             || arg == "l"
             || arg == "l2_size"
             || arg == "l3_size"
-            || arg == "l_shipmode"
-            || arg == "c"
         {
             parse_quote! { #ident }
         } else {
@@ -856,12 +890,11 @@ mod tests {
         let _ = rs!(src);
     }
 
-    // FIXME
-    // #[test]
-    // fn tpch_12() {
-    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/12.sdql"));
-    //     let _ = rs!(src);
-    // }
+    #[test]
+    fn tpch_12() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/12.sdql"));
+        let _ = rs!(src);
+    }
 
     #[test]
     fn tpch_13() {

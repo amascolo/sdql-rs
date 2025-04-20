@@ -111,11 +111,10 @@ fn tpch_11() {
 
 #[test]
 fn tpch_12() {
-    // FIXME nested sum
-    // let buffer = run_tpch(12, "0.01").unwrap();
-    // let actual: TypeQ12 = bincode::deserialize(&buffer).unwrap();
-    let _expected: TypeQ12 = sdql_static!(include!("tests/results/tpch/SF_0.01/12.sdql"));
-    // assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 0), ()));
+    let buffer = run_tpch(12, "0.01").unwrap();
+    let actual: TypeQ12 = bincode::deserialize(&buffer).unwrap();
+    let expected: TypeQ12 = sdql_static!(include!("tests/results/tpch/SF_0.01/12.sdql"));
+    assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 0), ()));
 }
 
 #[test]
