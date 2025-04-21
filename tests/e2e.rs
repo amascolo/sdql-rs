@@ -198,3 +198,42 @@ fn tpch_22() {
     let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/22.sdql"));
     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 1e-4), ()));
 }
+
+// SF 1
+
+#[test]
+fn tpch_1_sf1() {
+    let buffer = run_tpch(1, "1").unwrap();
+    let actual: TypeQ1 = bincode::deserialize(&buffer).unwrap();
+    let expected = sdql_static!(include!("tests/results/tpch/SF_1/1.sdql"));
+    assert_abs_diff_eq!(
+        actual,
+        expected,
+        // TODO change everywhere to 1e-3 (for SF=1 at least)
+        epsilon = (((), (), 1e-3, 1e-3, 1e-3, 1e-3, 0), ())
+    );
+}
+
+#[test]
+fn tpch_6_sf1() {
+    let buffer = run_tpch(6, "1").unwrap();
+    let actual: TypeQ6 = bincode::deserialize(&buffer).unwrap();
+    let expected = sdql_static!(include!("tests/results/tpch/SF_1/6.sdql"));
+    assert_abs_diff_eq!(actual, expected, epsilon = 1e-4);
+}
+
+#[test]
+fn tpch_14_sf1() {
+    let buffer = run_tpch(14, "1").unwrap();
+    let actual: TypeQ14 = bincode::deserialize(&buffer).unwrap();
+    let expected = sdql_static!(include!("tests/results/tpch/SF_1/14.sdql"));
+    assert_abs_diff_eq!(actual, expected, epsilon = 1e-4);
+}
+
+#[test]
+fn tpch_17_sf1() {
+    let buffer = run_tpch(17, "1").unwrap();
+    let actual: TypeQ17 = bincode::deserialize(&buffer).unwrap();
+    let expected = sdql_static!(include!("tests/results/tpch/SF_1/17.sdql"));
+    assert_abs_diff_eq!(actual, expected, epsilon = 1e-4);
+}
