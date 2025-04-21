@@ -1,0 +1,7 @@
+{
+    <"1-URGENT", 10594> -> true,
+    <"2-HIGH", 10476> -> true,
+    <"3-MEDIUM", 10410> -> true,
+    <"4-NOT SPECIFIED", 10556> -> true,
+    <"5-LOW", 10487> -> true,
+}
