@@ -1,9 +1,12 @@
+#![feature(adt_const_params)]
+
 mod bool;
 mod date;
 mod default;
 mod hashmap;
 mod load;
 mod record;
+mod semiring;
 mod smallvecdict;
 mod varchar;
 mod vecdict;

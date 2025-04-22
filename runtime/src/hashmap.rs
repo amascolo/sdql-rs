@@ -1,5 +1,6 @@
 use crate::bool::Bool;
 use crate::default::DefaultRef;
+use crate::semiring::Addition;
 use approx::AbsDiffEq;
 use hashbrown::hash_map::rayon::IntoParIter;
 use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelIterator};
@@ -9,14 +10,14 @@ use std::hash::Hash;
 use std::iter::Sum;
 use std::ops::{Add, AddAssign, Deref, DerefMut, Index, IndexMut};
 
-pub type HashSet<T> = HashMap<T, Bool>;
+pub type HashSet<T, const ADD: Addition = { Addition::Plus }> = HashMap<T, Bool, ADD>;
 
 #[derive(Clone, Default, PartialEq, Deserialize, Serialize)]
-pub struct HashMap<K, V>(hashbrown::HashMap<K, V>)
+pub struct HashMap<K, V, const ADD: Addition = { Addition::Plus }>(hashbrown::HashMap<K, V>)
 where
     K: Eq + Hash;
 
-impl<K, V> fmt::Display for HashMap<K, V>
+impl<K, V, const ADD: Addition> fmt::Display for HashMap<K, V, ADD>
 where
     K: fmt::Display + Ord + Eq + Hash,
     V: fmt::Display + Ord,
@@ -32,7 +33,7 @@ where
     }
 }
 // TODO most likely get rid of this
-impl<K, V> fmt::Debug for HashMap<K, V>
+impl<K, V, const ADD: Addition> fmt::Debug for HashMap<K, V, ADD>
 where
     K: fmt::Display + Ord + Eq + Hash,
     V: fmt::Display + Ord,
@@ -42,7 +43,7 @@ where
     }
 }
 
-impl<K, V> HashMap<K, V>
+impl<K, V, const ADD: Addition> HashMap<K, V, ADD>
 where
     K: Eq + Hash,
 {
@@ -55,7 +56,7 @@ where
     }
 }
 
-impl<K, V, T> From<T> for HashMap<K, V>
+impl<K, V, T, const ADD: Addition> From<T> for HashMap<K, V, ADD>
 where
     K: Eq + Hash,
     T: Into<hashbrown::HashMap<K, V>>,
@@ -66,7 +67,7 @@ where
 }
 
 // TODO get rid of this since we have the sum trait?
-impl<K, V> HashMap<K, V>
+impl<K, V, const ADD: Addition> HashMap<K, V, ADD>
 where
     K: Copy + Eq + Hash,
     V: AddAssign + DefaultRef,
@@ -77,7 +78,7 @@ where
     }
 }
 
-impl<K, V> Sum for HashMap<K, V>
+impl<K, V, const ADD: Addition> Sum for HashMap<K, V, ADD>
 where
     K: Copy + Eq + Hash,
     V: AddAssign + DefaultRef,
@@ -90,7 +91,7 @@ where
     }
 }
 
-impl<K, V> Add for HashMap<K, V>
+impl<K, V, const ADD: Addition> Add for HashMap<K, V, ADD>
 where
     K: Copy + Eq + Hash,
     V: AddAssign + DefaultRef,
@@ -104,7 +105,7 @@ where
     }
 }
 
-impl<K, V> AddAssign for HashMap<K, V>
+impl<K, V, const ADD: Addition> AddAssign for HashMap<K, V, ADD>
 where
     K: Copy + Eq + Hash,
     V: AddAssign + DefaultRef,
@@ -116,7 +117,7 @@ where
     }
 }
 
-impl<K, V> Deref for HashMap<K, V>
+impl<K, V, const ADD: Addition> Deref for HashMap<K, V, ADD>
 where
     K: Eq + Hash,
 {
@@ -127,7 +128,7 @@ where
     }
 }
 
-impl<K, V> DerefMut for HashMap<K, V>
+impl<K, V, const ADD: Addition> DerefMut for HashMap<K, V, ADD>
 where
     K: Eq + Hash,
 {
@@ -136,7 +137,7 @@ where
     }
 }
 
-impl<K, V> Index<&K> for HashMap<K, V>
+impl<K, V, const ADD: Addition> Index<&K> for HashMap<K, V, ADD>
 where
     K: Eq + Hash,
     V: DefaultRef,
@@ -148,7 +149,7 @@ where
     }
 }
 
-impl<K, V> IndexMut<&K> for HashMap<K, V>
+impl<K, V, const ADD: Addition> IndexMut<&K> for HashMap<K, V, ADD>
 where
     K: Copy + Eq + Hash,
     V: DefaultRef,
@@ -158,7 +159,7 @@ where
     }
 }
 
-impl<K, V> IntoIterator for HashMap<K, V>
+impl<K, V, const ADD: Addition> IntoIterator for HashMap<K, V, ADD>
 where
     K: Eq + Hash,
 {
@@ -170,7 +171,7 @@ where
     }
 }
 
-impl<K, V> FromIterator<(K, V)> for HashMap<K, V>
+impl<K, V, const ADD: Addition> FromIterator<(K, V)> for HashMap<K, V, ADD>
 where
     K: Eq + Hash,
 {
@@ -179,7 +180,7 @@ where
     }
 }
 
-impl<K, V> IntoParallelIterator for HashMap<K, V>
+impl<K, V, const ADD: Addition> IntoParallelIterator for HashMap<K, V, ADD>
 where
     K: Eq + Hash + Send,
     V: Send,
@@ -192,7 +193,7 @@ where
     }
 }
 
-impl<K, V> FromParallelIterator<(K, V)> for HashMap<K, V>
+impl<K, V, const ADD: Addition> FromParallelIterator<(K, V)> for HashMap<K, V, ADD>
 where
     K: Eq + Hash + Send,
     V: Send,
@@ -202,7 +203,7 @@ where
     }
 }
 
-impl<K, V> AbsDiffEq for HashMap<K, V>
+impl<K, V, const ADD: Addition> AbsDiffEq for HashMap<K, V, ADD>
 where
     K: AbsDiffEq + Ord + Eq + Hash,
     V: AbsDiffEq + Ord,
@@ -238,7 +239,7 @@ mod tests {
 
     #[test]
     fn add_assign() {
-        let mut map = HashMap::from([((), 0)]);
+        let mut map: HashMap<_, _> = [((), 0)].into();
         assert_eq!(map[&()], 0);
         map[&()] += 1;
         assert_eq!(map[&()], 1);
