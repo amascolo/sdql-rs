@@ -632,9 +632,9 @@ fn initialise(r#type: &Type) -> TokenStream {
                     },
                 ),
         } => {
-            let qual_type = qualified_type(&r#type);
+            let t = simple_type(&r#type);
             let capacity = LitInt::new(&capacity.to_string(), Span::call_site());
-            quote! { #qual_type::with_capacity(#capacity) }
+            quote! { #t::with_capacity(#capacity) }
         }
         Type::Dict {
             key: _,
@@ -643,9 +643,9 @@ fn initialise(r#type: &Type) -> TokenStream {
                 capacity: Some(capacity),
             }),
         } => {
-            let qual_type = qualified_type(val);
+            let t = simple_type(val);
             let capacity = LitInt::new(&capacity.to_string(), Span::call_site());
-            quote! { vec![#qual_type::default(); #capacity] }
+            quote! { vec![#t::default(); #capacity] }
         }
         Type::Dict {
             key: _,
@@ -655,8 +655,8 @@ fn initialise(r#type: &Type) -> TokenStream {
             }),
         } => todo!(),
         _ => {
-            let qual_type = qualified_type(&r#type);
-            quote! { #qual_type::default() }
+            let t = simple_type(&r#type);
+            quote! { #t::default() }
         }
     }
 }
@@ -735,49 +735,69 @@ impl From<&Type<'_>> for syn::Type {
         }
     }
 }
-// TODO simplify / avoid code duplication
-fn qualified_type(r#type: &Type) -> syn::Type {
+// TODO get rid of this if we don't use it anywhere
+// fn qualified_type(r#type: &Type) -> syn::Type {
+//     match r#type {
+//         Type::String {
+//             max_len: Some(max_len),
+//         } => {
+//             let max_len = LitInt::new(&max_len.to_string(), Span::call_site());
+//             parse_quote!(VarChar::<#max_len>)
+//         }
+//         Type::Record(tps) => {
+//             let tps: Vec<syn::Type> = tps.iter().map(|rt| syn::Type::from(&rt.r#type)).collect();
+//             parse_quote!(Record::<(#(#tps),*,)>)
+//         }
+//         Type::Dict {
+//             key,
+//             val,
+//             hint: hint @ (None | Some(DictHint::HashDict { .. } | DictHint::SortDict { .. })),
+//         } => {
+//             let dict = to_type(*hint);
+//             let key = syn::Type::from(&**key);
+//             let val = syn::Type::from(&**val);
+//             parse_quote!(#dict::<#key, #val>)
+//         }
+//         Type::Dict {
+//             key: _,
+//             val,
+//             hint: Some(hint @ DictHint::SmallVecDict { .. }),
+//         } => {
+//             let dict = to_type(Some(*hint));
+//             let val = syn::Type::from(&**val);
+//             let capacity = hint.capacity();
+//             parse_quote!(#dict::<[#val; #capacity]>)
+//         }
+//         Type::Dict {
+//             key: _,
+//             val,
+//             hint: hint @ Some(DictHint::Vec { .. } | DictHint::VecDict { .. }),
+//         } => {
+//             let dict = to_type(*hint);
+//             let val = syn::Type::from(&**val);
+//             parse_quote!(#dict::<#val>)
+//         }
+//         _ => r#type.into(),
+//     }
+// }
+fn simple_type(r#type: &Type) -> syn::Type {
     match r#type {
-        Type::String {
-            max_len: Some(max_len),
-        } => {
-            let max_len = LitInt::new(&max_len.to_string(), Span::call_site());
-            parse_quote!(VarChar::<#max_len>)
-        }
-        Type::Record(tps) => {
-            let tps: Vec<syn::Type> = tps.iter().map(|rt| syn::Type::from(&rt.r#type)).collect();
-            parse_quote!(Record::<(#(#tps),*,)>)
-        }
-        Type::Dict {
-            key,
-            val,
-            hint: hint @ (None | Some(DictHint::HashDict { .. } | DictHint::SortDict { .. })),
-        } => {
-            let dict = to_type(*hint);
-            let key = syn::Type::from(&**key);
-            let val = syn::Type::from(&**val);
-            parse_quote!(#dict::<#key, #val>)
-        }
+        Type::Bool => parse_quote!(Bool),
+        Type::Date => parse_quote!(Date),
+        Type::Int => parse_quote!(i32),
+        Type::Long => parse_quote!(i64),
+        Type::Real => parse_quote!(OrderedFloat<f64>),
+        Type::String { max_len: None } => parse_quote!(String),
+        Type::String { max_len: Some(_) } => parse_quote!(VarChar),
+        Type::Record(_) => parse_quote!(Record),
         Type::Dict {
             key: _,
-            val,
-            hint: Some(hint @ DictHint::SmallVecDict { .. }),
-        } => {
-            let dict = to_type(Some(*hint));
-            let val = syn::Type::from(&**val);
-            let capacity = hint.capacity();
-            parse_quote!(#dict::<[#val; #capacity]>)
-        }
-        Type::Dict {
-            key: _,
-            val,
-            hint: hint @ Some(DictHint::Vec { .. } | DictHint::VecDict { .. }),
+            val: _,
+            hint,
         } => {
             let dict = to_type(*hint);
-            let val = syn::Type::from(&**val);
-            parse_quote!(#dict::<#val>)
+            parse_quote!(#dict)
         }
-        _ => r#type.into(),
     }
 }
 
