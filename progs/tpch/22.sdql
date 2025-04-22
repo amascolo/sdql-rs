@@ -3,7 +3,7 @@ let orders = load[<o_orderkey: @vec {int -> int}, o_custkey: @vec {int -> int}, 
 
 let o_h =
   sum(<i,_> <- range(orders.size))
-    @vec(150000) { orders.o_custkey(i) -> 1 }
+    @vec(150001) { orders.o_custkey(i) -> 1 }
 
 let fused =
   sum(<i,_> <- range(customer.size))

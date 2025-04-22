@@ -26,7 +26,7 @@ let s_h =
 
 let c_h =
   sum(<i,_> <- range(customer.size))
-    @vec(200000) { customer.c_custkey(i) -> customer.c_nationkey(i) }
+    @vec(200001) { customer.c_custkey(i) -> customer.c_nationkey(i) }
 
 let p_h =
   sum(<i,_> <- range(part.size))

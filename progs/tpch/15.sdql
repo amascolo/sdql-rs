@@ -6,9 +6,7 @@ let suppkey_to_revenue =
     if((date(19960101) <= lineitem.l_shipdate(i)) && (lineitem.l_shipdate(i) < date(19960401))) then
       { lineitem.l_suppkey(i) -> lineitem.l_extendedprice(i) * (1.0 - lineitem.l_discount(i)) }
 
-// FIXME
-// let max_revenue = sum(<_,v> <- suppkey_to_revenue) promote[max_sum](v)
-let max_revenue = 1161099.4635999997
+let max_revenue = sum(<_,v> <- suppkey_to_revenue) promote[max_sum](v)
 
 let suppkey_to_supp =
   sum(<i,_> <- range(supplier.size))

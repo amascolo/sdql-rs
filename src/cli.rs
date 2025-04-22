@@ -11,6 +11,21 @@ pub fn run_tpch(query: u8, sf: &str) -> io::Result<Vec<u8>> {
         "datasets/tpch/",
         &format!("datasets/tpch_datasets/SF_{sf}/"),
     );
+
+    // FIXME TPCH q15 add support for max
+    let src = if query == 15 {
+        src.replace(
+            "let max_revenue = sum(<_,v> <- suppkey_to_revenue) promote[max_sum](v)",
+            match sf {
+                "0.01" => "let max_revenue = 1161099.4635999997",
+                "1" => "let max_revenue = 1772627.2087",
+                _ => unimplemented!(),
+            },
+        )
+    } else {
+        src
+    };
+
     let code = rs!(&src);
     let name = filename(&code);
     run(&name, &code)

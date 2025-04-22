@@ -235,14 +235,13 @@ fn tpch_22() {
 // //     assert_abs_diff_eq!(actual, expected, epsilon = ((0, (), 0, 1e-4), ()));
 // // }
 //
-// // FIXME index out of bounds: the len is 6000000 but the index is 6000000
-// // #[test]
-// // fn tpch_4_sf1() {
-// //     let buffer = run_tpch(4, "1").unwrap();
-// //     let actual: TypeQ4 = bincode::deserialize(&buffer).unwrap();
-// //     let expected = sdql_static!(include!("tests/results/tpch/SF_1/4.sdql"));
-// //     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0), ()));
-// // }
+// #[test]
+// fn tpch_4_sf1() {
+//     let buffer = run_tpch(4, "1").unwrap();
+//     let actual: TypeQ4 = bincode::deserialize(&buffer).unwrap();
+//     let expected = sdql_static!(include!("tests/results/tpch/SF_1/4.sdql"));
+//     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0), ()));
+// }
 //
 // #[test]
 // fn tpch_5_sf1() {
@@ -276,14 +275,13 @@ fn tpch_22() {
 //     assert_abs_diff_eq!(actual, expected, epsilon = ((0, 1e-4), ()));
 // }
 //
-// // FIXME index out of bounds: the len is 6000000 but the index is 6000000
-// // #[test]
-// // fn tpch_9_sf1() {
-// //     let buffer = run_tpch(9, "1").unwrap();
-// //     let actual: TypeQ9 = bincode::deserialize(&buffer).unwrap();
-// //     let expected = sdql_static!(include!("tests/results/tpch/SF_1/9.sdql"));
-// //     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 1e-4), ()));
-// // }
+// #[test]
+// fn tpch_9_sf1() {
+//     let buffer = run_tpch(9, "1").unwrap();
+//     let actual: TypeQ9 = bincode::deserialize(&buffer).unwrap();
+//     let expected = sdql_static!(include!("tests/results/tpch/SF_1/9.sdql"));
+//     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 1e-4), ()));
+// }
 //
 // // TODO file too large, find another solution
 // #[test]
@@ -331,13 +329,13 @@ fn tpch_22() {
 // }
 //
 // // FIXME empty result
-// // #[test]
-// // fn tpch_15_sf1() {
-// //     let buffer = run_tpch(15, "1").unwrap();
-// //     let actual: TypeQ15 = bincode::deserialize(&buffer).unwrap();
-// //     let expected = sdql_static!(include!("tests/results/tpch/SF_1/15.sdql"));
-// //     assert_abs_diff_eq!(actual, expected, epsilon = ((0, (), (), (), 1e-4), ()));
-// // }
+// #[test]
+// fn tpch_15_sf1() {
+//     let buffer = run_tpch(15, "1").unwrap();
+//     let actual: TypeQ15 = bincode::deserialize(&buffer).unwrap();
+//     let expected = sdql_static!(include!("tests/results/tpch/SF_1/15.sdql"));
+//     assert_abs_diff_eq!(actual, expected, epsilon = ((0, (), (), (), 1e-4), ()));
+// }
 //
 // // FIXME blows up compilation times
 // #[test]
@@ -383,14 +381,13 @@ fn tpch_22() {
 // //     assert_abs_diff_eq!(actual, expected, epsilon = (((), ()), ()));
 // // }
 //
-// // FIXME index out of bounds: the len is 6000000 but the index is 6000000
-// // #[test]
-// // fn tpch_21_sf1() {
-// //     let buffer = run_tpch(21, "1").unwrap();
-// //     let actual: TypeQ21 = bincode::deserialize(&buffer).unwrap();
-// //     let expected = sdql_static!(include!("tests/results/tpch/SF_1/21.sdql"));
-// //     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0), ()));
-// // }
+// #[test]
+// fn tpch_21_sf1() {
+//     let buffer = run_tpch(21, "1").unwrap();
+//     let actual: TypeQ21 = bincode::deserialize(&buffer).unwrap();
+//     let expected = sdql_static!(include!("tests/results/tpch/SF_1/21.sdql"));
+//     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0), ()));
+// }
 //
 // #[test]
 // fn tpch_22_sf1() {
