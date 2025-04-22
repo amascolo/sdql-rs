@@ -70,6 +70,7 @@ impl<K, V, const ADD: Addition> Sum for HashMap<K, V, ADD>
 where
     K: Copy + Eq + Hash,
     V: AddAssign + DefaultRef,
+    HashMap<K, V, ADD>: AddAssign,
 {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
         iter.fold(HashMap::new(), |mut acc, item| {
@@ -83,6 +84,7 @@ impl<K, V, const ADD: Addition> Add for HashMap<K, V, ADD>
 where
     K: Copy + Eq + Hash,
     V: AddAssign + DefaultRef,
+    HashMap<K, V, ADD>: AddAssign,
 {
     type Output = Self;
 
@@ -93,7 +95,7 @@ where
     }
 }
 
-impl<K, V, const ADD: Addition> AddAssign for HashMap<K, V, ADD>
+impl<K, V> AddAssign for HashMap<K, V, { Addition::Plus }>
 where
     K: Copy + Eq + Hash,
     V: AddAssign + DefaultRef,
@@ -104,6 +106,10 @@ where
         }
     }
 }
+
+// TODO
+//  impl<K, V> AddAssign for HashMap<K, V, { Addition::Min }>
+//  impl<K, V> AddAssign for HashMap<K, V, { Addition::Max }>
 
 impl<K, V, const ADD: Addition> Deref for HashMap<K, V, ADD>
 where
