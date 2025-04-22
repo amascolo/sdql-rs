@@ -23,7 +23,7 @@ fn sdql_static() {
     );
     assert_eq!(
         sdql_static!({<false, true, 1, -1, 3.14, date(20001231)> -> true}),
-        HashMap::from([(
+        HashMap::<_, _>::from([(
             sdql_static!(<false, true, 1, -1, 3.14, date(20001231)>),
             TRUE
         )])

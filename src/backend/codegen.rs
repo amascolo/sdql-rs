@@ -11,15 +11,18 @@ use syn::{
     RangeLimits,
 };
 
-impl From<ExprFMF<'_>> for String {
-    fn from(expr: ExprFMF<'_>) -> Self {
+impl<'src> From<Typed<'src, Spanned<ExprFMF<'src>>>> for String {
+    fn from(expr: Typed<'src, Spanned<ExprFMF<'src>>>) -> Self {
+        let Typed { val, ref r#type } = expr;
+        let r#type: syn::Type = r#type.into();
+        let Spanned(expr, _span) = val;
         let tks: TokenStream = expr.into();
         let main_tks = quote! {
             #![feature(stmt_expr_attributes)]
             #![allow(unused_variables)]
             use sdql_runtime::*;
             fn main() {
-                let value = { #tks };
+                let value: #r#type = { #tks };
                 // println!("{value:?}"); // TODO default mode
                 use std::io::Write;
                 let encoded = bincode::serialize(&value).unwrap();
@@ -28,12 +31,6 @@ impl From<ExprFMF<'_>> for String {
         };
         let ast = parse2(main_tks).unwrap();
         prettyplease::unparse(&ast)
-    }
-}
-
-impl<'src> From<Typed<'src, Spanned<ExprFMF<'src>>>> for String {
-    fn from(expr: Typed<'src, Spanned<ExprFMF<'src>>>) -> Self {
-        ExprFMF::from(expr).into()
     }
 }
 
