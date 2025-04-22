@@ -66,18 +66,6 @@ where
     }
 }
 
-// TODO get rid of this since we have the sum trait?
-impl<K, V, const ADD: Addition> HashMap<K, V, ADD>
-where
-    K: Copy + Eq + Hash,
-    V: AddAssign + DefaultRef,
-{
-    pub fn sum(mut self, other: Self) -> Self {
-        self += other;
-        self
-    }
-}
-
 impl<K, V, const ADD: Addition> Sum for HashMap<K, V, ADD>
 where
     K: Copy + Eq + Hash,
