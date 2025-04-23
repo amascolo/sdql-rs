@@ -328,7 +328,6 @@ fn tpch_22() {
 //     assert_abs_diff_eq!(actual, expected, epsilon = 1e-4);
 // }
 //
-// // FIXME empty result
 // #[test]
 // fn tpch_15_sf1() {
 //     let buffer = run_tpch(15, "1").unwrap();
@@ -372,14 +371,13 @@ fn tpch_22() {
 //     assert_abs_diff_eq!(actual, expected, epsilon = ((1e-4,), ()));
 // }
 //
-// // FIXME called `Result::unwrap()` on an `Err` value: Io(Custom { kind: UnexpectedEof, error: "" })
-// // #[test]
-// // fn tpch_20_sf1() {
-// //     let buffer = run_tpch(20, "1").unwrap();
-// //     let actual: TypeQ20 = bincode::deserialize(&buffer).unwrap();
-// //     let expected = sdql_static!(include!("tests/results/tpch/SF_1/20.sdql"));
-// //     assert_abs_diff_eq!(actual, expected, epsilon = (((), ()), ()));
-// // }
+// #[test]
+// fn tpch_20_sf1() {
+//     let buffer = run_tpch(20, "1").unwrap();
+//     let actual: TypeQ20 = bincode::deserialize(&buffer).unwrap();
+//     let expected = sdql_static!(include!("tests/results/tpch/SF_1/20.sdql"));
+//     assert_abs_diff_eq!(actual, expected, epsilon = (((), ()), ()));
+// }
 //
 // #[test]
 // fn tpch_21_sf1() {

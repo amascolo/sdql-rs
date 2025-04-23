@@ -35,4 +35,4 @@ let ps_h =
 
 sum(<i,_> <- range(supplier.size))
   if(dom(ps_h)(supplier.s_suppkey(i))) then
-    { unique(< _ = supplier.s_name(i), _ = supplier.s_address(i) >) -> 1 }
+    { unique(< _ = supplier.s_name(i), _ = supplier.s_address(i) >) -> true }
