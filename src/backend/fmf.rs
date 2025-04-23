@@ -296,7 +296,7 @@ fn from<'src>(
                 {
                     // unpack value inside unique
                     let DictEntry { key, val } = map.into_iter().next().unwrap();
-                    let TypedExpr::Unique { expr } = key.val.0 else {
+                    let Spanned(TypedExpr::Unique { expr }, span) = key.val else {
                         unreachable!()
                     };
                     // repack it without unique
