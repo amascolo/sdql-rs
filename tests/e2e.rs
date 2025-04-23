@@ -225,14 +225,14 @@ fn tpch_22() {
 //     );
 // }
 //
-// // FIXME thread 'tpch_3_sf1' has overflowed its stack
-// // #[test]
-// // fn tpch_3_sf1() {
-// //     let buffer = run_tpch(3, "1").unwrap();
-// //     let actual: TypeQ3 = bincode::deserialize(&buffer).unwrap();
-// //     let expected = sdql_static!(include!("tests/results/tpch/SF_1/3.sdql"));
-// //     assert_abs_diff_eq!(actual, expected, epsilon = ((0, (), 0, 1e-4), ()));
-// // }
+// // FIXME sdql_static! blows up compilation time due to size of result
+// #[test]
+// fn tpch_3_sf1() {
+//     let buffer = run_tpch(3, "1").unwrap();
+//     let _actual: TypeQ3 = bincode::deserialize(&buffer).unwrap();
+//     // let expected = sdql_static!(include!("tests/results/tpch/SF_1/3.sdql"));
+//     // assert_abs_diff_eq!(actual, expected, epsilon = ((0, (), 0, 1e-4), ()));
+// }
 //
 // #[test]
 // fn tpch_4_sf1() {
@@ -282,12 +282,13 @@ fn tpch_22() {
 //     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 1e-4), ()));
 // }
 //
-// // TODO file too large, find another solution
+// // FIXME sdql_static! blows up compilation time due to size of result
 // #[test]
 // fn tpch_10_sf1() {
-//     // let expected = sdql_static!(include!("tests/results/tpch/SF_1/10.sdql"));
 //     let buffer = run_tpch(10, "1").unwrap();
 //     let _actual: TypeQ10 = bincode::deserialize(&buffer).unwrap();
+//     // TODO result file has last 2 columns merged and haven't rounded to 4dp the floats
+//     // let expected = sdql_static!(include!("tests/results/tpch/SF_1/10.sdql"));
 //     // assert_abs_diff_eq!(
 //     //     actual,
 //     //     expected,
@@ -335,13 +336,13 @@ fn tpch_22() {
 //     assert_abs_diff_eq!(actual, expected, epsilon = ((0, (), (), (), 1e-4), ()));
 // }
 //
-// // FIXME blows up compilation times
+// // FIXME sdql_static! blows up compilation time due to size of result
 // #[test]
 // fn tpch_16_sf1() {
 //     let buffer = run_tpch(16, "1").unwrap();
 //     let _actual: TypeQ16 = bincode::deserialize(&buffer).unwrap();
-//     //     let expected = sdql_static!(include!("tests/results/tpch/SF_1/16.sdql"));
-//     //     assert_abs_diff_eq!(actual, expected, epsilon = (((), (), 0, 0), ()));
+//     // let expected = sdql_static!(include!("tests/results/tpch/SF_1/16.sdql"));
+//     // assert_abs_diff_eq!(actual, expected, epsilon = (((), (), 0, 0), ()));
 // }
 //
 // #[test]
