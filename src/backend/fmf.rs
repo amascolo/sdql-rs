@@ -589,8 +589,40 @@ mod tests {
     use crate::sdql;
 
     #[test]
+    fn tpch_q1() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/1.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
+
+    #[test]
+    fn tpch_q2() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/2.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
+
+    #[test]
     fn tpch_q3() {
         let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/3.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
+
+    #[test]
+    fn tpch_q4() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/4.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
+
+    #[test]
+    fn tpch_q5() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/5.sdql"));
         let typed = Typed::from(sdql!(src));
         let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
         assert_eq!(Typed::from(fmf), typed);
@@ -603,4 +635,142 @@ mod tests {
         let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
         assert_eq!(Typed::from(fmf), typed);
     }
+
+    #[test]
+    fn tpch_q7() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/7.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
+
+    // FIXME entered unreachable code
+    // #[test]
+    // fn tpch_q8() {
+    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/8.sdql"));
+    //     let typed = Typed::from(sdql!(src));
+    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+    //     assert_eq!(Typed::from(fmf), typed);
+    // }
+
+    #[test]
+    fn tpch_q9() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/9.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
+
+    #[test]
+    fn tpch_q10() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/10.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
+
+    #[test]
+    fn tpch_q11() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/11.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
+
+    // FIXME not yet implemented
+    // #[test]
+    // fn tpch_q12() {
+    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/12.sdql"));
+    //     let typed = Typed::from(sdql!(src));
+    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+    //     assert_eq!(Typed::from(fmf), typed);
+    // }
+
+    // FIXME entered unreachable code
+    // #[test]
+    // fn tpch_q13() {
+    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/13.sdql"));
+    //     let typed = Typed::from(sdql!(src));
+    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+    //     assert_eq!(Typed::from(fmf), typed);
+    // }
+
+    #[test]
+    fn tpch_q14() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/14.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
+
+    // FIXME called `Result::unwrap()` on an `Err` value
+    // #[test]
+    // fn tpch_q15() {
+    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/15.sdql"));
+    //     let typed = Typed::from(sdql!(src));
+    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+    //     assert_eq!(Typed::from(fmf), typed);
+    // }
+
+    // FIXME entered unreachable code
+    // #[test]
+    // fn tpch_q16() {
+    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/16.sdql"));
+    //     let typed = Typed::from(sdql!(src));
+    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+    //     assert_eq!(Typed::from(fmf), typed);
+    // }
+
+    // FIXME entered unreachable code
+    // #[test]
+    // fn tpch_q17() {
+    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/17.sdql"));
+    //     let typed = Typed::from(sdql!(src));
+    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+    //     assert_eq!(Typed::from(fmf), typed);
+    // }
+
+    #[test]
+    fn tpch_q18() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/18.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
+
+    // FIXME entered unreachable code
+    // #[test]
+    // fn tpch_q19() {
+    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/19.sdql"));
+    //     let typed = Typed::from(sdql!(src));
+    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+    //     assert_eq!(Typed::from(fmf), typed);
+    // }
+
+    // FIXME entered unreachable code
+    // #[test]
+    // fn tpch_q20() {
+    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/20.sdql"));
+    //     let typed = Typed::from(sdql!(src));
+    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+    //     assert_eq!(Typed::from(fmf), typed);
+    // }
+
+    // FIXME entered unreachable code
+    // #[test]
+    // fn tpch_q21() {
+    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/21.sdql"));
+    //     let typed = Typed::from(sdql!(src));
+    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+    //     assert_eq!(Typed::from(fmf), typed);
+    // }
+
+    // FIXME entered unreachable code
+    // #[test]
+    // fn tpch_q22() {
+    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/22.sdql"));
+    //     let typed = Typed::from(sdql!(src));
+    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+    //     assert_eq!(Typed::from(fmf), typed);
+    // }
 }
