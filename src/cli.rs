@@ -44,6 +44,7 @@ pub fn run(name: &str, code: &str) -> io::Result<Vec<u8>> {
     write_if_different(name, code)?; // avoids triggering recompilation
     let output = Command::new("cargo")
         .arg("run")
+        .arg("--release")
         .arg("--quiet")
         .arg("--bin")
         .arg(name)
