@@ -161,15 +161,28 @@ where
                     hint,
                 });
 
-            let set_items = expr
+            let anonymous_items = expr
                 .clone()
                 .separated_by(just(Token::Ctrl(',')))
                 .allow_trailing()
                 .collect::<Vec<_>>();
 
-            let set = set_items
+            let set = anonymous_items
+                .clone()
                 .delimited_by(just(Token::Ctrl('{')), just(Token::Ctrl('}')))
                 .map(Expr::Set);
+
+            let anonymous_record = anonymous_items
+                .map(|v| Expr::Record {
+                    vals: v
+                        .into_iter()
+                        .map(|val| RecordValue {
+                            name: "_".into(),
+                            val,
+                        })
+                        .collect(),
+                })
+                .delimited_by(just(Token::Op("<")), just(Token::Op(">")));
 
             let record_items = select! { Token::Ident(ident) => ident }
                 .then_ignore(just(Token::Op("=")))
@@ -179,7 +192,6 @@ where
                 .collect::<Vec<_>>();
 
             let record = record_items
-                .clone()
                 .map(|v| Expr::Record {
                     vals: v
                         .into_iter()
@@ -219,6 +231,7 @@ where
                 .or(sym)
                 .or(dict)
                 .or(set)
+                .or(anonymous_record)
                 .or(record)
                 .or(load)
                 .or(range)

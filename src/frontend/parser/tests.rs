@@ -422,6 +422,21 @@ fn records() {
             ],
         },
     );
+    assert_eq!(
+        no_span!("<1, 2>"),
+        Expr::Record {
+            vals: vec![
+                RecordValue {
+                    name: "_".into(),
+                    val: Spanned(no_span!("1"), (1..2).into()),
+                },
+                RecordValue {
+                    name: "_".into(),
+                    val: Spanned(no_span!("2"), (4..5).into()),
+                },
+            ],
+        },
+    );
 }
 
 #[test]
