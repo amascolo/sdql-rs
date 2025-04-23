@@ -91,14 +91,13 @@ fn tpch_9() {
 #[test]
 fn tpch_10() {
     let buffer = run_tpch(10, "0.01").unwrap();
-    let _actual: TypeQ10 = bincode::deserialize(&buffer).unwrap();
-    // FIXME overflows (previoously wouldn't if I switched the order of expected and actual)
-    // let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/10.sdql")); // FIXME round to 4dp
-    // assert_abs_diff_eq!(
-    //     actual,
-    //     expected,
-    //     epsilon = ((0, (), 1e-4, 1e-4, (), (), (), ()), ())
-    // );
+    let actual: TypeQ10 = bincode::deserialize(&buffer).unwrap();
+    let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/10.sdql"));
+    assert_abs_diff_eq!(
+        actual,
+        expected,
+        epsilon = ((0, (), 1e-4, 1e-4, (), (), (), ()), ())
+    );
 }
 
 #[test]
