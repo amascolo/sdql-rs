@@ -489,6 +489,29 @@ impl<'src> From<ExprFMF<'src>> for TypedExpr<'src> {
                 r#else: None,
             },
             ExprFMF::FMF {
+                op: OpFMF::FlatMap,
+                args: _,
+                inner,
+                cont: None,
+            } => {
+                let inner: Typed<Spanned<Box<TypedExpr>>> = inner.into();
+                let TypedExpr::Sum {
+                    key,
+                    val,
+                    head,
+                    body,
+                } = *inner.val.0
+                else {
+                    unreachable!()
+                };
+                TypedExpr::Sum {
+                    key,
+                    val,
+                    head,
+                    body,
+                }
+            }
+            ExprFMF::FMF {
                 op: OpFMF::Map,
                 args: _,
                 inner,
@@ -677,14 +700,13 @@ mod tests {
         assert_eq!(Typed::from(fmf), typed);
     }
 
-    // FIXME not yet implemented
-    // #[test]
-    // fn tpch_q12() {
-    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/12.sdql"));
-    //     let typed = Typed::from(sdql!(src));
-    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
-    //     assert_eq!(Typed::from(fmf), typed);
-    // }
+    #[test]
+    fn tpch_q12() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/12.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
 
     // FIXME entered unreachable code
     // #[test]
