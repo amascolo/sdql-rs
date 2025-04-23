@@ -394,7 +394,7 @@ fn from<'src>(
                     promo,
                     expr: expr.into(),
                 },
-                TypedExpr::Unique { expr } => ExprFMF::Unique { expr: expr.into() },
+                TypedExpr::Unique { .. } => unreachable!(),
             }
         })
     })
@@ -472,7 +472,6 @@ impl<'src> From<ExprFMF<'src>> for TypedExpr<'src> {
                 promo,
                 expr: expr.into(),
             },
-            ExprFMF::Unique { expr } => TypedExpr::Unique { expr: expr.into() },
             ExprFMF::FMF {
                 op: OpFMF::Filter,
                 args: _,
@@ -532,6 +531,37 @@ impl<'src> From<ExprFMF<'src>> for TypedExpr<'src> {
                 let inner: Typed<Spanned<Box<TypedExpr>>> = inner.into();
                 *inner.val.0
             }
+            ExprFMF::Unique { expr } => {
+                debug_assert!(matches!(
+                    *expr.val.0,
+                    ExprFMF::FMF {
+                        op: OpFMF::Fold,
+                        ..
+                    }
+                ));
+                let Typed { val, r#type } = expr;
+                let Spanned(val, span) = val;
+                let TypedExpr::Dict { map, hint } = TypedExpr::from(*val) else {
+                    unreachable!()
+                };
+                let [DictEntry { key, val }]: [_; _] = map.try_into().unwrap();
+                let Type::Dict { key: kt, .. } = r#type else {
+                    unreachable!()
+                };
+                let key = Typed {
+                    val: Spanned(
+                        TypedExpr::Unique {
+                            expr: key.map(Spanned::boxed),
+                        },
+                        span,
+                    ),
+                    r#type: *kt,
+                };
+                TypedExpr::Dict {
+                    map: vec![DictEntry { key, val }],
+                    hint,
+                }
+            }
             expr @ ExprFMF::FMF { .. } => todo!("{expr:?}"),
         }
     }
@@ -558,14 +588,13 @@ mod tests {
     use crate::ir::expr::Expr;
     use crate::sdql;
 
-    // FIXME backward conversion for unique
-    // #[test]
-    // fn tpch_q3() {
-    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/3.sdql"));
-    //     let typed = Typed::from(sdql!(src));
-    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
-    //     assert_eq!(Typed::from(fmf), typed);
-    // }
+    #[test]
+    fn tpch_q3() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/3.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
 
     #[test]
     fn tpch_q6() {
