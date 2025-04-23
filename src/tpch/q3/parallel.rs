@@ -16,43 +16,28 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
     let c_h: HashMap<i32, Record<(i32,)>> = (0../* size */ customer.8)
         .into_par_iter()
         .filter(|&i| /* mktsegment */ customer.6[i] == VarChar::from("BUILDING").unwrap())
-        .fold(HashMap::new, |mut acc, i| {
-            acc[/* custkey */ &customer.0[i]] += Record::new((/* custkey */ customer.0[i],));
-            acc
+        .map(|i| {
+            (
+                /* custkey */ customer.0[i],
+                Record::new((/* custkey */ customer.0[i],)),
+            )
         })
-        .sum();
-    // TODO this is way faster (for parallel, not for sequential) - we can do it since key is unique
-    // .map(|i| {
-    //     (
-    //         /* custkey */ customer.0[i],
-    //         Record::new((/* custkey */ customer.0[i],)),
-    //     )
-    // })
-    // .collect();
+        .collect();
 
     let o_h: HashMap<i32, Record<(Date, i32)>> = (0../* size */ orders.9)
         .into_par_iter()
         .filter(|&i| c_h.contains_key(&/* custkey */ orders.1[i]))
         .filter(|&i| /* orderdate */ orders.4[i] < _19950315)
-        .fold(HashMap::new, |mut acc, i| {
-            acc[&/* orderkey */ orders.0[i]] += Record::new((
-                /* orderdate */ orders.4[i],
-                /* shippriority */ orders.7[i],
-            ));
-            acc
+        .map(|i| {
+            (
+                /* orderkey */ orders.0[i],
+                Record::new((
+                    /* orderdate */ orders.4[i],
+                    /* shippriority */ orders.7[i],
+                )),
+            )
         })
-        .sum();
-    // TODO this is way faster (for parallel, not for sequential) - we can do it since key is unique
-    // .map(|i| {
-    //     (
-    //         /* orderkey */ orders.0[i],
-    //         Record::new((
-    //             /* orderdate */ orders.4[i],
-    //             /* shippriority */ orders.7[i],
-    //         )),
-    //     )
-    // })
-    // .collect();
+        .collect();
 
     let l_h: HashMap<Record<(i32, Date, i32)>, OrderedFloat<f64>> = (0../* size */ lineitem.16)
         .into_par_iter()
