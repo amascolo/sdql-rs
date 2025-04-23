@@ -395,6 +395,30 @@ impl From<ExprFMF<'_>> for TokenStream {
                     Some(r#else) => quote! { if #r#if { #then } else { #r#else } },
                 }
             }
+            ExprFMF::Unique { expr } => {
+                let ExprFMF::FMF {
+                    op: OpFMF::Fold,
+                    args,
+                    inner,
+                    cont: None,
+                } = *expr.val.0
+                else {
+                    unreachable!()
+                };
+                let args = gen_args(args);
+                let (lhs, rhs) = split(inner.map(Spanned::unboxed));
+                let [lhs]: [_; _] = lhs.try_into().unwrap();
+                let lhs: TokenStream = lhs.val.0.into();
+                let rhs: TokenStream = rhs.val.0.into();
+                quote! {
+                    .map(|#args| {
+                        (
+                            #lhs,
+                            #rhs,
+                        )
+                    }).collect()
+                }
+            }
             ExprFMF::External {
                 func: External::StrContains,
                 args,
@@ -508,7 +532,6 @@ impl From<ExprFMF<'_>> for TokenStream {
             }
             #[allow(unreachable_patterns)] // handy if you are adding more
             ExprFMF::External { func, args: _ } => todo!("{func}"),
-            ExprFMF::Unique { expr } => expr.into(), // TODO
             t => todo!("{t:?}"),
         }
     }
