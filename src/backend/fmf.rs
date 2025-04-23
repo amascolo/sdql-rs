@@ -6,7 +6,6 @@ use im_rc::vector;
 use sdql_runtime::Date;
 use std::fmt;
 
-#[allow(dead_code)] // TODO remove after using External
 #[derive(Clone, Debug, PartialEq)]
 pub enum ExprFMF<'src> {
     Sym {
@@ -709,13 +708,13 @@ mod tests {
     }
 
     // FIXME entered unreachable code
-    // #[test]
-    // fn tpch_q13() {
-    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/13.sdql"));
-    //     let typed = Typed::from(sdql!(src));
-    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
-    //     assert_eq!(Typed::from(fmf), typed);
-    // }
+    #[test]
+    fn tpch_q13() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/13.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
 
     #[test]
     fn tpch_q14() {
