@@ -179,8 +179,7 @@ fn from<'src>(
     ctx: &Ctx<'src>,
 ) -> Typed<'src, Spanned<ExprFMF<'src>>> {
     let r#type = expr.r#type.clone(); // TODO avoid clone
-    let span = expr.val.1;
-    expr.map(|spanned| {
+    expr.map(|spanned @ Spanned(_, span)| {
         spanned.map(|expr| {
             match expr {
                 TypedExpr::Sum {
