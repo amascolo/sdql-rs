@@ -13,11 +13,11 @@ pub fn q3_rayon(sf: &str) -> Result<TypeQ3, Box<dyn Error>> {
 }
 
 pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ3 {
-    let c_h: HashMap<i32, i32> = (0../* size */ customer.8)
+    let c_h: HashMap<i32, Record<(i32,)>> = (0../* size */ customer.8)
         .into_par_iter()
         .filter(|&i| /* mktsegment */ customer.6[i] == VarChar::from("BUILDING").unwrap())
         .fold(HashMap::new, |mut acc, i| {
-            acc[/* custkey */ &customer.0[i]] += /* custkey */ customer.0[i];
+            acc[/* custkey */ &customer.0[i]] += Record::new((/* custkey */ customer.0[i],));
             acc
         })
         .sum();
@@ -25,10 +25,10 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
     // .map(|i| {
     //     (
     //         /* custkey */ customer.0[i],
-    //         /* custkey */ customer.0[i],
+    //         Record::new((/* custkey */ customer.0[i],)),
     //     )
     // })
-    //     .collect();
+    // .collect();
 
     let o_h: HashMap<i32, Record<(Date, i32)>> = (0../* size */ orders.9)
         .into_par_iter()
