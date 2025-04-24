@@ -43,12 +43,15 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
         .into_par_iter()
         .filter(|&i| /* shipdate */ lineitem.10[i] > _19950315)
         .filter(|&i| o_h.contains_key(&/* orderkey */ lineitem.0[i]))
-        .fold(HashMap::new, |mut acc, i| {
+        .fold(HashMap::default, |mut acc, i| {
             acc[&Record::new((
-                    /* orderkey */ lineitem.0[i],
-                    o_h[&/* orderkey */ lineitem.0[i]].0,
-                    o_h[&/* orderkey */ lineitem.0[i]].1,
-                ))] += Record::new((/* extendedprice */ lineitem.5[i] * (OrderedFloat(1.0) - /* discount */ lineitem.6[i]),));
+                /* orderkey */ lineitem.0[i],
+                o_h[&/* orderkey */ lineitem.0[i]].0,
+                o_h[&/* orderkey */ lineitem.0[i]].1,
+            ))] += Record::new((
+                /* extendedprice */
+                lineitem.5[i] * (OrderedFloat(1.0) - /* discount */ lineitem.6[i]),
+            ));
             acc
         })
         .sum();
