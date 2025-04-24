@@ -6,6 +6,7 @@ use crate::ir::r#type::{DictHint, Type};
 use itertools::Itertools;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
+use std::assert_matches::debug_assert_matches;
 use syn::{
     parse2, parse_quote, Error, ExprBinary, ExprField, ExprRange, Index, LitInt, Member,
     RangeLimits,
@@ -110,7 +111,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                     .collect();
                 let load = try_gen_load(&tables).unwrap();
                 let tks = quote! { #load(#path).unwrap() };
-                debug_assert!(matches!(parse2(tks.clone()), Ok(syn::Expr::MethodCall(_))));
+                debug_assert_matches!(parse2(tks.clone()), Ok(syn::Expr::MethodCall(_)));
                 tks
             }
             ExprFMF::Sum {

@@ -4,6 +4,7 @@ use crate::ir::expr::{BinOp, DictEntry, External, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, Field, Type};
 use im_rc::vector;
 use sdql_runtime::Date;
+use std::assert_matches::debug_assert_matches;
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -545,13 +546,13 @@ impl<'src> From<ExprFMF<'src>> for TypedExpr<'src> {
                 *inner.val.0
             }
             ExprFMF::Unique { expr } => {
-                debug_assert!(matches!(
+                debug_assert_matches!(
                     *expr.val.0,
                     ExprFMF::FMF {
                         op: OpFMF::Fold,
                         ..
                     }
-                ));
+                );
                 let Typed { val, r#type } = expr;
                 let Spanned(val, span) = val;
                 let TypedExpr::Dict { map, hint } = TypedExpr::from(*val) else {
