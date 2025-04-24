@@ -35,10 +35,8 @@ impl<'src> From<Typed<'src, Spanned<ExprFMF<'src>>>> for String {
     }
 }
 
-impl<'src> From<Typed<'src, Spanned<ExprFMF<'src>>>> for TokenStream {
-    fn from(expr: Typed<'src, Spanned<ExprFMF<'src>>>) -> Self {
-        ExprFMF::from(expr).into()
-    }
+fn ts_gen<'src, const PARALLEL: bool>(expr: Typed<'src, Spanned<ExprFMF<'src>>>) -> TokenStream {
+    ExprFMF::from(expr).into()
 }
 
 fn boxed_ts_gen<'src, const PARALLEL: bool>(
@@ -352,7 +350,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let (lhs, rhs) = split(inner);
                 let lhs: TokenStream = lhs
                     .into_iter()
-                    .map(TokenStream::from)
+                    .map(ts_gen::<false>)
                     .zip_eq(hints)
                     .map(|(ts, hint)| match hint {
                         Some(DictHint::SmallVecDict { .. } | DictHint::VecDict { .. }) => {
@@ -363,7 +361,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                     })
                     .flatten()
                     .collect();
-                let rhs: TokenStream = rhs.into();
+                let rhs = ts_gen::<false>(rhs);
                 quote! {
                     .fold(#init, |mut acc, #args| {
                         acc #lhs += #rhs;
@@ -372,14 +370,14 @@ impl From<ExprFMF<'_>> for TokenStream {
                 }
             }
             ExprFMF::Record { vals } => {
-                let vals = vals.into_iter().map(|rv| TokenStream::from(rv.val));
+                let vals = vals.into_iter().map(|rv| ts_gen::<false>(rv.val));
                 quote! { Record::new((#(#vals),*,)) }
             }
             ExprFMF::Dict { map, hint } if map.len() == 1 => {
                 let [entry]: [_; 1] = map.try_into().unwrap();
                 let r#type = to_type(hint);
-                let key: TokenStream = entry.key.into();
-                let val: TokenStream = entry.val.into();
+                let key = ts_gen::<false>(entry.key);
+                let val = ts_gen::<false>(entry.val);
                 quote! { #r#type::from([(#key, #val)]) }
             }
             ExprFMF::Dom { .. } => unimplemented!(),
@@ -388,9 +386,9 @@ impl From<ExprFMF<'_>> for TokenStream {
                 let then: Typed<Spanned<ExprFMF>> = then.map(Spanned::unboxed);
                 let r#else: Option<Typed<Spanned<ExprFMF>>> =
                     r#else.map(|r#else| r#else.map(Spanned::unboxed));
-                let r#if: TokenStream = r#if.into();
-                let then: TokenStream = then.into();
-                let r#else: Option<TokenStream> = r#else.map(|r#else| r#else.into());
+                let r#if = ts_gen::<false>(r#if);
+                let then = ts_gen::<false>(then);
+                let r#else = r#else.map(ts_gen::<false>);
                 match r#else {
                     None => quote! { if #r#if { #then } },
                     Some(r#else) => quote! { if #r#if { #then } else { #r#else } },
@@ -425,7 +423,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 args,
             } => {
                 let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-                let arg0: TokenStream = arg0.clone().into();
+                let arg0 = ts_gen::<false>(arg0.clone());
                 let Typed {
                     val: Spanned(ExprFMF::String { val, max_len: _ }, _),
                     r#type: _,
@@ -440,7 +438,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 args,
             } => {
                 let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-                let arg0: TokenStream = arg0.clone().into();
+                let arg0 = ts_gen::<false>(arg0.clone());
                 let Typed {
                     val: Spanned(ExprFMF::String { val, max_len: _ }, _),
                     r#type: _,
@@ -455,7 +453,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 args,
             } => {
                 let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-                let arg0: TokenStream = arg0.into();
+                let arg0 = ts_gen::<false>(arg0);
                 let Typed {
                     val: Spanned(ExprFMF::String { val, max_len: _ }, _),
                     r#type: _,
@@ -470,7 +468,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 args,
             } => {
                 let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-                let arg0: TokenStream = arg0.clone().into();
+                let arg0 = ts_gen::<false>(arg0.clone());
                 let Typed {
                     val: Spanned(ExprFMF::String { val, max_len: _ }, _),
                     r#type: _,
@@ -485,7 +483,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 args,
             } => {
                 let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-                let arg0: TokenStream = arg0.into();
+                let arg0 = ts_gen::<false>(arg0);
                 let Typed {
                     val: Spanned(ExprFMF::String { val, max_len: _ }, _),
                     r#type: _,
@@ -500,7 +498,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 args,
             } => {
                 let [string, start, end]: [_; _] = args.try_into().unwrap();
-                let string: TokenStream = string.into();
+                let string = ts_gen::<false>(string);
                 let start: usize = match start.val.0 {
                     ExprFMF::Int { val } => val.try_into(),
                     ExprFMF::Long { val } => val.try_into(),
@@ -520,7 +518,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 args,
             } => {
                 let [arg]: [_; _] = args.try_into().unwrap();
-                let arg: TokenStream = arg.clone().into();
+                let arg = ts_gen::<false>(arg.clone());
                 quote! { #arg.len() as i32 }
             }
             ExprFMF::External {
@@ -528,7 +526,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 args,
             } => {
                 let [arg]: [_; _] = args.try_into().unwrap();
-                let arg: TokenStream = arg.clone().into();
+                let arg = ts_gen::<false>(arg.clone());
                 quote! { #arg.year() }
             }
             #[allow(unreachable_patterns)] // handy if you are adding more
