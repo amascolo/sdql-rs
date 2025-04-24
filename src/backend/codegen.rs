@@ -17,7 +17,7 @@ impl<'src> From<Typed<'src, Spanned<ExprFMF<'src>>>> for String {
         let Typed { val, ref r#type } = expr;
         let r#type: syn::Type = r#type.into();
         let Spanned(expr, _span) = val;
-        let tks: TokenStream = expr.into();
+        let tks = ts::<false>(expr);
         let main_tks = quote! {
             #![feature(stmt_expr_attributes)]
             #![allow(unused_variables)]
@@ -36,248 +36,286 @@ impl<'src> From<Typed<'src, Spanned<ExprFMF<'src>>>> for String {
 }
 
 fn ts_gen<'src, const PARALLEL: bool>(expr: Typed<'src, Spanned<ExprFMF<'src>>>) -> TokenStream {
-    ExprFMF::from(expr).into()
+    ts::<PARALLEL>(ExprFMF::from(expr))
 }
 
 fn boxed_ts_gen<'src, const PARALLEL: bool>(
     expr: Typed<'src, Spanned<Box<ExprFMF<'src>>>>,
 ) -> TokenStream {
-    ExprFMF::from(expr.map(Spanned::unboxed)).into()
+    ts::<PARALLEL>(ExprFMF::from(expr.map(Spanned::unboxed)))
 }
 
-impl From<ExprFMF<'_>> for TokenStream {
-    fn from(expr: ExprFMF<'_>) -> Self {
-        match expr {
-            ExprFMF::Sym { val } => {
-                let ident = Ident::new(val, Span::call_site());
-                quote!(#ident)
+fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
+    match expr {
+        ExprFMF::Sym { val } => {
+            let ident = Ident::new(val, Span::call_site());
+            quote!(#ident)
+        }
+        ExprFMF::Bool { val } => {
+            let val = if val { "TRUE" } else { "FALSE" };
+            let ident = Ident::new(val, Span::call_site());
+            quote!(#ident)
+        }
+        ExprFMF::Date { val } => format!(
+            "date!({:04}{:02}{:02})",
+            val.0.year(),
+            val.0.month() as u8,
+            val.0.day()
+        )
+        .parse()
+        .unwrap(),
+        ExprFMF::Int { val } => quote! { #val },
+        ExprFMF::Long { val } => quote! { #val },
+        ExprFMF::Real { val } => quote! { OrderedFloat(#val) },
+        ExprFMF::String { val, max_len } => {
+            let suffixed = match max_len {
+                None => quote! { VarChar },
+                Some(max_len) => quote! { VarChar::<#max_len> },
+            };
+            quote! { #suffixed::from_str(#val).unwrap() }
+        }
+        ExprFMF::Let { lhs, rhs, cont } => {
+            let lhs_ident = Ident::new(lhs, Span::call_site());
+            let mut lhs_tks = quote! { #lhs_ident };
+            // TODO remove special case for load
+            if !matches!(*rhs.val.0, ExprFMF::Load { .. }) {
+                let rhs_type: syn::Type = (&rhs.r#type).into();
+                lhs_tks = quote! { #lhs_tks: #rhs_type }
             }
-            ExprFMF::Bool { val } => {
-                let val = if val { "TRUE" } else { "FALSE" };
-                let ident = Ident::new(val, Span::call_site());
-                quote!(#ident)
-            }
-            ExprFMF::Date { val } => format!(
-                "date!({:04}{:02}{:02})",
-                val.0.year(),
-                val.0.month() as u8,
-                val.0.day()
-            )
-            .parse()
-            .unwrap(),
-            ExprFMF::Int { val } => quote! { #val },
-            ExprFMF::Long { val } => quote! { #val },
-            ExprFMF::Real { val } => quote! { OrderedFloat(#val) },
-            ExprFMF::String { val, max_len } => {
-                let suffixed = match max_len {
-                    None => quote! { VarChar },
-                    Some(max_len) => quote! { VarChar::<#max_len> },
-                };
-                quote! { #suffixed::from_str(#val).unwrap() }
-            }
-            ExprFMF::Let { lhs, rhs, cont } => {
-                let lhs_ident = Ident::new(lhs, Span::call_site());
-                let mut lhs_tks = quote! { #lhs_ident };
-                // TODO remove special case for load
-                if !matches!(*rhs.val.0, ExprFMF::Load { .. }) {
-                    let rhs_type: syn::Type = (&rhs.r#type).into();
-                    lhs_tks = quote! { #lhs_tks: #rhs_type }
-                }
-                let rhs_tks = boxed_ts_gen::<false>(rhs);
-                let let_tks = quote! { let #lhs_tks = #rhs_tks };
-                let cont_tks = boxed_ts_gen::<false>(cont);
-                quote! { #let_tks;  #cont_tks }
-            }
-            ExprFMF::Load { r#type, path } => {
-                let Type::Record(vals) = r#type else {
-                    unreachable!()
-                };
-                let tables: Vec<_> = vals
-                    .into_iter()
-                    .filter(|rt| rt.name != "size".into())
-                    .map(|val| {
-                        let r#type = match val.r#type {
-                            Type::Dict {
-                                key,
-                                val,
-                                hint: Some(DictHint::Vec { capacity: None }),
-                            } if matches!(*key, Type::Int) => *val,
-                            _ => unreachable!(),
-                        };
-                        (val.name.into(), (&r#type).into())
-                    })
-                    .collect();
-                let load = try_gen_load(&tables).unwrap();
-                let tks = quote! { #load(#path).unwrap() };
-                debug_assert_matches!(parse2(tks.clone()), Ok(syn::Expr::MethodCall(_)));
-                tks
-            }
-            ExprFMF::Sum {
-                key: _,
-                val: "_",
-                head:
-                    Typed {
-                        val: Spanned(range, _span),
-                        r#type: _,
-                    },
-                body,
-            } if matches!(*range, ExprFMF::Range { .. }) => {
-                let ExprFMF::Range { expr } = *range else {
-                    unreachable!()
-                };
-                let expr = ExprFMF::from(expr.map(Spanned::unboxed));
-                let expr: syn::Expr = parse2(expr.into()).unwrap();
-                let expr = gen_range(expr);
-                let body = ExprFMF::from(body.map(Spanned::unboxed));
-                let body: TokenStream = body.into();
-                quote! { (#expr)#body }
-            }
-            ExprFMF::Sum {
-                key: _,
-                val: _,
+            let rhs_tks = boxed_ts_gen::<false>(rhs);
+            let let_tks = quote! { let #lhs_tks = #rhs_tks };
+            let cont_tks = boxed_ts_gen::<false>(cont);
+            quote! { #let_tks;  #cont_tks }
+        }
+        ExprFMF::Load { r#type, path } => {
+            let Type::Record(vals) = r#type else {
+                unreachable!()
+            };
+            let tables: Vec<_> = vals
+                .into_iter()
+                .filter(|rt| rt.name != "size".into())
+                .map(|val| {
+                    let r#type = match val.r#type {
+                        Type::Dict {
+                            key,
+                            val,
+                            hint: Some(DictHint::Vec { capacity: None }),
+                        } if matches!(*key, Type::Int) => *val,
+                        _ => unreachable!(),
+                    };
+                    (val.name.into(), (&r#type).into())
+                })
+                .collect();
+            let load = try_gen_load(&tables).unwrap();
+            let tks = quote! { #load(#path).unwrap() };
+            debug_assert_matches!(parse2(tks.clone()), Ok(syn::Expr::MethodCall(_)));
+            tks
+        }
+        ExprFMF::Sum {
+            key: _,
+            val: "_",
+            head:
+                Typed {
+                    val: Spanned(range, _span),
+                    r#type: _,
+                },
+            body,
+        } if matches!(*range, ExprFMF::Range { .. }) => {
+            let ExprFMF::Range { expr } = *range else {
+                unreachable!()
+            };
+            let expr = ExprFMF::from(expr.map(Spanned::unboxed));
+            let expr: syn::Expr = parse2(ts::<PARALLEL>(expr)).unwrap();
+            let expr = gen_range(expr);
+            let body = ExprFMF::from(body.map(Spanned::unboxed));
+            let body = ts::<false>(body);
+            quote! { (#expr)#body }
+        }
+        ExprFMF::Sum {
+            key: _,
+            val: _,
+            head,
+            body,
+        } => {
+            let head = boxed_ts_gen::<false>(head);
+            let body = boxed_ts_gen::<false>(body);
+            quote! { #head.iter()#body }
+        }
+        ExprFMF::Concat { lhs, rhs } => {
+            let lhs_len = match lhs.r#type {
+                Type::Record(ref vals) => vals.len(),
+                _ => panic!(),
+            };
+            let rhs_len = match rhs.r#type {
+                Type::Record(ref vals) => vals.len(),
+                _ => panic!(),
+            };
+            let lhs = boxed_ts_gen::<false>(lhs);
+            let rhs = boxed_ts_gen::<false>(rhs);
+            let lhs = (0..lhs_len).map(Index::from).map(|i| quote! { #lhs.#i });
+            let rhs = (0..rhs_len).map(Index::from).map(|i| quote! { #rhs.#i });
+            quote! { Record::new((#(#lhs),*, #(#rhs),*)) }
+        }
+        ExprFMF::FMF {
+            op: OpFMF::Filter,
+            args: _,
+            inner: _,
+            cont: None,
+        } => unimplemented!(),
+        ExprFMF::FMF {
+            op: OpFMF::Filter,
+            args,
+            inner,
+            cont: Some(cont),
+        } => {
+            let inner = boxed_ts_gen::<false>(inner);
+            let cont = ExprFMF::from(cont.map(Spanned::unboxed));
+            let cont = ts::<false>(cont);
+            let args = gen_args(args);
+            quote! {.filter(|&#args| #inner)#cont}
+        }
+        ExprFMF::FMF {
+            op: OpFMF::FlatMap,
+            args,
+            inner,
+            cont: None,
+        } => {
+            let ExprFMF::Sum {
+                key,
+                val,
                 head,
                 body,
-            } => {
-                let head = boxed_ts_gen::<false>(head);
-                let body = boxed_ts_gen::<false>(body);
-                quote! { #head.iter()#body }
-            }
-            ExprFMF::Concat { lhs, rhs } => {
-                let lhs_len = match lhs.r#type {
-                    Type::Record(ref vals) => vals.len(),
-                    _ => panic!(),
-                };
-                let rhs_len = match rhs.r#type {
-                    Type::Record(ref vals) => vals.len(),
-                    _ => panic!(),
-                };
-                let lhs = boxed_ts_gen::<false>(lhs);
-                let rhs = boxed_ts_gen::<false>(rhs);
-                let lhs = (0..lhs_len).map(Index::from).map(|i| quote! { #lhs.#i });
-                let rhs = (0..rhs_len).map(Index::from).map(|i| quote! { #rhs.#i });
-                quote! { Record::new((#(#lhs),*, #(#rhs),*)) }
-            }
-            ExprFMF::FMF {
-                op: OpFMF::Filter,
-                args: _,
-                inner: _,
-                cont: None,
-            } => unimplemented!(),
-            ExprFMF::FMF {
-                op: OpFMF::Filter,
-                args,
-                inner,
-                cont: Some(cont),
-            } => {
-                let inner = boxed_ts_gen::<false>(inner);
-                let cont = ExprFMF::from(cont.map(Spanned::unboxed));
-                let cont: TokenStream = cont.into();
-                let args = gen_args(args);
-                quote! {.filter(|&#args| #inner)#cont}
-            }
-            ExprFMF::FMF {
-                op: OpFMF::FlatMap,
-                args,
-                inner,
-                cont: None,
-            } => {
-                let ExprFMF::Sum {
-                    key,
-                    val,
-                    head,
-                    body,
-                } = *inner.val.0
-                else {
-                    unreachable!()
-                };
-                let key = Ident::new(key, Span::call_site());
-                let val = Ident::new(val, Span::call_site());
-                let args: Vec<_> = args
+            } = *inner.val.0
+            else {
+                unreachable!()
+            };
+            let key = Ident::new(key, Span::call_site());
+            let val = Ident::new(val, Span::call_site());
+            let args: Vec<_> = args
+                .iter()
+                .map(|name| Ident::new(name, Span::call_site()))
+                .collect();
+            let head = boxed_ts_gen::<false>(head);
+            let body = boxed_ts_gen::<false>(body);
+            let fn_args = if args.len() > 1 {
+                quote! { (#(#args),*) }
+            } else {
+                quote! { #(#args),* }
+            };
+            quote! {
+                .flat_map(|#fn_args| {
+                    #head
                     .iter()
-                    .map(|name| Ident::new(name, Span::call_site()))
-                    .collect();
-                let head = boxed_ts_gen::<false>(head);
-                let body = boxed_ts_gen::<false>(body);
-                let fn_args = if args.len() > 1 {
-                    quote! { (#(#args),*) }
-                } else {
-                    quote! { #(#args),* }
-                };
-                quote! {
-                    .flat_map(|#fn_args| {
-                        #head
-                        .iter()
-                        .map(move |(#key, #val)| (#(#args),*, #key, #val) )
-                    })#body
-                }
+                    .map(move |(#key, #val)| (#(#args),*, #key, #val) )
+                })#body
             }
-            ExprFMF::FMF {
-                op: OpFMF::Map,
-                args,
-                inner,
-                cont: None,
-            } => {
-                let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
-                let fn_args = if args.len() > 1 {
-                    quote! { (#(#args),*) }
-                } else {
-                    quote! { #(#args),* }
-                };
-                let r#type: syn::Type = (&inner.r#type).into();
-                let inner = boxed_ts_gen::<false>(inner);
-                quote! {.map(|#fn_args| #inner).sum::<#r#type>()}
-            }
-            ExprFMF::FMF {
-                op: OpFMF::Map,
-                args,
-                inner,
-                cont: Some(cont),
-            } => {
-                let args: Vec<_> = args
-                    .iter()
-                    .map(|name| Ident::new(name, Span::call_site()))
-                    .collect();
-                let fn_args = if args.len() > 1 {
-                    quote! { (#(#args),*) }
-                } else {
-                    quote! { #(#args),* }
-                };
-                let inner = boxed_ts_gen::<false>(inner);
-                let cont = boxed_ts_gen::<false>(cont);
-                quote! {.map(|#fn_args| (#(#args),*, #inner))#cont}
-            }
-            ExprFMF::Unary {
-                op: UnaryOp::Neg,
-                expr,
-            } => {
-                let expr = boxed_ts_gen::<false>(expr);
-                quote! { -#expr }
-            }
-            ExprFMF::Unary {
-                op: UnaryOp::Not,
-                expr,
-            } => {
-                let expr = boxed_ts_gen::<false>(expr);
-                quote! { !#expr }
-            }
-            ExprFMF::Binary { lhs, op, rhs } => {
-                let lhs = parse2(boxed_ts_gen::<false>(lhs)).unwrap();
-                let rhs = parse2(boxed_ts_gen::<false>(rhs)).unwrap();
-                let expr = syn::Expr::Binary(ExprBinary {
+        }
+        ExprFMF::FMF {
+            op: OpFMF::Map,
+            args,
+            inner,
+            cont: None,
+        } => {
+            let args = args.iter().map(|name| Ident::new(name, Span::call_site()));
+            let fn_args = if args.len() > 1 {
+                quote! { (#(#args),*) }
+            } else {
+                quote! { #(#args),* }
+            };
+            let r#type: syn::Type = (&inner.r#type).into();
+            let inner = boxed_ts_gen::<false>(inner);
+            quote! {.map(|#fn_args| #inner).sum::<#r#type>()}
+        }
+        ExprFMF::FMF {
+            op: OpFMF::Map,
+            args,
+            inner,
+            cont: Some(cont),
+        } => {
+            let args: Vec<_> = args
+                .iter()
+                .map(|name| Ident::new(name, Span::call_site()))
+                .collect();
+            let fn_args = if args.len() > 1 {
+                quote! { (#(#args),*) }
+            } else {
+                quote! { #(#args),* }
+            };
+            let inner = boxed_ts_gen::<false>(inner);
+            let cont = boxed_ts_gen::<false>(cont);
+            quote! {.map(|#fn_args| (#(#args),*, #inner))#cont}
+        }
+        ExprFMF::Unary {
+            op: UnaryOp::Neg,
+            expr,
+        } => {
+            let expr = boxed_ts_gen::<false>(expr);
+            quote! { -#expr }
+        }
+        ExprFMF::Unary {
+            op: UnaryOp::Not,
+            expr,
+        } => {
+            let expr = boxed_ts_gen::<false>(expr);
+            quote! { !#expr }
+        }
+        ExprFMF::Binary { lhs, op, rhs } => {
+            let lhs = parse2(boxed_ts_gen::<false>(lhs)).unwrap();
+            let rhs = parse2(boxed_ts_gen::<false>(rhs)).unwrap();
+            let expr = syn::Expr::Binary(ExprBinary {
+                attrs: vec![],
+                left: Box::new(lhs),
+                op: op.into(),
+                right: Box::new(rhs),
+            });
+            quote! { #expr }
+        }
+        ExprFMF::Field { expr, field } => match expr.r#type {
+            Type::Record(ref vals) => {
+                let index = vals.iter().position(|rt| rt.name == field).unwrap();
+                let index = index.try_into().unwrap();
+                let field = syn::Expr::Field(ExprField {
                     attrs: vec![],
-                    left: Box::new(lhs),
-                    op: op.into(),
-                    right: Box::new(rhs),
+                    base: Box::new(parse2(boxed_ts_gen::<false>(expr)).unwrap()),
+                    dot_token: Default::default(),
+                    member: Member::Unnamed(Index {
+                        index,
+                        span: Span::call_site(),
+                    }),
                 });
-                quote! { #expr }
+                quote! { #field }
             }
-            ExprFMF::Field { expr, field } => match expr.r#type {
-                Type::Record(ref vals) => {
-                    let index = vals.iter().position(|rt| rt.name == field).unwrap();
-                    let index = index.try_into().unwrap();
+            _ => panic!(),
+        },
+        ExprFMF::Get {
+            lhs:
+                Typed {
+                    val: Spanned(val, _),
+                    r#type: _,
+                },
+            rhs,
+        } if matches!(*val, ExprFMF::Dom { .. }) => {
+            let ExprFMF::Dom { expr } = *val else {
+                unreachable!()
+            };
+            let hint = match &expr.r#type {
+                Type::Dict { hint, .. } => hint.clone(),
+                _ => panic!(),
+            };
+            let lhs = boxed_ts_gen::<false>(expr);
+            let rhs = boxed_ts_gen::<false>(rhs);
+            match hint {
+                Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs as usize] != 0 },
+                _ => quote! { #lhs.contains_key(&#rhs) },
+            }
+        }
+        ExprFMF::Get { lhs, rhs } => match lhs.r#type {
+            Type::Record(_) => match *rhs.val.0 {
+                ExprFMF::Int { val } => {
+                    let index = val.try_into().unwrap();
                     let field = syn::Expr::Field(ExprField {
                         attrs: vec![],
-                        base: Box::new(parse2(boxed_ts_gen::<false>(expr)).unwrap()),
+                        base: Box::new(parse2(boxed_ts_gen::<false>(lhs)).unwrap()),
                         dot_token: Default::default(),
                         member: Member::Unnamed(Index {
                             index,
@@ -286,253 +324,213 @@ impl From<ExprFMF<'_>> for TokenStream {
                     });
                     quote! { #field }
                 }
-                _ => panic!(),
+                _ => unimplemented!(),
             },
-            ExprFMF::Get {
-                lhs:
-                    Typed {
-                        val: Spanned(val, _),
-                        r#type: _,
-                    },
-                rhs,
-            } if matches!(*val, ExprFMF::Dom { .. }) => {
-                let ExprFMF::Dom { expr } = *val else {
-                    unreachable!()
-                };
-                let hint = match &expr.r#type {
-                    Type::Dict { hint, .. } => hint.clone(),
-                    _ => panic!(),
-                };
-                let lhs = boxed_ts_gen::<false>(expr);
+            Type::Dict { hint, .. } => {
+                let lhs = boxed_ts_gen::<false>(lhs);
                 let rhs = boxed_ts_gen::<false>(rhs);
                 match hint {
-                    Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs as usize] != 0 },
-                    _ => quote! { #lhs.contains_key(&#rhs) },
+                    Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs as usize] },
+                    _ => quote! { #lhs[&#rhs] },
                 }
             }
-            ExprFMF::Get { lhs, rhs } => match lhs.r#type {
-                Type::Record(_) => match *rhs.val.0 {
-                    ExprFMF::Int { val } => {
-                        let index = val.try_into().unwrap();
-                        let field = syn::Expr::Field(ExprField {
-                            attrs: vec![],
-                            base: Box::new(parse2(boxed_ts_gen::<false>(lhs)).unwrap()),
-                            dot_token: Default::default(),
-                            member: Member::Unnamed(Index {
-                                index,
-                                span: Span::call_site(),
-                            }),
-                        });
-                        quote! { #field }
+            _ => panic!(),
+        },
+        ExprFMF::FMF {
+            op: OpFMF::Fold,
+            args,
+            inner,
+            cont: None,
+        } => {
+            let init = initialise(&inner.r#type);
+            let args = gen_args(args);
+            let inner = inner.map(Spanned::unboxed);
+            let hints = hints(&inner);
+            let (lhs, rhs) = split(inner);
+            let lhs: TokenStream = lhs
+                .into_iter()
+                .map(ts_gen::<false>)
+                .zip_eq(hints)
+                .map(|(ts, hint)| match hint {
+                    Some(DictHint::SmallVecDict { .. } | DictHint::VecDict { .. }) => {
+                        quote! { [#ts] }
                     }
-                    _ => unimplemented!(),
-                },
-                Type::Dict { hint, .. } => {
-                    let lhs = boxed_ts_gen::<false>(lhs);
-                    let rhs = boxed_ts_gen::<false>(rhs);
-                    match hint {
-                        Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs as usize] },
-                        _ => quote! { #lhs[&#rhs] },
-                    }
-                }
-                _ => panic!(),
-            },
-            ExprFMF::FMF {
+                    Some(DictHint::Vec { .. }) => quote! { [#ts as usize] },
+                    _ => quote! { [&#ts] },
+                })
+                .flatten()
+                .collect();
+            let rhs = ts_gen::<false>(rhs);
+            quote! {
+                .fold(#init, |mut acc, #args| {
+                    acc #lhs += #rhs;
+                    acc
+                })
+            }
+        }
+        ExprFMF::Record { vals } => {
+            let vals = vals.into_iter().map(|rv| ts_gen::<false>(rv.val));
+            quote! { Record::new((#(#vals),*,)) }
+        }
+        ExprFMF::Dict { map, hint } if map.len() == 1 => {
+            let [entry]: [_; 1] = map.try_into().unwrap();
+            let r#type = to_type(hint);
+            let key = ts_gen::<false>(entry.key);
+            let val = ts_gen::<false>(entry.val);
+            quote! { #r#type::from([(#key, #val)]) }
+        }
+        ExprFMF::Dom { .. } => unimplemented!(),
+        ExprFMF::If { r#if, then, r#else } => {
+            let r#if: Typed<Spanned<ExprFMF>> = r#if.map(Spanned::unboxed);
+            let then: Typed<Spanned<ExprFMF>> = then.map(Spanned::unboxed);
+            let r#else: Option<Typed<Spanned<ExprFMF>>> =
+                r#else.map(|r#else| r#else.map(Spanned::unboxed));
+            let r#if = ts_gen::<false>(r#if);
+            let then = ts_gen::<false>(then);
+            let r#else = r#else.map(ts_gen::<false>);
+            match r#else {
+                None => quote! { if #r#if { #then } },
+                Some(r#else) => quote! { if #r#if { #then } else { #r#else } },
+            }
+        }
+        ExprFMF::Unique { expr } => {
+            let ExprFMF::FMF {
                 op: OpFMF::Fold,
                 args,
                 inner,
                 cont: None,
-            } => {
-                let init = initialise(&inner.r#type);
-                let args = gen_args(args);
-                let inner = inner.map(Spanned::unboxed);
-                let hints = hints(&inner);
-                let (lhs, rhs) = split(inner);
-                let lhs: TokenStream = lhs
-                    .into_iter()
-                    .map(ts_gen::<false>)
-                    .zip_eq(hints)
-                    .map(|(ts, hint)| match hint {
-                        Some(DictHint::SmallVecDict { .. } | DictHint::VecDict { .. }) => {
-                            quote! { [#ts] }
-                        }
-                        Some(DictHint::Vec { .. }) => quote! { [#ts as usize] },
-                        _ => quote! { [&#ts] },
-                    })
-                    .flatten()
-                    .collect();
-                let rhs = ts_gen::<false>(rhs);
-                quote! {
-                    .fold(#init, |mut acc, #args| {
-                        acc #lhs += #rhs;
-                        acc
-                    })
-                }
+            } = *expr.val.0
+            else {
+                unreachable!()
+            };
+            let args = gen_args(args);
+            let (lhs, rhs) = split(inner.map(Spanned::unboxed));
+            let [lhs]: [_; _] = lhs.try_into().unwrap();
+            let lhs = ts::<false>(lhs.val.0);
+            let rhs = ts::<false>(rhs.val.0);
+            quote! {
+                .map(|#args| {
+                    (
+                        #lhs,
+                        #rhs,
+                    )
+                }).collect()
             }
-            ExprFMF::Record { vals } => {
-                let vals = vals.into_iter().map(|rv| ts_gen::<false>(rv.val));
-                quote! { Record::new((#(#vals),*,)) }
-            }
-            ExprFMF::Dict { map, hint } if map.len() == 1 => {
-                let [entry]: [_; 1] = map.try_into().unwrap();
-                let r#type = to_type(hint);
-                let key = ts_gen::<false>(entry.key);
-                let val = ts_gen::<false>(entry.val);
-                quote! { #r#type::from([(#key, #val)]) }
-            }
-            ExprFMF::Dom { .. } => unimplemented!(),
-            ExprFMF::If { r#if, then, r#else } => {
-                let r#if: Typed<Spanned<ExprFMF>> = r#if.map(Spanned::unboxed);
-                let then: Typed<Spanned<ExprFMF>> = then.map(Spanned::unboxed);
-                let r#else: Option<Typed<Spanned<ExprFMF>>> =
-                    r#else.map(|r#else| r#else.map(Spanned::unboxed));
-                let r#if = ts_gen::<false>(r#if);
-                let then = ts_gen::<false>(then);
-                let r#else = r#else.map(ts_gen::<false>);
-                match r#else {
-                    None => quote! { if #r#if { #then } },
-                    Some(r#else) => quote! { if #r#if { #then } else { #r#else } },
-                }
-            }
-            ExprFMF::Unique { expr } => {
-                let ExprFMF::FMF {
-                    op: OpFMF::Fold,
-                    args,
-                    inner,
-                    cont: None,
-                } = *expr.val.0
-                else {
-                    unreachable!()
-                };
-                let args = gen_args(args);
-                let (lhs, rhs) = split(inner.map(Spanned::unboxed));
-                let [lhs]: [_; _] = lhs.try_into().unwrap();
-                let lhs: TokenStream = lhs.val.0.into();
-                let rhs: TokenStream = rhs.val.0.into();
-                quote! {
-                    .map(|#args| {
-                        (
-                            #lhs,
-                            #rhs,
-                        )
-                    }).collect()
-                }
-            }
-            ExprFMF::External {
-                func: External::StrContains,
-                args,
-            } => {
-                let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-                let arg0 = ts_gen::<false>(arg0.clone());
-                let Typed {
-                    val: Spanned(ExprFMF::String { val, max_len: _ }, _),
-                    r#type: _,
-                } = arg1
-                else {
-                    unreachable!()
-                };
-                quote! { #arg0.contains(&#val) }
-            }
-            ExprFMF::External {
-                func: External::StrStartsWith,
-                args,
-            } => {
-                let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-                let arg0 = ts_gen::<false>(arg0.clone());
-                let Typed {
-                    val: Spanned(ExprFMF::String { val, max_len: _ }, _),
-                    r#type: _,
-                } = arg1
-                else {
-                    unreachable!()
-                };
-                quote! { #arg0.starts_with(&#val) }
-            }
-            ExprFMF::External {
-                func: External::StrEndsWith,
-                args,
-            } => {
-                let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-                let arg0 = ts_gen::<false>(arg0);
-                let Typed {
-                    val: Spanned(ExprFMF::String { val, max_len: _ }, _),
-                    r#type: _,
-                } = arg1
-                else {
-                    unreachable!()
-                };
-                quote! { #arg0.ends_with(&#val) }
-            }
-            ExprFMF::External {
-                func: External::FirstIndex,
-                args,
-            } => {
-                let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-                let arg0 = ts_gen::<false>(arg0.clone());
-                let Typed {
-                    val: Spanned(ExprFMF::String { val, max_len: _ }, _),
-                    r#type: _,
-                } = arg1
-                else {
-                    unreachable!()
-                };
-                quote! { #arg0.find(&#val).map(|i| i as i32).unwrap_or(-1) }
-            }
-            ExprFMF::External {
-                func: External::LastIndex,
-                args,
-            } => {
-                let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-                let arg0 = ts_gen::<false>(arg0);
-                let Typed {
-                    val: Spanned(ExprFMF::String { val, max_len: _ }, _),
-                    r#type: _,
-                } = arg1
-                else {
-                    unreachable!()
-                };
-                quote! { #arg0.rfind(&#val).map(|i| i as i32).unwrap_or(-1) }
-            }
-            ExprFMF::External {
-                func: External::SubString,
-                args,
-            } => {
-                let [string, start, end]: [_; _] = args.try_into().unwrap();
-                let string = ts_gen::<false>(string);
-                let start: usize = match start.val.0 {
-                    ExprFMF::Int { val } => val.try_into(),
-                    ExprFMF::Long { val } => val.try_into(),
-                    _ => unimplemented!(),
-                }
-                .unwrap();
-                let end: usize = match end.val.0 {
-                    ExprFMF::Int { val } => val.try_into(),
-                    ExprFMF::Long { val } => val.try_into(),
-                    _ => unimplemented!(),
-                }
-                .unwrap();
-                quote! { VarChar::<{ #end - #start }>::from(&(#string)[#start..#end]).unwrap() }
-            }
-            ExprFMF::External {
-                func: External::Size,
-                args,
-            } => {
-                let [arg]: [_; _] = args.try_into().unwrap();
-                let arg = ts_gen::<false>(arg.clone());
-                quote! { #arg.len() as i32 }
-            }
-            ExprFMF::External {
-                func: External::Year,
-                args,
-            } => {
-                let [arg]: [_; _] = args.try_into().unwrap();
-                let arg = ts_gen::<false>(arg.clone());
-                quote! { #arg.year() }
-            }
-            #[allow(unreachable_patterns)] // handy if you are adding more
-            ExprFMF::External { func, args: _ } => todo!("{func}"),
-            t => todo!("{t:?}"),
         }
+        ExprFMF::External {
+            func: External::StrContains,
+            args,
+        } => {
+            let [arg0, arg1]: [_; _] = args.try_into().unwrap();
+            let arg0 = ts_gen::<false>(arg0.clone());
+            let Typed {
+                val: Spanned(ExprFMF::String { val, max_len: _ }, _),
+                r#type: _,
+            } = arg1
+            else {
+                unreachable!()
+            };
+            quote! { #arg0.contains(&#val) }
+        }
+        ExprFMF::External {
+            func: External::StrStartsWith,
+            args,
+        } => {
+            let [arg0, arg1]: [_; _] = args.try_into().unwrap();
+            let arg0 = ts_gen::<false>(arg0.clone());
+            let Typed {
+                val: Spanned(ExprFMF::String { val, max_len: _ }, _),
+                r#type: _,
+            } = arg1
+            else {
+                unreachable!()
+            };
+            quote! { #arg0.starts_with(&#val) }
+        }
+        ExprFMF::External {
+            func: External::StrEndsWith,
+            args,
+        } => {
+            let [arg0, arg1]: [_; _] = args.try_into().unwrap();
+            let arg0 = ts_gen::<false>(arg0);
+            let Typed {
+                val: Spanned(ExprFMF::String { val, max_len: _ }, _),
+                r#type: _,
+            } = arg1
+            else {
+                unreachable!()
+            };
+            quote! { #arg0.ends_with(&#val) }
+        }
+        ExprFMF::External {
+            func: External::FirstIndex,
+            args,
+        } => {
+            let [arg0, arg1]: [_; _] = args.try_into().unwrap();
+            let arg0 = ts_gen::<false>(arg0.clone());
+            let Typed {
+                val: Spanned(ExprFMF::String { val, max_len: _ }, _),
+                r#type: _,
+            } = arg1
+            else {
+                unreachable!()
+            };
+            quote! { #arg0.find(&#val).map(|i| i as i32).unwrap_or(-1) }
+        }
+        ExprFMF::External {
+            func: External::LastIndex,
+            args,
+        } => {
+            let [arg0, arg1]: [_; _] = args.try_into().unwrap();
+            let arg0 = ts_gen::<false>(arg0);
+            let Typed {
+                val: Spanned(ExprFMF::String { val, max_len: _ }, _),
+                r#type: _,
+            } = arg1
+            else {
+                unreachable!()
+            };
+            quote! { #arg0.rfind(&#val).map(|i| i as i32).unwrap_or(-1) }
+        }
+        ExprFMF::External {
+            func: External::SubString,
+            args,
+        } => {
+            let [string, start, end]: [_; _] = args.try_into().unwrap();
+            let string = ts_gen::<false>(string);
+            let start: usize = match start.val.0 {
+                ExprFMF::Int { val } => val.try_into(),
+                ExprFMF::Long { val } => val.try_into(),
+                _ => unimplemented!(),
+            }
+            .unwrap();
+            let end: usize = match end.val.0 {
+                ExprFMF::Int { val } => val.try_into(),
+                ExprFMF::Long { val } => val.try_into(),
+                _ => unimplemented!(),
+            }
+            .unwrap();
+            quote! { VarChar::<{ #end - #start }>::from(&(#string)[#start..#end]).unwrap() }
+        }
+        ExprFMF::External {
+            func: External::Size,
+            args,
+        } => {
+            let [arg]: [_; _] = args.try_into().unwrap();
+            let arg = ts_gen::<false>(arg.clone());
+            quote! { #arg.len() as i32 }
+        }
+        ExprFMF::External {
+            func: External::Year,
+            args,
+        } => {
+            let [arg]: [_; _] = args.try_into().unwrap();
+            let arg = ts_gen::<false>(arg.clone());
+            quote! { #arg.year() }
+        }
+        #[allow(unreachable_patterns)] // handy if you are adding more
+        ExprFMF::External { func, args: _ } => todo!("{func}"),
+        t => todo!("{t:?}"),
     }
 }
 
