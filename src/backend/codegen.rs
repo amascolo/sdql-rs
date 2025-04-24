@@ -41,10 +41,10 @@ impl<'src> From<Typed<'src, Spanned<ExprFMF<'src>>>> for TokenStream {
     }
 }
 
-impl<'src> From<Typed<'src, Spanned<Box<ExprFMF<'src>>>>> for TokenStream {
-    fn from(expr: Typed<'src, Spanned<Box<ExprFMF<'src>>>>) -> Self {
-        ExprFMF::from(expr.map(Spanned::unboxed)).into()
-    }
+fn boxed_ts_gen<'src, const PARALLEL: bool>(
+    expr: Typed<'src, Spanned<Box<ExprFMF<'src>>>>,
+) -> TokenStream {
+    ExprFMF::from(expr.map(Spanned::unboxed)).into()
 }
 
 impl From<ExprFMF<'_>> for TokenStream {
@@ -85,9 +85,9 @@ impl From<ExprFMF<'_>> for TokenStream {
                     let rhs_type: syn::Type = (&rhs.r#type).into();
                     lhs_tks = quote! { #lhs_tks: #rhs_type }
                 }
-                let rhs_tks: TokenStream = rhs.into();
+                let rhs_tks = boxed_ts_gen::<false>(rhs);
                 let let_tks = quote! { let #lhs_tks = #rhs_tks };
-                let cont_tks: TokenStream = cont.into();
+                let cont_tks = boxed_ts_gen::<false>(cont);
                 quote! { #let_tks;  #cont_tks }
             }
             ExprFMF::Load { r#type, path } => {
@@ -140,8 +140,8 @@ impl From<ExprFMF<'_>> for TokenStream {
                 head,
                 body,
             } => {
-                let head: TokenStream = head.into();
-                let body: TokenStream = body.into();
+                let head = boxed_ts_gen::<false>(head);
+                let body = boxed_ts_gen::<false>(body);
                 quote! { #head.iter()#body }
             }
             ExprFMF::Concat { lhs, rhs } => {
@@ -153,8 +153,8 @@ impl From<ExprFMF<'_>> for TokenStream {
                     Type::Record(ref vals) => vals.len(),
                     _ => panic!(),
                 };
-                let lhs: TokenStream = lhs.into();
-                let rhs: TokenStream = rhs.into();
+                let lhs = boxed_ts_gen::<false>(lhs);
+                let rhs = boxed_ts_gen::<false>(rhs);
                 let lhs = (0..lhs_len).map(Index::from).map(|i| quote! { #lhs.#i });
                 let rhs = (0..rhs_len).map(Index::from).map(|i| quote! { #rhs.#i });
                 quote! { Record::new((#(#lhs),*, #(#rhs),*)) }
@@ -171,7 +171,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                 inner,
                 cont: Some(cont),
             } => {
-                let inner: TokenStream = inner.into();
+                let inner = boxed_ts_gen::<false>(inner);
                 let cont = ExprFMF::from(cont.map(Spanned::unboxed));
                 let cont: TokenStream = cont.into();
                 let args = gen_args(args);
@@ -198,8 +198,8 @@ impl From<ExprFMF<'_>> for TokenStream {
                     .iter()
                     .map(|name| Ident::new(name, Span::call_site()))
                     .collect();
-                let head: TokenStream = head.into();
-                let body: TokenStream = body.into();
+                let head = boxed_ts_gen::<false>(head);
+                let body = boxed_ts_gen::<false>(body);
                 let fn_args = if args.len() > 1 {
                     quote! { (#(#args),*) }
                 } else {
@@ -226,7 +226,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                     quote! { #(#args),* }
                 };
                 let r#type: syn::Type = (&inner.r#type).into();
-                let inner: TokenStream = inner.into();
+                let inner = boxed_ts_gen::<false>(inner);
                 quote! {.map(|#fn_args| #inner).sum::<#r#type>()}
             }
             ExprFMF::FMF {
@@ -244,27 +244,27 @@ impl From<ExprFMF<'_>> for TokenStream {
                 } else {
                     quote! { #(#args),* }
                 };
-                let inner: TokenStream = inner.into();
-                let cont: TokenStream = cont.into();
+                let inner = boxed_ts_gen::<false>(inner);
+                let cont = boxed_ts_gen::<false>(cont);
                 quote! {.map(|#fn_args| (#(#args),*, #inner))#cont}
             }
             ExprFMF::Unary {
                 op: UnaryOp::Neg,
                 expr,
             } => {
-                let expr: TokenStream = expr.into();
+                let expr = boxed_ts_gen::<false>(expr);
                 quote! { -#expr }
             }
             ExprFMF::Unary {
                 op: UnaryOp::Not,
                 expr,
             } => {
-                let expr: TokenStream = expr.into();
+                let expr = boxed_ts_gen::<false>(expr);
                 quote! { !#expr }
             }
             ExprFMF::Binary { lhs, op, rhs } => {
-                let lhs = parse2(lhs.into()).unwrap();
-                let rhs = parse2(rhs.into()).unwrap();
+                let lhs = parse2(boxed_ts_gen::<false>(lhs)).unwrap();
+                let rhs = parse2(boxed_ts_gen::<false>(rhs)).unwrap();
                 let expr = syn::Expr::Binary(ExprBinary {
                     attrs: vec![],
                     left: Box::new(lhs),
@@ -279,7 +279,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                     let index = index.try_into().unwrap();
                     let field = syn::Expr::Field(ExprField {
                         attrs: vec![],
-                        base: Box::new(parse2(expr.into()).unwrap()),
+                        base: Box::new(parse2(boxed_ts_gen::<false>(expr)).unwrap()),
                         dot_token: Default::default(),
                         member: Member::Unnamed(Index {
                             index,
@@ -305,8 +305,8 @@ impl From<ExprFMF<'_>> for TokenStream {
                     Type::Dict { hint, .. } => hint.clone(),
                     _ => panic!(),
                 };
-                let lhs: TokenStream = expr.into();
-                let rhs: TokenStream = rhs.into();
+                let lhs = boxed_ts_gen::<false>(expr);
+                let rhs = boxed_ts_gen::<false>(rhs);
                 match hint {
                     Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs as usize] != 0 },
                     _ => quote! { #lhs.contains_key(&#rhs) },
@@ -318,7 +318,7 @@ impl From<ExprFMF<'_>> for TokenStream {
                         let index = val.try_into().unwrap();
                         let field = syn::Expr::Field(ExprField {
                             attrs: vec![],
-                            base: Box::new(parse2(lhs.into()).unwrap()),
+                            base: Box::new(parse2(boxed_ts_gen::<false>(lhs)).unwrap()),
                             dot_token: Default::default(),
                             member: Member::Unnamed(Index {
                                 index,
@@ -330,8 +330,8 @@ impl From<ExprFMF<'_>> for TokenStream {
                     _ => unimplemented!(),
                 },
                 Type::Dict { hint, .. } => {
-                    let lhs: TokenStream = lhs.into();
-                    let rhs: TokenStream = rhs.into();
+                    let lhs = boxed_ts_gen::<false>(lhs);
+                    let rhs = boxed_ts_gen::<false>(rhs);
                     match hint {
                         Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs as usize] },
                         _ => quote! { #lhs[&#rhs] },
