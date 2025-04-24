@@ -39,7 +39,7 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
         })
         .collect();
 
-    let l_h: HashMap<Record<(i32, Date, i32)>, OrderedFloat<f64>> = (0../* size */ lineitem.16)
+    let l_h: HashMap<Record<(i32, Date, i32)>, Record<(OrderedFloat<f64>,)>> = (0../* size */ lineitem.16)
         .into_par_iter()
         .filter(|&i| /* shipdate */ lineitem.10[i] > _19950315)
         .filter(|&i| o_h.contains_key(&/* orderkey */ lineitem.0[i]))
@@ -48,13 +48,13 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
                     /* orderkey */ lineitem.0[i],
                     o_h[&/* orderkey */ lineitem.0[i]].0,
                     o_h[&/* orderkey */ lineitem.0[i]].1,
-                ))] += /* extendedprice */ lineitem.5[i] * (OrderedFloat(1.0) - /* discount */ lineitem.6[i]);
+                ))] += Record::new((/* extendedprice */ lineitem.5[i] * (OrderedFloat(1.0) - /* discount */ lineitem.6[i]),));
             acc
         })
         .sum();
 
     // TODO change to into_iter() (+40% faster than iter() in sequential, no change in parallel)
     l_h.par_iter()
-        .map(|(&k, &v)| (Record::new((k.0, k.1, k.2, v)), TRUE))
+        .map(|(&k, &v)| (Record::new((k.0, k.1, k.2, v.0)), TRUE))
         .collect()
 }
