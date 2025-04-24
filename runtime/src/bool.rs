@@ -2,6 +2,7 @@ use approx::AbsDiffEq;
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use std::ops::{AddAssign, Deref};
+use std::str::{FromStr, ParseBoolError};
 
 pub const FALSE: Bool = Bool(false);
 pub const TRUE: Bool = Bool(true);
@@ -26,6 +27,14 @@ pub struct Bool(bool);
 impl AddAssign for Bool {
     fn add_assign(&mut self, rhs: Self) {
         *self = Self(self.0 || rhs.0);
+    }
+}
+
+impl FromStr for Bool {
+    type Err = ParseBoolError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        s.parse().map(Self)
     }
 }
 
