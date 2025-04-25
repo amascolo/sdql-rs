@@ -1,11 +1,11 @@
-use crate::rs;
+use crate::{rs, rs_par};
 use std::fs::{self, File};
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::io::{self, Write};
 use std::path::Path;
 use std::process::Command;
 
-pub fn run_tpch(query: u8, sf: &str) -> io::Result<Vec<u8>> {
+pub fn run_tpch<const PARALLEL: bool>(query: u8, sf: &str) -> io::Result<Vec<u8>> {
     let path = format!("{}/progs/tpch/{query}.sdql", env!("CARGO_MANIFEST_DIR"));
     let src = fs::read_to_string(&path)?.replace(
         "datasets/tpch/",
@@ -26,7 +26,7 @@ pub fn run_tpch(query: u8, sf: &str) -> io::Result<Vec<u8>> {
         src
     };
 
-    let code = rs!(&src);
+    let code = if PARALLEL { rs_par!(&src) } else { rs!(&src) };
     let name = filename(&code);
     run(&name, &code)
 }

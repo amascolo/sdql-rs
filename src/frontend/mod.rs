@@ -8,7 +8,21 @@ use parser::expr_parser;
 
 #[macro_export]
 macro_rules! rs {
-    ($src:expr) => {{
+    ($src:expr) => {
+        $crate::codegen!($src, false)
+    };
+}
+
+#[macro_export]
+macro_rules! rs_par {
+    ($src:expr) => {
+        $crate::codegen!($src, true)
+    };
+}
+
+#[macro_export]
+macro_rules! codegen {
+    ($src:expr, $parallel:expr) => {{
         use $crate::backend::codegen::codegen;
         use $crate::backend::fmf::ExprFMF;
         use $crate::frontend::lexer::Spanned;
@@ -19,10 +33,9 @@ macro_rules! rs {
         let expr = Spanned::<Expr>::try_from(src).unwrap();
         let typed = Typed::<Spanned<TypedExpr>>::from(expr);
         let fmf = Typed::<Spanned<ExprFMF>>::from(typed);
-        codegen::<false>(fmf)
+        codegen::<$parallel>(fmf)
     }};
 }
-
 #[macro_export]
 macro_rules! sdql {
     ($src:expr) => {
