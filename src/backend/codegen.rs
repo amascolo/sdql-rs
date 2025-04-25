@@ -8,8 +8,8 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use std::assert_matches::debug_assert_matches;
 use syn::{
-    parse2, parse_quote, Error, ExprBinary, ExprField, ExprRange, Index, LitInt, Member,
-    RangeLimits,
+    Error, ExprBinary, ExprField, ExprRange, Index, LitInt, Member, RangeLimits, parse_quote,
+    parse2,
 };
 
 impl<'src> From<Typed<'src, Spanned<ExprFMF<'src>>>> for String {
@@ -755,51 +755,6 @@ impl From<&Type<'_>> for syn::Type {
         }
     }
 }
-// TODO get rid of this if we don't use it anywhere
-// fn qualified_type(r#type: &Type) -> syn::Type {
-//     match r#type {
-//         Type::String {
-//             max_len: Some(max_len),
-//         } => {
-//             let max_len = LitInt::new(&max_len.to_string(), Span::call_site());
-//             parse_quote!(VarChar::<#max_len>)
-//         }
-//         Type::Record(tps) => {
-//             let tps: Vec<syn::Type> = tps.iter().map(|rt| syn::Type::from(&rt.r#type)).collect();
-//             parse_quote!(Record::<(#(#tps),*,)>)
-//         }
-//         Type::Dict {
-//             key,
-//             val,
-//             hint: hint @ (None | Some(DictHint::HashDict { .. } | DictHint::SortDict { .. })),
-//         } => {
-//             let dict = to_type(*hint);
-//             let key = syn::Type::from(&**key);
-//             let val = syn::Type::from(&**val);
-//             parse_quote!(#dict::<#key, #val>)
-//         }
-//         Type::Dict {
-//             key: _,
-//             val,
-//             hint: Some(hint @ DictHint::SmallVecDict { .. }),
-//         } => {
-//             let dict = to_type(Some(*hint));
-//             let val = syn::Type::from(&**val);
-//             let capacity = hint.capacity();
-//             parse_quote!(#dict::<[#val; #capacity]>)
-//         }
-//         Type::Dict {
-//             key: _,
-//             val,
-//             hint: hint @ Some(DictHint::Vec { .. } | DictHint::VecDict { .. }),
-//         } => {
-//             let dict = to_type(*hint);
-//             let val = syn::Type::from(&**val);
-//             parse_quote!(#dict::<#val>)
-//         }
-//         _ => r#type.into(),
-//     }
-// }
 fn simple_type(r#type: &Type) -> syn::Type {
     match r#type {
         Type::Bool => parse_quote!(Bool),
