@@ -52,8 +52,7 @@ pub fn q3_query(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> Ty
             acc
         });
 
-    // TODO change to into_iter() (+40% faster than iter() in sequential, no change in parallel)
-    l_h.iter()
-        .map(|(&k, &v)| (Record::new((k.0, k.1, k.2, v.0)), TRUE))
+    l_h.into_iter()
+        .map(|(k, v)| (Record::new((k.0, k.1, k.2, v.0)), TRUE))
         .collect()
 }

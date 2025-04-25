@@ -56,8 +56,7 @@ pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem)
         })
         .sum();
 
-    // TODO change to into_iter() (+40% faster than iter() in sequential, no change in parallel)
-    l_h.par_iter()
-        .map(|(&k, &v)| (Record::new((k.0, k.1, k.2, v.0)), TRUE))
+    l_h.into_par_iter()
+        .map(|(k, v)| (Record::new((k.0, k.1, k.2, v.0)), TRUE))
         .collect()
 }
