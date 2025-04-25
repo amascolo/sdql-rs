@@ -12,27 +12,25 @@ use syn::{
     RangeLimits,
 };
 
-impl<'src> From<Typed<'src, Spanned<ExprFMF<'src>>>> for String {
-    fn from(expr: Typed<'src, Spanned<ExprFMF<'src>>>) -> Self {
-        let Typed { val, ref r#type } = expr;
-        let r#type: syn::Type = r#type.into();
-        let Spanned(expr, _span) = val;
-        let tks = ts::<false>(expr);
-        let main_tks = quote! {
-            #![feature(stmt_expr_attributes)]
-            #![allow(unused_variables)]
-            use sdql_runtime::*;
-            fn main() {
-                let value: #r#type = { #tks };
-                // println!("{value:?}"); // TODO default mode
-                use std::io::Write;
-                let encoded = bincode::serialize(&value).unwrap();
-                std::io::stdout().write_all(&encoded).unwrap();
-            }
-        };
-        let ast = parse2(main_tks).unwrap();
-        prettyplease::unparse(&ast)
-    }
+pub fn codegen<'src, const PARALLEL: bool>(expr: Typed<'src, Spanned<ExprFMF<'src>>>) -> String {
+    let Typed { val, ref r#type } = expr;
+    let r#type: syn::Type = r#type.into();
+    let Spanned(expr, _span) = val;
+    let tks = ts::<false>(expr);
+    let main_tks = quote! {
+        #![feature(stmt_expr_attributes)]
+        #![allow(unused_variables)]
+        use sdql_runtime::*;
+        fn main() {
+            let value: #r#type = { #tks };
+            // println!("{value:?}"); // TODO default mode
+            use std::io::Write;
+            let encoded = bincode::serialize(&value).unwrap();
+            std::io::stdout().write_all(&encoded).unwrap();
+        }
+    };
+    let ast = parse2(main_tks).unwrap();
+    prettyplease::unparse(&ast)
 }
 
 fn ts_typed<'src, const PARALLEL: bool>(expr: Typed<'src, Spanned<ExprFMF<'src>>>) -> TokenStream {
