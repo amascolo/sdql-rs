@@ -137,7 +137,12 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
         } => {
             let head = ts_boxed::<false>(head);
             let body = ts_boxed::<false>(body);
-            quote! { #head.iter()#body }
+            if PARALLEL {
+                quote! { #head.into_par_iter()#body }
+            } else {
+                // TODO make this into_iter()
+                quote! { #head.iter()#body }
+            }
         }
         ExprFMF::Concat { lhs, rhs } => {
             let lhs_len = match lhs.r#type {
@@ -340,7 +345,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             inner,
             cont: None,
         } => {
-            let init = initialise(&inner.r#type);
+            let init = initialise::<PARALLEL>(&inner.r#type);
             let args = gen_args(args);
             let inner = inner.map(Spanned::unboxed);
             let hints = hints(&inner);
@@ -359,11 +364,16 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                 .flatten()
                 .collect();
             let rhs = ts_typed::<false>(rhs);
-            quote! {
+            let fold = quote! {
                 .fold(#init, |mut acc, #args| {
                     acc #lhs += #rhs;
                     acc
                 })
+            };
+            if PARALLEL {
+                quote! { #fold.sum() }
+            } else {
+                quote! { #fold }
             }
         }
         ExprFMF::Record { vals } => {
@@ -635,7 +645,7 @@ fn split<'src>(
     (vec![], expr)
 }
 
-fn initialise(r#type: &Type) -> TokenStream {
+fn initialise<const PARALLEL: bool>(r#type: &Type) -> TokenStream {
     match r#type {
         Type::Dict {
             key: _,
@@ -652,7 +662,12 @@ fn initialise(r#type: &Type) -> TokenStream {
         } => {
             let t = simple_type(&r#type);
             let capacity = LitInt::new(&capacity.to_string(), Span::call_site());
-            quote! { #t::with_capacity(#capacity) }
+            let init = quote! { #t::with_capacity(#capacity) };
+            if PARALLEL {
+                quote! { || #init }
+            } else {
+                quote! { #init }
+            }
         }
         Type::Dict {
             key: _,
@@ -663,7 +678,12 @@ fn initialise(r#type: &Type) -> TokenStream {
         } => {
             let t = simple_type(val);
             let capacity = LitInt::new(&capacity.to_string(), Span::call_site());
-            quote! { vec![#t::default(); #capacity] }
+            let init = quote! { vec![#t::default(); #capacity] };
+            if PARALLEL {
+                quote! { || #init }
+            } else {
+                quote! { #init }
+            }
         }
         Type::Dict {
             key: _,
@@ -674,7 +694,11 @@ fn initialise(r#type: &Type) -> TokenStream {
         } => todo!(),
         _ => {
             let t = simple_type(&r#type);
-            quote! { #t::default() }
+            if PARALLEL {
+                quote! { #t::default }
+            } else {
+                quote! { #t::default() }
+            }
         }
     }
 }
