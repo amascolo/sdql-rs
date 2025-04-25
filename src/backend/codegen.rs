@@ -16,7 +16,7 @@ pub fn codegen<'src, const PARALLEL: bool>(expr: Typed<'src, Spanned<ExprFMF<'sr
     let Typed { val, ref r#type } = expr;
     let r#type: syn::Type = r#type.into();
     let Spanned(expr, _span) = val;
-    let tks = ts::<false>(expr);
+    let tks = ts::<PARALLEL>(expr);
     let main_tks = quote! {
         #![feature(stmt_expr_attributes)]
         #![allow(unused_variables)]
@@ -80,9 +80,9 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                 let rhs_type: syn::Type = (&rhs.r#type).into();
                 lhs_tks = quote! { #lhs_tks: #rhs_type }
             }
-            let rhs_tks = ts_boxed::<false>(rhs);
+            let rhs_tks = ts_boxed::<PARALLEL>(rhs);
             let let_tks = quote! { let #lhs_tks = #rhs_tks };
-            let cont_tks = ts_boxed::<false>(cont);
+            let cont_tks = ts_boxed::<PARALLEL>(cont);
             quote! { #let_tks;  #cont_tks }
         }
         ExprFMF::Load { r#type, path } => {
@@ -126,7 +126,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             let expr: syn::Expr = parse2(ts::<PARALLEL>(expr)).unwrap();
             let expr = gen_range(expr);
             let body = ExprFMF::from(body.map(Spanned::unboxed));
-            let body = ts::<false>(body);
+            let body = ts::<PARALLEL>(body);
             quote! { (#expr)#body }
         }
         ExprFMF::Sum {
@@ -135,8 +135,8 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             head,
             body,
         } => {
-            let head = ts_boxed::<false>(head);
-            let body = ts_boxed::<false>(body);
+            let head = ts_boxed::<PARALLEL>(head);
+            let body = ts_boxed::<PARALLEL>(body);
             if PARALLEL {
                 quote! { #head.into_par_iter()#body }
             } else {
@@ -153,8 +153,8 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                 Type::Record(ref vals) => vals.len(),
                 _ => panic!(),
             };
-            let lhs = ts_boxed::<false>(lhs);
-            let rhs = ts_boxed::<false>(rhs);
+            let lhs = ts_boxed::<PARALLEL>(lhs);
+            let rhs = ts_boxed::<PARALLEL>(rhs);
             let lhs = (0..lhs_len).map(Index::from).map(|i| quote! { #lhs.#i });
             let rhs = (0..rhs_len).map(Index::from).map(|i| quote! { #rhs.#i });
             quote! { Record::new((#(#lhs),*, #(#rhs),*)) }
@@ -171,9 +171,9 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             inner,
             cont: Some(cont),
         } => {
-            let inner = ts_boxed::<false>(inner);
+            let inner = ts_boxed::<PARALLEL>(inner);
             let cont = ExprFMF::from(cont.map(Spanned::unboxed));
-            let cont = ts::<false>(cont);
+            let cont = ts::<PARALLEL>(cont);
             let args = gen_args(args);
             quote! {.filter(|&#args| #inner)#cont}
         }
@@ -198,8 +198,8 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                 .iter()
                 .map(|name| Ident::new(name, Span::call_site()))
                 .collect();
-            let head = ts_boxed::<false>(head);
-            let body = ts_boxed::<false>(body);
+            let head = ts_boxed::<PARALLEL>(head);
+            let body = ts_boxed::<PARALLEL>(body);
             let fn_args = if args.len() > 1 {
                 quote! { (#(#args),*) }
             } else {
@@ -225,9 +225,8 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             } else {
                 quote! { #(#args),* }
             };
-            let r#type: syn::Type = (&inner.r#type).into();
-            let inner = ts_boxed::<false>(inner);
-            quote! {.map(|#fn_args| #inner).sum::<#r#type>()}
+            let inner = ts_boxed::<PARALLEL>(inner);
+            quote! {.map(|#fn_args| #inner).sum()}
         }
         ExprFMF::FMF {
             op: OpFMF::Map,
@@ -244,27 +243,27 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             } else {
                 quote! { #(#args),* }
             };
-            let inner = ts_boxed::<false>(inner);
-            let cont = ts_boxed::<false>(cont);
+            let inner = ts_boxed::<PARALLEL>(inner);
+            let cont = ts_boxed::<PARALLEL>(cont);
             quote! {.map(|#fn_args| (#(#args),*, #inner))#cont}
         }
         ExprFMF::Unary {
             op: UnaryOp::Neg,
             expr,
         } => {
-            let expr = ts_boxed::<false>(expr);
+            let expr = ts_boxed::<PARALLEL>(expr);
             quote! { -#expr }
         }
         ExprFMF::Unary {
             op: UnaryOp::Not,
             expr,
         } => {
-            let expr = ts_boxed::<false>(expr);
+            let expr = ts_boxed::<PARALLEL>(expr);
             quote! { !#expr }
         }
         ExprFMF::Binary { lhs, op, rhs } => {
-            let lhs = parse2(ts_boxed::<false>(lhs)).unwrap();
-            let rhs = parse2(ts_boxed::<false>(rhs)).unwrap();
+            let lhs = parse2(ts_boxed::<PARALLEL>(lhs)).unwrap();
+            let rhs = parse2(ts_boxed::<PARALLEL>(rhs)).unwrap();
             let expr = syn::Expr::Binary(ExprBinary {
                 attrs: vec![],
                 left: Box::new(lhs),
@@ -279,7 +278,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                 let index = index.try_into().unwrap();
                 let field = syn::Expr::Field(ExprField {
                     attrs: vec![],
-                    base: Box::new(parse2(ts_boxed::<false>(expr)).unwrap()),
+                    base: Box::new(parse2(ts_boxed::<PARALLEL>(expr)).unwrap()),
                     dot_token: Default::default(),
                     member: Member::Unnamed(Index {
                         index,
@@ -305,8 +304,8 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                 Type::Dict { hint, .. } => hint.clone(),
                 _ => panic!(),
             };
-            let lhs = ts_boxed::<false>(expr);
-            let rhs = ts_boxed::<false>(rhs);
+            let lhs = ts_boxed::<PARALLEL>(expr);
+            let rhs = ts_boxed::<PARALLEL>(rhs);
             match hint {
                 Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs as usize] != 0 },
                 _ => quote! { #lhs.contains_key(&#rhs) },
@@ -318,7 +317,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                     let index = val.try_into().unwrap();
                     let field = syn::Expr::Field(ExprField {
                         attrs: vec![],
-                        base: Box::new(parse2(ts_boxed::<false>(lhs)).unwrap()),
+                        base: Box::new(parse2(ts_boxed::<PARALLEL>(lhs)).unwrap()),
                         dot_token: Default::default(),
                         member: Member::Unnamed(Index {
                             index,
@@ -330,8 +329,8 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                 _ => unimplemented!(),
             },
             Type::Dict { hint, .. } => {
-                let lhs = ts_boxed::<false>(lhs);
-                let rhs = ts_boxed::<false>(rhs);
+                let lhs = ts_boxed::<PARALLEL>(lhs);
+                let rhs = ts_boxed::<PARALLEL>(rhs);
                 match hint {
                     Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs as usize] },
                     _ => quote! { #lhs[&#rhs] },
@@ -352,7 +351,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             let (lhs, rhs) = split(inner);
             let lhs: TokenStream = lhs
                 .into_iter()
-                .map(ts_typed::<false>)
+                .map(ts_typed::<PARALLEL>)
                 .zip_eq(hints)
                 .map(|(ts, hint)| match hint {
                     Some(DictHint::SmallVecDict { .. } | DictHint::VecDict { .. }) => {
@@ -363,7 +362,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                 })
                 .flatten()
                 .collect();
-            let rhs = ts_typed::<false>(rhs);
+            let rhs = ts_typed::<PARALLEL>(rhs);
             let fold = quote! {
                 .fold(#init, |mut acc, #args| {
                     acc #lhs += #rhs;
@@ -377,14 +376,14 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             }
         }
         ExprFMF::Record { vals } => {
-            let vals = vals.into_iter().map(|rv| ts_typed::<false>(rv.val));
+            let vals = vals.into_iter().map(|rv| ts_typed::<PARALLEL>(rv.val));
             quote! { Record::new((#(#vals),*,)) }
         }
         ExprFMF::Dict { map, hint } if map.len() == 1 => {
             let [entry]: [_; 1] = map.try_into().unwrap();
             let r#type = to_type(hint);
-            let key = ts_typed::<false>(entry.key);
-            let val = ts_typed::<false>(entry.val);
+            let key = ts_typed::<PARALLEL>(entry.key);
+            let val = ts_typed::<PARALLEL>(entry.val);
             quote! { #r#type::from([(#key, #val)]) }
         }
         ExprFMF::Dom { .. } => unimplemented!(),
@@ -393,9 +392,9 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             let then: Typed<Spanned<ExprFMF>> = then.map(Spanned::unboxed);
             let r#else: Option<Typed<Spanned<ExprFMF>>> =
                 r#else.map(|r#else| r#else.map(Spanned::unboxed));
-            let r#if = ts_typed::<false>(r#if);
-            let then = ts_typed::<false>(then);
-            let r#else = r#else.map(ts_typed::<false>);
+            let r#if = ts_typed::<PARALLEL>(r#if);
+            let then = ts_typed::<PARALLEL>(then);
+            let r#else = r#else.map(ts_typed::<PARALLEL>);
             match r#else {
                 None => quote! { if #r#if { #then } },
                 Some(r#else) => quote! { if #r#if { #then } else { #r#else } },
@@ -414,8 +413,8 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             let args = gen_args(args);
             let (lhs, rhs) = split(inner.map(Spanned::unboxed));
             let [lhs]: [_; _] = lhs.try_into().unwrap();
-            let lhs = ts::<false>(lhs.val.0);
-            let rhs = ts::<false>(rhs.val.0);
+            let lhs = ts::<PARALLEL>(lhs.val.0);
+            let rhs = ts::<PARALLEL>(rhs.val.0);
             quote! {
                 .map(|#args| {
                     (
@@ -430,7 +429,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             args,
         } => {
             let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-            let arg0 = ts_typed::<false>(arg0.clone());
+            let arg0 = ts_typed::<PARALLEL>(arg0.clone());
             let Typed {
                 val: Spanned(ExprFMF::String { val, max_len: _ }, _),
                 r#type: _,
@@ -445,7 +444,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             args,
         } => {
             let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-            let arg0 = ts_typed::<false>(arg0.clone());
+            let arg0 = ts_typed::<PARALLEL>(arg0.clone());
             let Typed {
                 val: Spanned(ExprFMF::String { val, max_len: _ }, _),
                 r#type: _,
@@ -460,7 +459,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             args,
         } => {
             let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-            let arg0 = ts_typed::<false>(arg0);
+            let arg0 = ts_typed::<PARALLEL>(arg0);
             let Typed {
                 val: Spanned(ExprFMF::String { val, max_len: _ }, _),
                 r#type: _,
@@ -475,7 +474,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             args,
         } => {
             let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-            let arg0 = ts_typed::<false>(arg0.clone());
+            let arg0 = ts_typed::<PARALLEL>(arg0.clone());
             let Typed {
                 val: Spanned(ExprFMF::String { val, max_len: _ }, _),
                 r#type: _,
@@ -490,7 +489,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             args,
         } => {
             let [arg0, arg1]: [_; _] = args.try_into().unwrap();
-            let arg0 = ts_typed::<false>(arg0);
+            let arg0 = ts_typed::<PARALLEL>(arg0);
             let Typed {
                 val: Spanned(ExprFMF::String { val, max_len: _ }, _),
                 r#type: _,
@@ -505,7 +504,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             args,
         } => {
             let [string, start, end]: [_; _] = args.try_into().unwrap();
-            let string = ts_typed::<false>(string);
+            let string = ts_typed::<PARALLEL>(string);
             let start: usize = match start.val.0 {
                 ExprFMF::Int { val } => val.try_into(),
                 ExprFMF::Long { val } => val.try_into(),
@@ -525,7 +524,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             args,
         } => {
             let [arg]: [_; _] = args.try_into().unwrap();
-            let arg = ts_typed::<false>(arg.clone());
+            let arg = ts_typed::<PARALLEL>(arg.clone());
             quote! { #arg.len() as i32 }
         }
         ExprFMF::External {
@@ -533,7 +532,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             args,
         } => {
             let [arg]: [_; _] = args.try_into().unwrap();
-            let arg = ts_typed::<false>(arg.clone());
+            let arg = ts_typed::<PARALLEL>(arg.clone());
             quote! { #arg.year() }
         }
         #[allow(unreachable_patterns)] // handy if you are adding more
