@@ -17,13 +17,22 @@ pub fn codegen<'src, const PARALLEL: bool>(expr: Typed<'src, Spanned<ExprFMF<'sr
     let r#type: syn::Type = r#type.into();
     let Spanned(expr, _span) = val;
     let tks = ts::<PARALLEL>(expr);
+    let imports = quote! { use sdql_runtime::*; };
+    let imports = if PARALLEL {
+        quote! {
+            #imports
+            use rayon::prelude::*;
+        }
+    } else {
+        quote! { #imports }
+    };
     let main_tks = quote! {
         #![feature(stmt_expr_attributes)]
         #![allow(unused_variables)]
-        use sdql_runtime::*;
+        #imports
         fn main() {
             let value: #r#type = { #tks };
-            // println!("{value:?}"); // TODO default mode
+            // println!("{value:?}"); // TODO have a mode from main.rs that generates this instead
             use std::io::Write;
             let encoded = bincode::serialize(&value).unwrap();
             std::io::stdout().write_all(&encoded).unwrap();
@@ -122,12 +131,17 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             let ExprFMF::Range { expr } = *range else {
                 unreachable!()
             };
-            let expr = ExprFMF::from(expr.map(Spanned::unboxed));
-            let expr: syn::Expr = parse2(ts::<PARALLEL>(expr)).unwrap();
-            let expr = gen_range(expr);
+            let range = ExprFMF::from(expr.map(Spanned::unboxed));
+            let range: syn::Expr = parse2(ts::<PARALLEL>(range)).unwrap();
+            let range = gen_range(range);
+            let range = if PARALLEL {
+                quote! { (#range).into_par_iter() }
+            } else {
+                quote! { (#range) }
+            };
             let body = ExprFMF::from(body.map(Spanned::unboxed));
             let body = ts::<PARALLEL>(body);
-            quote! { (#expr)#body }
+            quote! { #range #body }
         }
         ExprFMF::Sum {
             key: _,
