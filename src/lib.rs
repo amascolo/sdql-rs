@@ -1,4 +1,5 @@
 #![feature(assert_matches)]
+#![feature(box_patterns)]
 #![feature(generic_arg_infer)]
 #![feature(let_chains)]
 

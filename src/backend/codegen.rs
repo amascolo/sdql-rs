@@ -8,8 +8,8 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use std::assert_matches::debug_assert_matches;
 use syn::{
-    Error, ExprBinary, ExprField, ExprRange, Index, LitInt, Member, RangeLimits, parse_quote,
-    parse2,
+    parse2, parse_quote, Error, ExprBinary, ExprField, ExprRange, Index, LitInt, Member,
+    RangeLimits,
 };
 
 pub fn codegen<'src, const PARALLEL: bool>(expr: Typed<'src, Spanned<ExprFMF<'src>>>) -> String {
@@ -104,10 +104,10 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                 .map(|val| {
                     let r#type = match val.r#type {
                         Type::Dict {
-                            key,
+                            key: box Type::Int,
                             val,
                             hint: Some(DictHint::Vec { capacity: None }),
-                        } if matches!(*key, Type::Int) => *val,
+                        } => *val,
                         _ => unreachable!(),
                     };
                     (val.name.into(), (&r#type).into())
@@ -123,14 +123,11 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             val: "_",
             head:
                 Typed {
-                    val: Spanned(range, _span),
+                    val: Spanned(box ExprFMF::Range { expr }, _span),
                     r#type: _,
                 },
             body,
-        } if matches!(*range, ExprFMF::Range { .. }) => {
-            let ExprFMF::Range { expr } = *range else {
-                unreachable!()
-            };
+        } => {
             let range = ExprFMF::from(expr.map(Spanned::unboxed));
             let range: syn::Expr = parse2(ts::<PARALLEL>(range)).unwrap();
             let range = gen_range(range);
@@ -305,14 +302,11 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
         ExprFMF::Get {
             lhs:
                 Typed {
-                    val: Spanned(val, _),
+                    val: Spanned(box ExprFMF::Dom { expr }, _),
                     r#type: _,
                 },
             rhs,
-        } if matches!(*val, ExprFMF::Dom { .. }) => {
-            let ExprFMF::Dom { expr } = *val else {
-                unreachable!()
-            };
+        } => {
             let hint = match &expr.r#type {
                 Type::Dict { hint, .. } => hint.clone(),
                 _ => panic!(),

@@ -212,23 +212,18 @@ fn from<'src>(
                     key,
                     val: "_",
                     head:
-                        Typed {
-                            val: Spanned(range, span),
-                            r#type,
+                        head @ Typed {
+                            val: Spanned(box TypedExpr::Range { .. }, _),
+                            r#type: _,
                         },
                     body,
-                } if ctx.is_empty() && matches!(*range, TypedExpr::Range { .. }) => {
-                    let head = Typed {
-                        val: Spanned(range, span),
-                        r#type,
-                    }
-                    .into();
+                } if ctx.is_empty() => {
                     let ctx = ctx + &vector![key];
                     let body = from(body.map(Spanned::unboxed), &ctx).map(Spanned::boxed);
                     ExprFMF::Sum {
                         key,
                         val: "_",
-                        head,
+                        head: head.into(),
                         body,
                     }
                 }
