@@ -1,4 +1,4 @@
-use sdql_runtime::{date, Date};
+use sdql_runtime::{Date, date};
 
 pub mod parallel;
 pub mod sequential;

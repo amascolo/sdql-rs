@@ -8,8 +8,8 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use std::assert_matches::debug_assert_matches;
 use syn::{
-    parse2, parse_quote, Error, ExprBinary, ExprField, ExprRange, Index, LitInt, Member,
-    RangeLimits,
+    Error, ExprBinary, ExprField, ExprRange, Index, LitInt, Member, RangeLimits, parse_quote,
+    parse2,
 };
 
 pub fn codegen<'src, const PARALLEL: bool>(expr: Typed<'src, Spanned<ExprFMF<'src>>>) -> String {
