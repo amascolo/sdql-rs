@@ -357,6 +357,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             inner,
             cont: None,
         } => {
+            let r#type: syn::Type = (&inner.r#type).into();
             let init = initialise::<PARALLEL>(&inner.r#type);
             let args = gen_args(args);
             let inner = inner.map(Spanned::unboxed);
@@ -377,7 +378,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                 .collect();
             let rhs = ts_typed::<PARALLEL>(rhs);
             let fold = quote! {
-                .fold(#init, |mut acc, #args| {
+                .fold(#init, |mut acc: #r#type, #args| {
                     acc #lhs += #rhs;
                     acc
                 })

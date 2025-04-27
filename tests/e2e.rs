@@ -450,9 +450,7 @@ mod parallel {
         // assert_abs_diff_eq!(actual, expected, epsilon = ((0, (), 0, 1e-4), ()));
     }
 
-    // FIXME
-    //  .sum();
-    //   ^^^ value of type `Vec<i32>` cannot be made by summing a `std::iter::Iterator<Item=Vec<i32>>`
+    // FIXME sum together vectors
     // #[test]
     // fn tpch_4() {
     //     let buffer = run_tpch::<true>(4, "1").unwrap();
@@ -485,9 +483,7 @@ mod parallel {
         assert_abs_diff_eq!(actual, expected, epsilon = (((), (), 0, 1e-4), ()));
     }
 
-    // FIXME
-    //  .sum();
-    //   ^^^ value of type `Vec<i32>` cannot be made by summing a `std::iter::Iterator<Item=Vec<i32>>`
+    // FIXME sum together vectors
     // #[test]
     // fn tpch_8() {
     //     let buffer = run_tpch::<true>(8, "1").unwrap();
@@ -496,9 +492,7 @@ mod parallel {
     //     assert_abs_diff_eq!(actual, expected, epsilon = ((0, 1e-4), ()));
     // }
 
-    // FIXME
-    //  .sum();
-    //   ^^^ value of type `Vec<i32>` cannot be made by summing a `std::iter::Iterator<Item=Vec<i32>>`
+    // FIXME sum together vectors
     // #[test]
     // fn tpch_9() {
     //     let buffer = run_tpch::<true>(9, "1").unwrap();
@@ -563,15 +557,14 @@ mod parallel {
         assert_abs_diff_eq!(actual, expected, epsilon = ((0, (), (), (), 1e-4), ()));
     }
 
-    // FIXME investigate several issues
-    // #[test]
-    // fn tpch_16() {
-    //     let buffer = run_tpch::<true>(16, "1").unwrap();
-    //     let _actual: TypeQ16 = bincode::deserialize(&buffer).unwrap();
-    //     // FIXME sdql_static! blows up compilation time due to size of result
-    //     // let expected = sdql_static!(include!("tests/results/tpch/SF_1/16.sdql"));
-    //     // assert_abs_diff_eq!(actual, expected, epsilon = (((), (), 0, 0), ()));
-    // }
+    #[test]
+    fn tpch_16() {
+        let buffer = run_tpch::<true>(16, "1").unwrap();
+        let _actual: TypeQ16 = bincode::deserialize(&buffer).unwrap();
+        // FIXME sdql_static! blows up compilation time due to size of result
+        // let expected = sdql_static!(include!("tests/results/tpch/SF_1/16.sdql"));
+        // assert_abs_diff_eq!(actual, expected, epsilon = (((), (), 0, 0), ()));
+    }
 
     #[test]
     fn tpch_17() {
@@ -607,9 +600,7 @@ mod parallel {
         assert_abs_diff_eq!(actual, expected, epsilon = (((), ()), ()));
     }
 
-    // FIXME
-    //  .sum();
-    //   ^^^ value of type `Vec<i32>` cannot be made by summing a `std::iter::Iterator<Item=Vec<i32>>`
+    // FIXME sum together vectors
     // #[test]
     // fn tpch_21() {
     //     let buffer = run_tpch::<true>(21, "1").unwrap();
@@ -618,9 +609,7 @@ mod parallel {
     //     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0), ()));
     // }
 
-    // FIXME
-    //  .sum();
-    //   ^^^ value of type `Vec<i32>` cannot be made by summing a `std::iter::Iterator<Item=Vec<i32>>`
+    // FIXME sum together vectors
     // #[test]
     // fn tpch_22() {
     //     let buffer = run_tpch::<true>(22, "1").unwrap();
