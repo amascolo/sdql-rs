@@ -44,6 +44,11 @@ where
     pub const fn new(value: T) -> Self {
         Record(value)
     }
+
+    pub fn decat(self) -> T {
+        let Self(value) = self;
+        value
+    }
 }
 
 impl<T: IsTuple> Record<T> {}
