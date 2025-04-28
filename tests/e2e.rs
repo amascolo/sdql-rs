@@ -1,8 +1,8 @@
 use approx::assert_abs_diff_eq;
 use sdql::cli::run_tpch;
 use sdql::tpch::types::{
-    TypeQ1, TypeQ10, TypeQ13, TypeQ14, TypeQ15, TypeQ16, TypeQ17, TypeQ18, TypeQ19, TypeQ2, TypeQ20,
-    TypeQ21, TypeQ22, TypeQ3, TypeQ4, TypeQ5, TypeQ6, TypeQ7, TypeQ8, TypeQ9,
+    TypeQ1, TypeQ10, TypeQ12, TypeQ13, TypeQ14, TypeQ15, TypeQ16, TypeQ17, TypeQ18, TypeQ19, TypeQ2,
+    TypeQ20, TypeQ21, TypeQ22, TypeQ3, TypeQ4, TypeQ5, TypeQ6, TypeQ7, TypeQ8, TypeQ9,
 };
 use sdql_macros::sdql_static;
 use sdql_runtime::{HashMap, OrderedFloat, Record, TRUE};
@@ -112,23 +112,13 @@ mod sf_0_01 {
     //     assert_abs_diff_eq!(actual, expected, epsilon = ((0, 1e-4), ()));
     // }
 
-    // FIXME
-    //  .flat_map(|i| {
-    //      l_h.remove(&orders.0[i as usize])
-    //          .into_iter()
-    //          .flat_map(move |inner_map| {
-    //              inner_map
-    //                  .into_iter()
-    //                  .map(move |(l_shipmode, c)| (i, l_shipmode, c))
-    //          })
-    //  })
-    // #[test]
-    // fn tpch_12() {
-    //     let buffer = run_tpch::<false>(12, "0.01").unwrap();
-    //     let actual: TypeQ12 = bincode::deserialize(&buffer).unwrap();
-    //     let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/12.sdql"));
-    //     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 0), ()));
-    // }
+    #[test]
+    fn tpch_12() {
+        let buffer = run_tpch::<false>(12, "0.01").unwrap();
+        let actual: TypeQ12 = bincode::deserialize(&buffer).unwrap();
+        let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/12.sdql"));
+        assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 0), ()));
+    }
 
     #[test]
     fn tpch_13() {
@@ -320,14 +310,13 @@ mod sf_1 {
     //     assert_abs_diff_eq!(actual, expected, epsilon = ((0, 1e-4), ()));
     // }
 
-    // FIXME
-    // #[test]
-    // fn tpch_12() {
-    //     let buffer = run_tpch::<false>(12, "1").unwrap();
-    //     let actual: TypeQ12 = bincode::deserialize(&buffer).unwrap();
-    //     let expected = sdql_static!(include!("tests/results/tpch/SF_1/12.sdql"));
-    //     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 0), ()));
-    // }
+    #[test]
+    fn tpch_12() {
+        let buffer = run_tpch::<false>(12, "1").unwrap();
+        let actual: TypeQ12 = bincode::deserialize(&buffer).unwrap();
+        let expected = sdql_static!(include!("tests/results/tpch/SF_1/12.sdql"));
+        assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 0), ()));
+    }
 
     #[test]
     fn tpch_13() {
@@ -413,7 +402,6 @@ mod sf_1 {
     }
 }
 
-// FIXME requires fixing hardcoded hack in codegen::gen_args
 mod parallel {
     use super::*;
 

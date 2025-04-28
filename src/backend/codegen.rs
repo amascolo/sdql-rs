@@ -3,6 +3,7 @@ use crate::frontend::lexer::Spanned;
 use crate::inference::Typed;
 use crate::ir::expr::{BinOp, DictEntry, External, UnaryOp};
 use crate::ir::r#type::{DictHint, Type};
+use im_rc::vector;
 use itertools::Itertools;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
@@ -28,7 +29,7 @@ pub fn codegen<'src, const PARALLEL: bool>(expr: Typed<'src, Spanned<ExprFMF<'sr
     };
     let main_tks = quote! {
         #![feature(stmt_expr_attributes)]
-        #![allow(unused_variables)]
+        #![allow(unused_mut, unused_variables)]
         #imports
         fn main() {
             let value: #r#type = { #tks };
@@ -90,7 +91,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                 lhs_tks = quote! { #lhs_tks: #rhs_type }
             }
             let rhs_tks = ts_boxed::<PARALLEL>(rhs);
-            let let_tks = quote! { let #lhs_tks = #rhs_tks };
+            let let_tks = quote! { let mut #lhs_tks = #rhs_tks };
             let cont_tks = ts_boxed::<PARALLEL>(cont);
             quote! { #let_tks;  #cont_tks }
         }
@@ -149,7 +150,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             let head = ts_boxed::<PARALLEL>(head);
             let body = ts_boxed::<PARALLEL>(body);
             if PARALLEL {
-                quote! { #head.into_par_iter()#body }
+                quote! { #head.into_par_iter()#body } // FIXME TPCH Q12
             } else {
                 quote! { #head.into_iter()#body }
             }
@@ -175,6 +176,96 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             inner: _,
             cont: None,
         } => unimplemented!(),
+        ExprFMF::FMF {
+            op: OpFMF::Filter,
+            args,
+            inner:
+                Typed {
+                    val:
+                        Spanned(
+                            box ExprFMF::Get {
+                                lhs:
+                                    Typed {
+                                        val: Spanned(box ExprFMF::Dom { expr }, _),
+                                        r#type:
+                                            Type::Dict {
+                                                hint: None | Some(DictHint::HashDict { .. }),
+                                                ..
+                                            },
+                                    },
+                                rhs,
+                            },
+                            _,
+                        ),
+                    r#type: _,
+                },
+            cont:
+                Some(Typed {
+                    val:
+                        Spanned(
+                            box ExprFMF::FMF {
+                                op: OpFMF::FlatMap,
+                                args: _,
+                                inner:
+                                    Typed {
+                                        val:
+                                            Spanned(
+                                                box ExprFMF::Sum {
+                                                    key,
+                                                    val,
+                                                    head: _,
+                                                    body,
+                                                },
+                                                _,
+                                            ),
+                                        r#type: _,
+                                    },
+                                cont: _,
+                            },
+                            _,
+                        ),
+                    r#type: _,
+                }),
+        } => {
+            let args_inner = args.clone() + vector!["inner"];
+            let args_inner = gen_args(args_inner);
+            let args_outer = gen_args(args.clone());
+            let args: Vec<_> = args
+                .iter()
+                .map(|name| Ident::new(name, Span::call_site()))
+                .collect();
+
+            let lhs = ts_boxed::<PARALLEL>(expr);
+            let rhs = ts_boxed::<PARALLEL>(rhs);
+
+            let key = Ident::new(key, Span::call_site());
+            let val = Ident::new(val, Span::call_site());
+            // TODO match guard to check args coincide, i.e. Sum's head and Get's domain
+            let body = ts_boxed::<PARALLEL>(body);
+
+            let par_bridge = if PARALLEL {
+                quote! { .par_bridge() }
+            } else {
+                quote! {}
+            };
+            let flat_map = if PARALLEL {
+                quote! { flat_map_iter }
+            } else {
+                quote! { flat_map }
+            };
+
+            // TODO benchmark ParallelIterator::flat_map_iter vs ParallelIterator::flat_map
+            //  https://docs.rs/rayon/latest/rayon/iter/trait.ParallelIterator.html#flat_map_iter-versus-flat_map
+            quote! {
+                .filter_map(|#args_outer| #lhs.remove(&#rhs).map(|inner| (#(#args),*, inner)))
+                #par_bridge
+                .#flat_map(|#args_inner| {
+                    inner
+                        .into_iter()
+                        .map(move |(#key, #val)| (#(#args),*, #key, #val) )
+                })#body
+            }
+        }
         ExprFMF::FMF {
             op: OpFMF::Filter,
             args,
