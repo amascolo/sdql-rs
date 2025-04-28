@@ -197,7 +197,18 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                                                 box ExprFMF::Sum {
                                                     key,
                                                     val,
-                                                    head: _,
+                                                    head:
+                                                        Typed {
+                                                            val:
+                                                                Spanned(
+                                                                    box ExprFMF::Get {
+                                                                        lhs: _lhs_head,
+                                                                        rhs: _rhs_head,
+                                                                    },
+                                                                    _,
+                                                                ),
+                                                            r#type: _,
+                                                        },
                                                     body,
                                                 },
                                                 _,
@@ -211,6 +222,10 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                     r#type: _,
                 }),
         } => {
+            // TODO should ignore spans (including nested ones) and be match guards
+            // assert_eq!(expr, _lhs_head);
+            // assert_eq!(rhs, _rhs_head);
+
             let args_inner = args.clone() + vector!["inner"];
             let args_inner = gen_args(args_inner);
             let args_outer = gen_args(args.clone());
@@ -224,7 +239,6 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
 
             let key = Ident::new(key, Span::call_site());
             let val = Ident::new(val, Span::call_site());
-            // TODO match guard to check args coincide, i.e. Sum's head and Get's domain
             let body = ts_boxed::<PARALLEL>(body);
 
             let par_bridge = if PARALLEL {
