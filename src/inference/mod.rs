@@ -102,6 +102,11 @@ pub enum TypedExpr<'src> {
         lhs: Typed<'src, Spanned<Box<Self>>>,
         rhs: Typed<'src, Spanned<Box<Self>>>,
     },
+    Decat {
+        lhs: Vec<Field<'src>>,
+        rhs: Typed<'src, Spanned<Box<Self>>>,
+        cont: Typed<'src, Spanned<Box<Self>>>,
+    },
     External {
         func: External,
         args: Vec<Typed<'src, Spanned<Self>>>,
@@ -381,6 +386,29 @@ fn infer<'src>(expr: Expr<'src>, ctx: &Ctx<'src>) -> Typed<'src, TypedExpr<'src>
                 val: TypedExpr::Concat { lhs, rhs },
             }
         }
+        Expr::Decat { lhs, rhs, cont } => {
+            let rhs = infer_spanned(rhs, ctx);
+            let Typed {
+                val: _,
+                r#type: Type::Record(ref vec),
+            } = rhs
+            else {
+                panic!()
+            };
+            let mut ctx = ctx.clone();
+            let updates: impl IntoIterator<Item = (&str, _)> =
+                lhs.iter()
+                    .zip(vec)
+                    .map(|(field, RecordType { name: _, r#type })| {
+                        (field.clone().into(), r#type.clone())
+                    });
+            ctx.extend(updates);
+            let cont = infer_spanned(cont, &ctx);
+            Typed {
+                r#type: cont.r#type.clone(),
+                val: TypedExpr::Decat { lhs, rhs, cont },
+            }
+        }
         Expr::External {
             func: External::SubString,
             args,
@@ -555,6 +583,11 @@ impl<'src> From<TypedExpr<'src>> for Expr<'src> {
                 lhs: lhs.into(),
                 rhs: rhs.into(),
             },
+            TypedExpr::Decat { lhs, rhs, cont } => Expr::Decat {
+                lhs: lhs.into(),
+                rhs: rhs.into(),
+                cont: cont.into(),
+            },
             TypedExpr::External { func, args } => Expr::External {
                 func,
                 args: args.into_iter().map(|arg| arg.into()).collect(),
@@ -657,13 +690,12 @@ mod tests {
         assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
     }
 
-    // FIXME
-    // #[test]
-    // fn tpch_q11() {
-    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/11.sdql"));
-    //     let expr = sdql!(src);
-    //     assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
-    // }
+    #[test]
+    fn tpch_q11() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/11.sdql"));
+        let expr = sdql!(src);
+        assert_eq!(Spanned::from(Typed::from(expr.clone())), expr);
+    }
 
     #[test]
     fn tpch_q12() {

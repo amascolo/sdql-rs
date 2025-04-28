@@ -1,6 +1,7 @@
 use crate::frontend::lexer::Spanned;
 use crate::ir::r#type::{DictHint, Field, Type};
 use derive_more::Display;
+use itertools::Itertools;
 use sdql_runtime::Date;
 use std::fmt;
 use strum_macros::EnumString;
@@ -82,6 +83,11 @@ pub enum Expr<'src> {
     Concat {
         lhs: Spanned<Box<Self>>,
         rhs: Spanned<Box<Self>>,
+    },
+    Decat {
+        lhs: Vec<Field<'src>>,
+        rhs: Spanned<Box<Self>>,
+        cont: Spanned<Box<Self>>,
     },
     External {
         func: External,
@@ -242,6 +248,10 @@ impl fmt::Display for Expr<'_> {
             } => write!(f, "sum(<{key}, {val}> <- {head}) {body}"),
             Self::Range { expr } => write!(f, "range({expr})"),
             Self::Concat { lhs, rhs } => write!(f, "concat({lhs}, {rhs})"),
+            Self::Decat { lhs, rhs, cont } => {
+                let record = lhs.into_iter().join(", ");
+                write!(f, "let <{record}> = {rhs} in {cont}")
+            }
             Self::External { func, args } => write!(
                 f,
                 "ext(`{func}`, {})",

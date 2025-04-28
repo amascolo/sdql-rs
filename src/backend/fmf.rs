@@ -85,6 +85,11 @@ pub enum ExprFMF<'src> {
         lhs: Typed<'src, Spanned<Box<Self>>>,
         rhs: Typed<'src, Spanned<Box<Self>>>,
     },
+    Decat {
+        lhs: Vec<Field<'src>>,
+        rhs: Typed<'src, Spanned<Box<Self>>>,
+        cont: Typed<'src, Spanned<Box<Self>>>,
+    },
     External {
         func: External,
         args: Vec<Typed<'src, Spanned<Self>>>,
@@ -381,6 +386,11 @@ fn from<'src>(
                     lhs: lhs.into(),
                     rhs: rhs.into(),
                 },
+                TypedExpr::Decat { lhs, rhs, cont } => ExprFMF::Decat {
+                    lhs,
+                    rhs: rhs.into(),
+                    cont: cont.into(),
+                },
                 TypedExpr::External { func, args } => ExprFMF::External {
                     func,
                     args: args.into_iter().map(|arg| arg.into()).collect(),
@@ -458,6 +468,11 @@ impl<'src> From<ExprFMF<'src>> for TypedExpr<'src> {
             ExprFMF::Concat { lhs, rhs } => TypedExpr::Concat {
                 lhs: lhs.into(),
                 rhs: rhs.into(),
+            },
+            ExprFMF::Decat { lhs, rhs, cont } => TypedExpr::Decat {
+                lhs,
+                rhs: rhs.into(),
+                cont: cont.into(),
             },
             ExprFMF::External { func, args } => TypedExpr::External {
                 func,
@@ -677,14 +692,13 @@ mod tests {
         assert_eq!(Typed::from(fmf), typed);
     }
 
-    // FIXME
-    // #[test]
-    // fn tpch_q11() {
-    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/11.sdql"));
-    //     let typed = Typed::from(sdql!(src));
-    //     let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
-    //     assert_eq!(Typed::from(fmf), typed);
-    // }
+    #[test]
+    fn tpch_q11() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/11.sdql"));
+        let typed = Typed::from(sdql!(src));
+        let fmf = Typed::<Spanned<ExprFMF>>::from(typed.clone());
+        assert_eq!(Typed::from(fmf), typed);
+    }
 
     #[test]
     fn tpch_q12() {

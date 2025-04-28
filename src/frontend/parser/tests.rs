@@ -617,6 +617,18 @@ fn concat() {
 }
 
 #[test]
+fn decat() {
+    assert_eq!(
+        no_span!("let <a, b> = x in y"),
+        Expr::Decat {
+            lhs: vec!["a".into(), "b".into()],
+            rhs: Spanned(Box::new(no_span!("x")), (13..14).into()),
+            cont: Spanned(Box::new(no_span!("y")), (18..19).into()),
+        },
+    );
+}
+
+#[test]
 fn external() {
     assert_eq!(
         no_span!("ext(`StrContains`, p.p_name, \"green\")"),
@@ -717,12 +729,11 @@ fn tpch_10() {
     let _ = no_span!(prog);
 }
 
-// FIXME
-// #[test]
-// fn tpch_11() {
-//     let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/11.sdql"));
-//     let _ = no_span!(prog);
-// }
+#[test]
+fn tpch_11() {
+    let prog = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/11.sdql"));
+    let _ = no_span!(prog);
+}
 
 #[test]
 fn tpch_12() {

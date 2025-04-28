@@ -1,6 +1,6 @@
 use crate::frontend::lexer::{DictHintToken, ScalarType, Spanned, Token};
 use crate::ir::expr::{BinOp, DictEntry, Expr, RecordValue, UnaryOp};
-use crate::ir::r#type::{DictHint, RecordType, Type};
+use crate::ir::r#type::{DictHint, Field, RecordType, Type};
 use chumsky::error::Rich;
 use chumsky::{input::ValueInput, prelude::*};
 use sdql_runtime::Date;
@@ -455,6 +455,28 @@ where
                 )
             });
 
+        let idents = select! { Token::Ident(ident) => ident }
+            .separated_by(just(Token::Ctrl(',')))
+            .allow_trailing()
+            .collect::<Vec<_>>();
+
+        let decat = just(Token::Let)
+            .ignore_then(idents.delimited_by(just(Token::Op("<")), just(Token::Op(">"))))
+            .then_ignore(just(Token::Op("=")))
+            .then(expr.clone())
+            .then_ignore(just(Token::In).or_not())
+            .then(expr.clone())
+            .map_with(|((vec, val), body), e| {
+                Spanned(
+                    Expr::Decat {
+                        lhs: vec.into_iter().map(Field::from).collect(),
+                        rhs: val.boxed(),
+                        cont: body.boxed(),
+                    },
+                    e.span(),
+                )
+            });
+
         let concat = just(Token::Concat)
             .ignore_then(
                 expr.clone()
@@ -513,6 +535,7 @@ where
             .or(if_)
             .or(sum)
             .or(let_)
+            .or(decat)
             .or(concat)
             .or(external)
             .or(promote)

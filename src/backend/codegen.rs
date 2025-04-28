@@ -91,9 +91,8 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                 lhs_tks = quote! { #lhs_tks: #rhs_type }
             }
             let rhs_tks = ts_boxed::<PARALLEL>(rhs);
-            let let_tks = quote! { let mut #lhs_tks = #rhs_tks };
             let cont_tks = ts_boxed::<PARALLEL>(cont);
-            quote! { #let_tks;  #cont_tks }
+            quote! { let mut #lhs_tks = #rhs_tks;  #cont_tks }
         }
         ExprFMF::Load { r#type, path } => {
             let Type::Record(vals) = r#type else {
@@ -153,6 +152,14 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             let lhs = (0..lhs_len).map(Index::from).map(|i| quote! { #lhs.#i });
             let rhs = (0..rhs_len).map(Index::from).map(|i| quote! { #rhs.#i });
             quote! { Record::new((#(#lhs),*, #(#rhs),*)) }
+        }
+        ExprFMF::Decat { lhs, rhs, cont } => {
+            let lhs = lhs
+                .iter()
+                .map(|field| Ident::new(field.clone().into(), Span::call_site()));
+            let rhs = ts_boxed::<PARALLEL>(rhs);
+            let cont = ts_boxed::<PARALLEL>(cont);
+            quote! { let (#(#lhs),*) = #rhs.decat(); #cont }
         }
         ExprFMF::FMF {
             op: OpFMF::Filter,
@@ -944,12 +951,11 @@ mod tests {
         let _ = rs!(src);
     }
 
-    // FIXME
-    // #[test]
-    // fn tpch_11() {
-    //     let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/11.sdql"));
-    //     let _ = rs!(src);
-    // }
+    #[test]
+    fn tpch_11() {
+        let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/11.sdql"));
+        let _ = rs!(src);
+    }
 
     #[test]
     fn tpch_12() {
