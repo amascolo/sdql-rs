@@ -20,7 +20,7 @@ let ps_t =
         _ = { partsupp.ps_partkey(i) -> partsupp.ps_supplycost(i) * partsupp.ps_availqty(i) }
       >
 
-let <ps_t_0, ps_t_1> = decat(ps_t)
+let <ps_t_0, ps_t_1> = ps_t
 
 sum(<ps_partkey,ps_supplycost> <-  ps_t_1)
   if(ps_t_0 < ps_supplycost) then
