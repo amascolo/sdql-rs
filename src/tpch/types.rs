@@ -27,7 +27,7 @@ pub type TypeQ2 = HashSet<
 
 pub type TypeQ3 = HashSet<Record<(i32, Date, i32, OrderedFloat<f64>)>>;
 
-pub type TypeQ4 = HashSet<Record<(VarChar<25>, i32)>>;
+pub type TypeQ4 = HashSet<Record<(VarChar<15>, i32)>>;
 
 pub type TypeQ5 = HashSet<Record<(VarChar<25>, OrderedFloat<f64>)>>;
 
@@ -94,46 +94,89 @@ pub type TypeQ21 = HashSet<Record<(VarChar<25>, u32)>>;
 pub type TypeQ22 = HashSet<Record<(VarChar<2>, u32, OrderedFloat<f64>)>>;
 
 pub type Customer = (
-    /* custkey */ Vec<i32>,
-    /* name */ Vec<VarChar<25>>,
-    /* address */ Vec<VarChar<40>>,
-    /* nationkey */ Vec<i32>,
-    /* phone */ Vec<VarChar<15>>,
-    /* acctbal */ Vec<OrderedFloat<f64>>,
-    /* mktsegment */ Vec<VarChar<10>>,
-    /* comment */ Vec<VarChar<117>>,
-    /* size */ usize,
+    Vec<i32>,
+    Vec<VarChar<25>>,
+    Vec<VarChar<40>>,
+    Vec<i32>,
+    Vec<VarChar<15>>,
+    Vec<OrderedFloat<f64>>,
+    Vec<VarChar<10>>,
+    Vec<VarChar<117>>,
+    usize,
 );
 
 pub type Orders = (
-    /* orderkey */ Vec<i32>,
-    /* custkey */ Vec<i32>,
-    /* orderstatus */ Vec<VarChar<1>>,
-    /* totalprice */ Vec<OrderedFloat<f64>>,
-    /* orderdate */ Vec<Date>,
-    /* orderpriority */ Vec<VarChar<15>>,
-    /* clerk */ Vec<VarChar<15>>,
-    /* shippriority */ Vec<i32>,
-    /* comment */ Vec<VarChar<117>>,
-    /* size */ usize,
+    Vec<i32>,
+    Vec<i32>,
+    Vec<VarChar<1>>,
+    Vec<OrderedFloat<f64>>,
+    Vec<Date>,
+    Vec<VarChar<15>>,
+    Vec<VarChar<15>>,
+    Vec<i32>,
+    Vec<VarChar<117>>,
+    usize,
 );
 
 pub type Lineitem = (
-    /* orderkey */ Vec<i32>,
-    /* partkey */ Vec<i32>,
-    /* suppkey */ Vec<i32>,
-    /* linenumber */ Vec<i32>,
-    /* quantity */ Vec<OrderedFloat<f64>>,
-    /* extendedprice */ Vec<OrderedFloat<f64>>,
-    /* discount */ Vec<OrderedFloat<f64>>,
-    /* tax */ Vec<OrderedFloat<f64>>,
-    /* returnflag */ Vec<VarChar<1>>,
-    /* linestatus */ Vec<VarChar<1>>,
-    /* shipdate */ Vec<Date>,
-    /* commitdate */ Vec<Date>,
-    /* receiptdate */ Vec<Date>,
-    /* shipinstruct */ Vec<VarChar<25>>,
-    /* shipmode */ Vec<VarChar<10>>,
-    /* comment */ Vec<VarChar<117>>,
-    /* size */ usize,
+    Vec<i32>,
+    Vec<i32>,
+    Vec<i32>,
+    Vec<i32>,
+    Vec<OrderedFloat<f64>>,
+    Vec<OrderedFloat<f64>>,
+    Vec<OrderedFloat<f64>>,
+    Vec<OrderedFloat<f64>>,
+    Vec<VarChar<1>>,
+    Vec<VarChar<1>>,
+    Vec<Date>,
+    Vec<Date>,
+    Vec<Date>,
+    Vec<VarChar<25>>,
+    Vec<VarChar<10>>,
+    Vec<VarChar<117>>,
+    usize,
 );
+
+pub type Part = (
+    Vec<i32>,
+    Vec<VarChar<55>>,
+    Vec<VarChar<25>>,
+    Vec<VarChar<10>>,
+    Vec<VarChar<25>>,
+    Vec<i32>,
+    Vec<VarChar<10>>,
+    Vec<OrderedFloat<f64>>,
+    Vec<VarChar<23>>,
+    usize,
+);
+
+pub type Supplier = (
+    Vec<i32>,
+    Vec<VarChar<25>>,
+    Vec<VarChar<40>>,
+    Vec<i32>,
+    Vec<VarChar<15>>,
+    Vec<OrderedFloat<f64>>,
+    Vec<VarChar<101>>,
+    usize,
+);
+
+pub type Partsupp = (
+    Vec<i32>,
+    Vec<i32>,
+    Vec<OrderedFloat<f64>>,
+    Vec<OrderedFloat<f64>>,
+    Vec<VarChar<199>>,
+    usize,
+);
+
+pub type Nation = (
+    Vec<i32>,
+    Vec<VarChar<25>>,
+    Vec<i32>,
+    Vec<VarChar<152>>,
+    usize,
+);
+
+pub type Region = (Vec<i32>, Vec<VarChar<25>>, Vec<VarChar<152>>, usize);

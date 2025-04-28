@@ -1,0 +1,99 @@
+#![allow(unused_mut, unused_variables)]
+
+use super::types::*;
+use rayon::prelude::*;
+use sdql_runtime::*;
+
+pub fn q3_query(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ3 {
+    let c_h: HashMap<i32, Record<(i32,)>> = (0../* size */ customer.8)
+        .filter(|&i| /* mktsegment */ customer.6[i] == VarChar::from("BUILDING").unwrap())
+        .map(|i| {
+            (
+                /* custkey */ customer.0[i],
+                Record::new((/* custkey */ customer.0[i],)),
+            )
+        })
+        .collect();
+
+    let o_h: HashMap<i32, Record<(Date, i32)>> = (0../* size */ orders.9)
+        .filter(|&i| c_h.contains_key(&/* custkey */ orders.1[i]))
+        .filter(|&i| /* orderdate */ orders.4[i] < date!(19950315))
+        .map(|i| {
+            (
+                /* orderkey */ orders.0[i],
+                Record::new((
+                    /* orderdate */ orders.4[i],
+                    /* shippriority */ orders.7[i],
+                )),
+            )
+        })
+        .collect();
+
+    let l_h: HashMap<Record<(i32, Date, i32)>, Record<(OrderedFloat<f64>,)>> = (0../* size */ lineitem.16)
+        .filter(|&i| /* shipdate */ lineitem.10[i] > date!(19950315))
+        .filter(|&i| o_h.contains_key(&/* orderkey */ lineitem.0[i]))
+        .fold(HashMap::default(), |mut acc, i| {
+            acc[&Record::new((
+                /* orderkey */ lineitem.0[i],
+                o_h[&/* orderkey */ lineitem.0[i]].0,
+                o_h[&/* orderkey */ lineitem.0[i]].1,
+            ))] += Record::new((
+                /* extendedprice */
+                lineitem.5[i] * (OrderedFloat(1.0) - /* discount */ lineitem.6[i]),
+            ));
+            acc
+        });
+
+    l_h.into_iter()
+        .map(|(k, v)| (Record::new((k.0, k.1, k.2, v.0)), TRUE))
+        .collect()
+}
+
+pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ3 {
+    let c_h: HashMap<i32, Record<(i32,)>> = (0../* size */ customer.8)
+        .into_par_iter()
+        .filter(|&i| /* mktsegment */ customer.6[i] == VarChar::from("BUILDING").unwrap())
+        .map(|i| {
+            (
+                /* custkey */ customer.0[i],
+                Record::new((/* custkey */ customer.0[i],)),
+            )
+        })
+        .collect();
+
+    let o_h: HashMap<i32, Record<(Date, i32)>> = (0../* size */ orders.9)
+        .into_par_iter()
+        .filter(|&i| c_h.contains_key(&/* custkey */ orders.1[i]))
+        .filter(|&i| /* orderdate */ orders.4[i] < date!(19950315))
+        .map(|i| {
+            (
+                /* orderkey */ orders.0[i],
+                Record::new((
+                    /* orderdate */ orders.4[i],
+                    /* shippriority */ orders.7[i],
+                )),
+            )
+        })
+        .collect();
+
+    let l_h: HashMap<Record<(i32, Date, i32)>, Record<(OrderedFloat<f64>,)>> = (0../* size */ lineitem.16)
+        .into_par_iter()
+        .filter(|&i| /* shipdate */ lineitem.10[i] > date!(19950315))
+        .filter(|&i| o_h.contains_key(&/* orderkey */ lineitem.0[i]))
+        .fold(HashMap::default, |mut acc, i| {
+            acc[&Record::new((
+                /* orderkey */ lineitem.0[i],
+                o_h[&/* orderkey */ lineitem.0[i]].0,
+                o_h[&/* orderkey */ lineitem.0[i]].1,
+            ))] += Record::new((
+                /* extendedprice */
+                lineitem.5[i] * (OrderedFloat(1.0) - /* discount */ lineitem.6[i]),
+            ));
+            acc
+        })
+        .sum();
+
+    l_h.into_par_iter()
+        .map(|(k, v)| (Record::new((k.0, k.1, k.2, v.0)), TRUE))
+        .collect()
+}
