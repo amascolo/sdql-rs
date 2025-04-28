@@ -160,68 +160,39 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             inner: _,
             cont: None,
         } => unimplemented!(),
+        #[rustfmt::skip]
         ExprFMF::FMF {
-            op: OpFMF::Filter,
-            args,
-            inner:
-                Typed {
-                    val:
-                        Spanned(
-                            box ExprFMF::Get {
-                                lhs:
-                                    Typed {
-                                        val: Spanned(box ExprFMF::Dom { expr }, _),
-                                        r#type:
-                                            Type::Dict {
-                                                hint: None | Some(DictHint::HashDict { .. }),
-                                                ..
-                                            },
-                                    },
-                                rhs,
+            op: OpFMF::Filter, args,
+            inner: Typed {
+                val: Spanned(box ExprFMF::Get {
+                    lhs: Typed {
+                        val: Spanned(box ExprFMF::Dom { expr }, _),
+                        r#type: Type::Dict { hint: None | Some(DictHint::HashDict { .. }), .. },
+                    },
+                    rhs,
+                }, _),
+                r#type: _,
+            },
+            cont: Some(Typed {
+                val: Spanned(box ExprFMF::FMF {
+                    op: OpFMF::FlatMap, args: _,
+                    inner: Typed {
+                        val: Spanned(box ExprFMF::Sum {
+                            key, val,
+                            head: Typed {
+                                val: Spanned(box ExprFMF::Get { lhs: _lhs_head, rhs: _rhs_head }, _),
+                                r#type: _,
                             },
-                            _,
-                        ),
-                    r#type: _,
-                },
-            cont:
-                Some(Typed {
-                    val:
-                        Spanned(
-                            box ExprFMF::FMF {
-                                op: OpFMF::FlatMap,
-                                args: _,
-                                inner:
-                                    Typed {
-                                        val:
-                                            Spanned(
-                                                box ExprFMF::Sum {
-                                                    key,
-                                                    val,
-                                                    head:
-                                                        Typed {
-                                                            val:
-                                                                Spanned(
-                                                                    box ExprFMF::Get {
-                                                                        lhs: _lhs_head,
-                                                                        rhs: _rhs_head,
-                                                                    },
-                                                                    _,
-                                                                ),
-                                                            r#type: _,
-                                                        },
-                                                    body,
-                                                },
-                                                _,
-                                            ),
-                                        r#type: _,
-                                    },
-                                cont: _,
-                            },
-                            _,
-                        ),
-                    r#type: _,
-                }),
-        } => {
+                            body,
+                        }, _),
+                        r#type: _,
+                    },
+                    cont: _,
+                }, _),
+                r#type: _,
+            }),
+        }
+         => {
             // TODO should ignore spans (including nested ones) and be match guards
             // assert_eq!(expr, _lhs_head);
             // assert_eq!(rhs, _rhs_head);
