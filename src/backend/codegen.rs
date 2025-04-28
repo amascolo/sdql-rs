@@ -132,13 +132,14 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             let range = ExprFMF::from(expr.map(Spanned::unboxed));
             let range: syn::Expr = parse2(ts::<PARALLEL>(range)).unwrap();
             let range = gen_range(range);
-            let range = if PARALLEL {
+            let body = ExprFMF::from(body.map(Spanned::unboxed));
+            let body = ts::<PARALLEL>(body);
+            // TODO more robust solution for par_bridge
+            let range = if PARALLEL && !body.to_string().contains("par_bridge") {
                 quote! { (#range).into_par_iter() }
             } else {
                 quote! { (#range) }
             };
-            let body = ExprFMF::from(body.map(Spanned::unboxed));
-            let body = ts::<PARALLEL>(body);
             quote! { #range #body }
         }
         ExprFMF::Sum {
@@ -150,7 +151,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             let head = ts_boxed::<PARALLEL>(head);
             let body = ts_boxed::<PARALLEL>(body);
             if PARALLEL {
-                quote! { #head.into_par_iter()#body } // FIXME TPCH Q12
+                quote! { #head.into_par_iter()#body }
             } else {
                 quote! { #head.into_iter()#body }
             }

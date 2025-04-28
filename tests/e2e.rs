@@ -512,14 +512,13 @@ mod parallel {
     //     assert_abs_diff_eq!(actual, expected, epsilon = ((0, 1e-4), ()));
     // }
 
-    // FIXME
-    // #[test]
-    // fn tpch_12() {
-    //     let buffer = run_tpch::<true>(12, "1").unwrap();
-    //     let actual: TypeQ12 = bincode::deserialize(&buffer).unwrap();
-    //     let expected = sdql_static!(include!("tests/results/tpch/SF_1/12.sdql"));
-    //     assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 0), ()));
-    // }
+    #[test]
+    fn tpch_12() {
+        let buffer = run_tpch::<true>(12, "1").unwrap();
+        let actual: TypeQ12 = bincode::deserialize(&buffer).unwrap();
+        let expected = sdql_static!(include!("tests/results/tpch/SF_1/12.sdql"));
+        assert_abs_diff_eq!(actual, expected, epsilon = (((), 0, 0), ()));
+    }
 
     #[test]
     fn tpch_13() {
