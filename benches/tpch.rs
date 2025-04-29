@@ -9,6 +9,7 @@ use sdql::tpch::q5::{q5_query, q5_query_rayon};
 use sdql::tpch::q6::{q6_query, q6_query_rayon};
 use sdql::tpch::q7::{q7_query, q7_query_rayon};
 use sdql::tpch::q8::{q8_query, q8_query_rayon};
+use sdql::tpch::q9::{q9_query, q9_query_rayon};
 use sdql::tpch::read::*;
 
 fn benchmark_q1(c: &mut Criterion) {
@@ -169,6 +170,29 @@ fn benchmark_q8(c: &mut Criterion) {
     }
 }
 
+fn benchmark_q9(c: &mut Criterion) {
+    let path = |table| format!("datasets/tpch_datasets/SF_1/{table}.tbl");
+    let part = read_part()(&path("part")).unwrap();
+    let supplier = read_supplier()(&path("lineitem")).unwrap();
+    let lineitems = read_lineitems()(&path("lineitem")).unwrap();
+    let partsupp = read_partsupp()(&path("partsupp")).unwrap();
+    let orders = read_orders()(&path("orders")).unwrap();
+    let nation = read_nation()(&path("nation")).unwrap();
+    let data = (part, supplier, lineitems, partsupp, orders, nation);
+    for parallel in [false, true] {
+        let query = if parallel { q9_query_rayon } else { q9_query };
+        let variant = if parallel { "parallel" } else { "sequential" };
+        let id = BenchmarkId::new("q9", format!("SF1_{variant}"));
+        c.bench_with_input(
+            id,
+            &data,
+            |b, (part, supplier, lineitems, partsupp, orders, nation)| {
+                b.iter(|| black_box(query(part, supplier, lineitems, partsupp, orders, nation)))
+            },
+        );
+    }
+}
+
 fn benchmark_q12(c: &mut Criterion) {
     let path = |table| format!("datasets/tpch_datasets/SF_1/{table}.tbl");
     let orders = read_orders()(&path("orders")).unwrap();
@@ -194,6 +218,7 @@ criterion_group!(
     benchmark_q6, // TODO generated, not manually written
     benchmark_q7,
     benchmark_q8,
+    benchmark_q9,
     benchmark_q12
 );
 criterion_main!(benches);
