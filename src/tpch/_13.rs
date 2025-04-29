@@ -16,22 +16,17 @@ pub fn tpch_13(orders: &Orders, customer: &Customer) -> TypeQ13 {
                     .unwrap_or(-1),
             )
         })
-        .map(|(i, idx_special)| {
-            (
-                i,
-                idx_special,
-                orders.8[i as usize]
+        .filter(|&(i, idx_special)| {
+            idx_special == -1i32
+                || orders.8[i as usize]
                     .rfind(&"requests")
                     .map(|i| i as i32)
-                    .unwrap_or(-1),
-            )
-        })
-        .filter(|&(i, idx_special, idx_requests)| {
-            idx_special == -1i32 || idx_requests < idx_special + 7i32
+                    .unwrap_or(-1)
+                    < idx_special + 7i32
         })
         .fold(
             HashMap::default(),
-            |mut acc: HashMap<i32, i32>, (i, idx_special, idx_requests)| {
+            |mut acc: HashMap<i32, i32>, (i, idx_special)| {
                 acc[&orders.1[i as usize]] += 1i32;
                 acc
             },
@@ -68,22 +63,17 @@ pub fn tpch_13_parallel(orders: &Orders, customer: &Customer) -> TypeQ13 {
                     .unwrap_or(-1),
             )
         })
-        .map(|(i, idx_special)| {
-            (
-                i,
-                idx_special,
-                orders.8[i as usize]
+        .filter(|&(i, idx_special)| {
+            idx_special == -1i32
+                || orders.8[i as usize]
                     .rfind(&"requests")
                     .map(|i| i as i32)
-                    .unwrap_or(-1),
-            )
-        })
-        .filter(|&(i, idx_special, idx_requests)| {
-            idx_special == -1i32 || idx_requests < idx_special + 7i32
+                    .unwrap_or(-1)
+                    < idx_special + 7i32
         })
         .fold(
             HashMap::default,
-            |mut acc: HashMap<i32, i32>, (i, idx_special, idx_requests)| {
+            |mut acc: HashMap<i32, i32>, (i, idx_special)| {
                 acc[&orders.1[i as usize]] += 1i32;
                 acc
             },

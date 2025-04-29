@@ -4,10 +4,7 @@ let customer = load[<c_custkey: @vec {int -> int}, c_name: @vec {int -> varchar(
 let o_h =
   sum(<i,_> <- range(orders.size))
     let idx_special = ext(`FirstIndex`, orders.o_comment(i), "special")
-//    FIXME
-//    if((idx_special == -1) || (ext(`LastIndex`, orders.o_comment(i), "requests") < (idx_special + 7))) then
-    let idx_requests = ext(`LastIndex`, orders.o_comment(i), "requests")
-    if((idx_special == -1) || (idx_requests < (idx_special + 7))) then
+    if((idx_special == -1) || (ext(`LastIndex`, orders.o_comment(i), "requests") < (idx_special + 7))) then
         { orders.o_custkey(i) -> 1 }
 
 let c_h =

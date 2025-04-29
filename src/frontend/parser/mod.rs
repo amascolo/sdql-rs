@@ -222,6 +222,23 @@ where
                 )
                 .map(|expr| Expr::Range { expr: expr.boxed() });
 
+            let args = expr
+                .clone()
+                .separated_by(just(Token::Ctrl(',')))
+                .collect::<Vec<_>>();
+            let external = just(Token::Ext)
+                .ignore_then(
+                    select! { Token::Backtick(s) => s }
+                        .then(just(Token::Ctrl(',')).ignore_then(args))
+                        .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
+                )
+                .map(|(ext, args)| Expr::External {
+                    func: ext
+                        .parse()
+                        .expect(&format!("missing external enum variant `{ext}`")),
+                    args,
+                });
+
             let atom = val
                 .or(long)
                 .or(varchar)
@@ -235,6 +252,7 @@ where
                 .or(record)
                 .or(load)
                 .or(range)
+                .or(external)
                 .map_with(|expr, e| Spanned(expr, e.span()))
                 .or(expr
                     .clone()
@@ -493,28 +511,6 @@ where
                 )
             });
 
-        let args = expr
-            .clone()
-            .separated_by(just(Token::Ctrl(',')))
-            .collect::<Vec<_>>();
-        let external = just(Token::Ext)
-            .ignore_then(
-                select! { Token::Backtick(s) => s }
-                    .then(just(Token::Ctrl(',')).ignore_then(args))
-                    .delimited_by(just(Token::Ctrl('(')), just(Token::Ctrl(')'))),
-            )
-            .map_with(|(ext, args), e| {
-                Spanned(
-                    Expr::External {
-                        func: ext
-                            .parse()
-                            .expect(&format!("missing external enum variant `{ext}`")),
-                        args,
-                    },
-                    e.span(),
-                )
-            });
-
         let promote = just(Token::Promote)
             .ignore_then(type_.delimited_by(just(Token::Ctrl('[')), just(Token::Ctrl(']'))))
             .then(
@@ -537,7 +533,6 @@ where
             .or(let_)
             .or(decat)
             .or(concat)
-            .or(external)
             .or(promote)
             .boxed()
     })
