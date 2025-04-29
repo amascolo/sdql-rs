@@ -89,9 +89,9 @@ pub type TypeQ19 = HashSet<Record<(OrderedFloat<f64>,)>>;
 
 pub type TypeQ20 = HashSet<Record<(VarChar<25>, VarChar<40>)>>;
 
-pub type TypeQ21 = HashSet<Record<(VarChar<25>, u32)>>;
+pub type TypeQ21 = HashSet<Record<(VarChar<25>, i32)>>;
 
-pub type TypeQ22 = HashSet<Record<(VarChar<2>, u32, OrderedFloat<f64>)>>;
+pub type TypeQ22 = HashSet<Record<(VarChar<2>, i32, OrderedFloat<f64>)>>;
 
 pub type Customer = (
     Vec<i32>,
