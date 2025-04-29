@@ -32,14 +32,8 @@ pub fn tpch_11(supplier: &Supplier, partsupp: &Partsupp, nation: &Nation) -> Typ
     ps_t_1
         .into_iter()
         .filter(|&(ps_partkey, ps_supplycost)| ps_t_0 < ps_supplycost)
-        .fold(
-            HashMap::default(),
-            |mut acc: HashMap<Record<(i32, OrderedFloat<f64>)>, Bool>,
-             (ps_partkey, ps_supplycost)| {
-                acc[&Record::new((ps_partkey, ps_supplycost))] += TRUE;
-                acc
-            },
-        )
+        .map(|(ps_partkey, ps_supplycost)| (Record::new((ps_partkey, ps_supplycost)), TRUE))
+        .collect()
 }
 
 pub fn tpch_11_parallel(supplier: &Supplier, partsupp: &Partsupp, nation: &Nation) -> TypeQ11 {
@@ -70,13 +64,6 @@ pub fn tpch_11_parallel(supplier: &Supplier, partsupp: &Partsupp, nation: &Natio
     ps_t_1
         .into_par_iter()
         .filter(|&(ps_partkey, ps_supplycost)| ps_t_0 < ps_supplycost)
-        .fold(
-            HashMap::default,
-            |mut acc: HashMap<Record<(i32, OrderedFloat<f64>)>, Bool>,
-             (ps_partkey, ps_supplycost)| {
-                acc[&Record::new((ps_partkey, ps_supplycost))] += TRUE;
-                acc
-            },
-        )
-        .sum()
+        .map(|(ps_partkey, ps_supplycost)| (Record::new((ps_partkey, ps_supplycost)), TRUE))
+        .collect()
 }

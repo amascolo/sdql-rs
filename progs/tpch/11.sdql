@@ -24,4 +24,4 @@ let <ps_t_0, ps_t_1> = ps_t
 
 sum(<ps_partkey,ps_supplycost> <-  ps_t_1)
   if(ps_t_0 < ps_supplycost) then
-    { < _ = ps_partkey, _ = ps_supplycost > -> true }
+    { unique(< _ = ps_partkey, _ = ps_supplycost >) -> true }
