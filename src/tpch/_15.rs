@@ -37,29 +37,19 @@ pub fn tpch_15(lineitem: &Lineitem, supplier: &Supplier) -> TypeQ15 {
     suppkey_to_revenue
         .into_iter()
         .filter(|&(suppkey, revenue)| revenue == max_revenue)
-        .fold(
-            HashMap::default(),
-            |mut acc: HashMap<
-                Record<(
-                    i32,
-                    VarChar<25>,
-                    VarChar<40>,
-                    VarChar<15>,
-                    OrderedFloat<f64>,
-                )>,
-                Bool,
-            >,
-             (suppkey, revenue)| {
-                acc[&Record::new((
+        .map(|(suppkey, revenue)| {
+            (
+                Record::new((
                     suppkey,
                     suppkey_to_supp[&suppkey].0,
                     suppkey_to_supp[&suppkey].1,
                     suppkey_to_supp[&suppkey].2,
                     revenue,
-                ))] += TRUE;
-                acc
-            },
-        )
+                )),
+                TRUE,
+            )
+        })
+        .collect()
 }
 
 pub fn tpch_15_parallel(lineitem: &Lineitem, supplier: &Supplier) -> TypeQ15 {
@@ -93,30 +83,19 @@ pub fn tpch_15_parallel(lineitem: &Lineitem, supplier: &Supplier) -> TypeQ15 {
         })
         .collect();
     suppkey_to_revenue
-        .into_par_iter()
+        .into_iter()
         .filter(|&(suppkey, revenue)| revenue == max_revenue)
-        .fold(
-            HashMap::default,
-            |mut acc: HashMap<
-                Record<(
-                    i32,
-                    VarChar<25>,
-                    VarChar<40>,
-                    VarChar<15>,
-                    OrderedFloat<f64>,
-                )>,
-                Bool,
-            >,
-             (suppkey, revenue)| {
-                acc[&Record::new((
+        .map(|(suppkey, revenue)| {
+            (
+                Record::new((
                     suppkey,
                     suppkey_to_supp[&suppkey].0,
                     suppkey_to_supp[&suppkey].1,
                     suppkey_to_supp[&suppkey].2,
                     revenue,
-                ))] += TRUE;
-                acc
-            },
-        )
-        .sum()
+                )),
+                TRUE,
+            )
+        })
+        .collect()
 }

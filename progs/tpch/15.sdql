@@ -22,12 +22,14 @@ let suppkey_to_supp =
 sum(<suppkey,revenue> <- suppkey_to_revenue)
   if(revenue == max_revenue) then
     {
-      <
-        suppkey = suppkey,
-        // FIXME redundant brackets
-        name = (suppkey_to_supp(suppkey)).name,
-        address = (suppkey_to_supp(suppkey)).address,
-        phone = (suppkey_to_supp(suppkey)).phone,
-        total_revenue = revenue
-      > -> true
+      unique(
+        <
+          suppkey = suppkey,
+          // FIXME redundant brackets
+          name = (suppkey_to_supp(suppkey)).name,
+          address = (suppkey_to_supp(suppkey)).address,
+          phone = (suppkey_to_supp(suppkey)).phone,
+          total_revenue = revenue
+        >
+      ) -> true
     }
