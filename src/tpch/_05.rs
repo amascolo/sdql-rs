@@ -4,7 +4,7 @@ use super::types::*;
 use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q5_query(
+pub fn tpch_05(
     customer: &Customer,
     orders: &Orders,
     lineitem: &Lineitem,
@@ -77,7 +77,7 @@ pub fn q5_query(
         .collect()
 }
 
-pub fn q5_query_rayon(
+pub fn tpch_05_parallel(
     customer: &Customer,
     orders: &Orders,
     lineitem: &Lineitem,

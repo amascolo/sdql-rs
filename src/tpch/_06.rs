@@ -4,7 +4,7 @@ use super::types::*;
 use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q6_query(lineitem: &Lineitem) -> TypeQ6 {
+pub fn tpch_06(lineitem: &Lineitem) -> TypeQ6 {
     (0../* size */ lineitem.16)
         .map(|i| {
             if (OrderedFloat(0.05) <= /* discount */ lineitem.6[i])
@@ -22,7 +22,7 @@ pub fn q6_query(lineitem: &Lineitem) -> TypeQ6 {
         .sum()
 }
 
-pub fn q6_query_rayon(lineitem: &Lineitem) -> TypeQ6 {
+pub fn tpch_06_parallel(lineitem: &Lineitem) -> TypeQ6 {
     (0../* size */ lineitem.16)
         .into_par_iter()
         .map(|i| {

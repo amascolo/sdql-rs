@@ -5,7 +5,7 @@ use rayon::iter::IntoParallelIterator;
 use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q19_query(lineitem: &Lineitem, part: &Part) -> TypeQ19 {
+pub fn tpch_19(lineitem: &Lineitem, part: &Part) -> TypeQ19 {
     let mut p_h: HashMap<i32, Record<(VarChar<10>, i32, VarChar<10>)>> = (0..part.9)
         .into_iter()
         .filter(|&i| {
@@ -65,7 +65,7 @@ pub fn q19_query(lineitem: &Lineitem, part: &Part) -> TypeQ19 {
     HashMap::from([(Record::new((res,)), TRUE)])
 }
 
-pub fn q19_query_rayon(lineitem: &Lineitem, part: &Part) -> TypeQ19 {
+pub fn tpch_19_parallel(lineitem: &Lineitem, part: &Part) -> TypeQ19 {
     let mut p_h: HashMap<i32, Record<(VarChar<10>, i32, VarChar<10>)>> = (0..part.9)
         .into_par_iter()
         .filter(|&i| {

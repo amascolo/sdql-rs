@@ -4,7 +4,7 @@ use super::types::*;
 // use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q22_query(customer: &Customer, orders: &Orders) -> TypeQ22 {
+pub fn tpch_22(customer: &Customer, orders: &Orders) -> TypeQ22 {
     let mut o_h: Vec<i32> =
         (0..orders.9)
             .into_iter()
@@ -71,6 +71,6 @@ pub fn q22_query(customer: &Customer, orders: &Orders) -> TypeQ22 {
         .collect()
 }
 
-pub fn q22_query_rayon(customer: &Customer, orders: &Orders) -> TypeQ22 {
+pub fn tpch_22_parallel(customer: &Customer, orders: &Orders) -> TypeQ22 {
     todo!()
 }

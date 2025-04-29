@@ -4,7 +4,7 @@ use super::types::*;
 // use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q4_query(orders: &Orders, lineitem: &Lineitem) -> TypeQ4 {
+pub fn tpch_04(orders: &Orders, lineitem: &Lineitem) -> TypeQ4 {
     let mut l_h: Vec<i32> = (0..lineitem.16)
         .into_iter()
         .filter(|&i| lineitem.11[i as usize] < lineitem.12[i as usize])
@@ -31,6 +31,6 @@ pub fn q4_query(orders: &Orders, lineitem: &Lineitem) -> TypeQ4 {
         .collect()
 }
 
-pub fn q4_query_rayon(_orders: &Orders, _lineitem: &Lineitem) -> TypeQ4 {
+pub fn tpch_04_parallel(_orders: &Orders, _lineitem: &Lineitem) -> TypeQ4 {
     todo!()
 }

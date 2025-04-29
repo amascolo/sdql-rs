@@ -4,7 +4,7 @@ use super::types::*;
 use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q11_query(supplier: &Supplier, partsupp: &Partsupp, nation: &Nation) -> TypeQ11 {
+pub fn tpch_11(supplier: &Supplier, partsupp: &Partsupp, nation: &Nation) -> TypeQ11 {
     let mut n_h: HashMap<i32, Record<(i32,)>> = (0..nation.4)
         .into_iter()
         .filter(|&i| nation.1[i as usize] == VarChar::from_str("GERMANY").unwrap())
@@ -42,7 +42,7 @@ pub fn q11_query(supplier: &Supplier, partsupp: &Partsupp, nation: &Nation) -> T
         )
 }
 
-pub fn q11_query_rayon(supplier: &Supplier, partsupp: &Partsupp, nation: &Nation) -> TypeQ11 {
+pub fn tpch_11_parallel(supplier: &Supplier, partsupp: &Partsupp, nation: &Nation) -> TypeQ11 {
     let mut n_h: HashMap<i32, Record<(i32,)>> = (0..nation.4)
         .into_par_iter()
         .filter(|&i| nation.1[i as usize] == VarChar::from_str("GERMANY").unwrap())

@@ -5,7 +5,7 @@ use rayon::iter::IntoParallelIterator;
 use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q16_query(partsupp: &Partsupp, part: &Part, supplier: &Supplier) -> TypeQ16 {
+pub fn tpch_16(partsupp: &Partsupp, part: &Part, supplier: &Supplier) -> TypeQ16 {
     let mut p_h: HashMap<i32, Record<(VarChar<10>, VarChar<25>, i32)>> = (0..part.9)
         .into_iter()
         .map(|i| (i, !part.4[i as usize].starts_with(&"MEDIUM POLISHED")))
@@ -86,7 +86,7 @@ pub fn q16_query(partsupp: &Partsupp, part: &Part, supplier: &Supplier) -> TypeQ
         .collect()
 }
 
-pub fn q16_query_rayon(partsupp: &Partsupp, part: &Part, supplier: &Supplier) -> TypeQ16 {
+pub fn tpch_16_parallel(partsupp: &Partsupp, part: &Part, supplier: &Supplier) -> TypeQ16 {
     let mut p_h: HashMap<i32, Record<(VarChar<10>, VarChar<25>, i32)>> = (0..part.9)
         .into_par_iter()
         .map(|i| (i, !part.4[i as usize].starts_with(&"MEDIUM POLISHED")))

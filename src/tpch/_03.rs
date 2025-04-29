@@ -4,7 +4,7 @@ use super::types::*;
 use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q3_query(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ3 {
+pub fn tpch_03(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ3 {
     let c_h: HashMap<i32, Record<(i32,)>> = (0../* size */ customer.8)
         .filter(|&i| /* mktsegment */ customer.6[i] == VarChar::from("BUILDING").unwrap())
         .map(|i| {
@@ -49,7 +49,7 @@ pub fn q3_query(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> Ty
         .collect()
 }
 
-pub fn q3_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ3 {
+pub fn tpch_03_parallel(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ3 {
     let c_h: HashMap<i32, Record<(i32,)>> = (0../* size */ customer.8)
         .into_par_iter()
         .filter(|&i| /* mktsegment */ customer.6[i] == VarChar::from("BUILDING").unwrap())

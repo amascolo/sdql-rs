@@ -4,7 +4,7 @@ use super::types::*;
 use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q20_query(
+pub fn tpch_20(
     supplier: &Supplier,
     nation: &Nation,
     part: &Part,
@@ -74,7 +74,7 @@ pub fn q20_query(
         .collect()
 }
 
-pub fn q20_query_rayon(
+pub fn tpch_20_parallel(
     supplier: &Supplier,
     nation: &Nation,
     part: &Part,

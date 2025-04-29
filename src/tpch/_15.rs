@@ -5,7 +5,7 @@ use rayon::iter::IntoParallelIterator;
 use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q15_query(lineitem: &Lineitem, supplier: &Supplier) -> TypeQ15 {
+pub fn tpch_15(lineitem: &Lineitem, supplier: &Supplier) -> TypeQ15 {
     let mut suppkey_to_revenue: HashMap<i32, OrderedFloat<f64>> = (0..lineitem.16)
         .into_iter()
         .filter(|&i| {
@@ -62,7 +62,7 @@ pub fn q15_query(lineitem: &Lineitem, supplier: &Supplier) -> TypeQ15 {
         )
 }
 
-pub fn q15_query_rayon(lineitem: &Lineitem, supplier: &Supplier) -> TypeQ15 {
+pub fn tpch_15_parallel(lineitem: &Lineitem, supplier: &Supplier) -> TypeQ15 {
     let mut suppkey_to_revenue: HashMap<i32, OrderedFloat<f64>> = (0..lineitem.16)
         .into_par_iter()
         .filter(|&i| {

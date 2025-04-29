@@ -4,7 +4,7 @@ use super::types::*;
 use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q12_query(orders: &Orders, lineitem: &Lineitem) -> TypeQ12 {
+pub fn tpch_12(orders: &Orders, lineitem: &Lineitem) -> TypeQ12 {
     let mut l_h: HashMap<i32, HashMap<VarChar<10>, i32>> = (0..lineitem.16)
         .into_iter()
         .filter(|&i| {
@@ -61,7 +61,7 @@ pub fn q12_query(orders: &Orders, lineitem: &Lineitem) -> TypeQ12 {
     )
 }
 
-pub fn q12_query_rayon(orders: &Orders, lineitem: &Lineitem) -> TypeQ12 {
+pub fn tpch_12_parallel(orders: &Orders, lineitem: &Lineitem) -> TypeQ12 {
     let mut l_h: HashMap<i32, HashMap<VarChar<10>, i32>> = (0..lineitem.16)
         .into_par_iter()
         .filter(|&i| {

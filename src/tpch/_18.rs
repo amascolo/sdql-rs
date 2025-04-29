@@ -4,7 +4,7 @@ use super::types::*;
 use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q18_query(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ18 {
+pub fn tpch_18(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ18 {
     let mut l_h: HashMap<i32, OrderedFloat<f64>> = (0..lineitem.16).into_iter().fold(
         HashMap::default(),
         |mut acc: HashMap<i32, OrderedFloat<f64>>, i| {
@@ -69,7 +69,7 @@ pub fn q18_query(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> T
         .collect()
 }
 
-pub fn q18_query_rayon(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ18 {
+pub fn tpch_18_parallel(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> TypeQ18 {
     let mut l_h: HashMap<i32, OrderedFloat<f64>> = (0..lineitem.16)
         .into_par_iter()
         .fold(

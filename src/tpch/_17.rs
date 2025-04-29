@@ -4,7 +4,7 @@ use super::types::*;
 use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q17_query(lineitem: &Lineitem, part: &Part) -> TypeQ17 {
+pub fn tpch_17(lineitem: &Lineitem, part: &Part) -> TypeQ17 {
     let mut p_h: HashMap<i32, Record<(i32,)>> = (0..part.9)
         .into_iter()
         .filter(|&i| {
@@ -41,7 +41,7 @@ pub fn q17_query(lineitem: &Lineitem, part: &Part) -> TypeQ17 {
     tot / OrderedFloat(7f64)
 }
 
-pub fn q17_query_rayon(lineitem: &Lineitem, part: &Part) -> TypeQ17 {
+pub fn tpch_17_parallel(lineitem: &Lineitem, part: &Part) -> TypeQ17 {
     let mut p_h: HashMap<i32, Record<(i32,)>> = (0..part.9)
         .into_par_iter()
         .filter(|&i| {

@@ -12,7 +12,7 @@ mod sf_0_01 {
     use super::*;
 
     #[test]
-    fn tpch_1() {
+    fn tpch_01() {
         let buffer = run_tpch::<false>(1, "0.01").unwrap();
         let actual: TypeQ1 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/1.sdql"));
@@ -24,7 +24,7 @@ mod sf_0_01 {
     }
 
     #[test]
-    fn tpch_2() {
+    fn tpch_02() {
         let buffer = run_tpch::<false>(2, "0.01").unwrap();
         let actual: TypeQ2 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/2.sdql"));
@@ -36,7 +36,7 @@ mod sf_0_01 {
     }
 
     #[test]
-    fn tpch_3() {
+    fn tpch_03() {
         let buffer = run_tpch::<false>(3, "0.01").unwrap();
         let actual: TypeQ3 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/3.sdql"));
@@ -44,7 +44,7 @@ mod sf_0_01 {
     }
 
     #[test]
-    fn tpch_4() {
+    fn tpch_04() {
         let buffer = run_tpch::<false>(4, "0.01").unwrap();
         let actual: TypeQ4 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/4.sdql"));
@@ -52,7 +52,7 @@ mod sf_0_01 {
     }
 
     #[test]
-    fn tpch_5() {
+    fn tpch_05() {
         let buffer = run_tpch::<false>(5, "0.01").unwrap();
         let actual: TypeQ5 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/5.sdql"));
@@ -60,7 +60,7 @@ mod sf_0_01 {
     }
 
     #[test]
-    fn tpch_6() {
+    fn tpch_06() {
         let buffer = run_tpch::<false>(6, "0.01").unwrap();
         let actual: TypeQ6 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/6.sdql"));
@@ -68,7 +68,7 @@ mod sf_0_01 {
     }
 
     #[test]
-    fn tpch_7() {
+    fn tpch_07() {
         let buffer = run_tpch::<false>(7, "0.01").unwrap();
         let actual: TypeQ7 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/7.sdql"));
@@ -76,7 +76,7 @@ mod sf_0_01 {
     }
 
     #[test]
-    fn tpch_8() {
+    fn tpch_08() {
         let buffer = run_tpch::<false>(8, "0.01").unwrap();
         let actual: TypeQ8 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/8.sdql"));
@@ -84,7 +84,7 @@ mod sf_0_01 {
     }
 
     #[test]
-    fn tpch_9() {
+    fn tpch_09() {
         let buffer = run_tpch::<false>(9, "0.01").unwrap();
         let actual: TypeQ9 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/9.sdql"));
@@ -207,7 +207,7 @@ mod sf_1 {
     use super::*;
 
     #[test]
-    fn tpch_1() {
+    fn tpch_01() {
         let buffer = run_tpch::<false>(1, "1").unwrap();
         let actual: TypeQ1 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_1/1.sdql"));
@@ -219,7 +219,7 @@ mod sf_1 {
     }
 
     #[test]
-    fn tpch_2() {
+    fn tpch_02() {
         let buffer = run_tpch::<false>(2, "1").unwrap();
         let _actual: TypeQ2 = bincode::deserialize(&buffer).unwrap();
         // FIXME stack overflow
@@ -232,7 +232,7 @@ mod sf_1 {
     }
 
     #[test]
-    fn tpch_3() {
+    fn tpch_03() {
         let buffer = run_tpch::<false>(3, "1").unwrap();
         let _actual: TypeQ3 = bincode::deserialize(&buffer).unwrap();
         // FIXME sdql_static! blows up compilation time due to size of result
@@ -241,7 +241,7 @@ mod sf_1 {
     }
 
     #[test]
-    fn tpch_4() {
+    fn tpch_04() {
         let buffer = run_tpch::<false>(4, "1").unwrap();
         let actual: TypeQ4 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_1/4.sdql"));
@@ -249,7 +249,7 @@ mod sf_1 {
     }
 
     #[test]
-    fn tpch_5() {
+    fn tpch_05() {
         let buffer = run_tpch::<false>(5, "1").unwrap();
         let actual: TypeQ5 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_1/5.sdql"));
@@ -257,7 +257,7 @@ mod sf_1 {
     }
 
     #[test]
-    fn tpch_6() {
+    fn tpch_06() {
         let buffer = run_tpch::<false>(6, "1").unwrap();
         let actual: TypeQ6 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_1/6.sdql"));
@@ -265,7 +265,7 @@ mod sf_1 {
     }
 
     #[test]
-    fn tpch_7() {
+    fn tpch_07() {
         let buffer = run_tpch::<false>(7, "1").unwrap();
         let actual: TypeQ7 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_1/7.sdql"));
@@ -273,7 +273,7 @@ mod sf_1 {
     }
 
     #[test]
-    fn tpch_8() {
+    fn tpch_08() {
         let buffer = run_tpch::<false>(8, "1").unwrap();
         let actual: TypeQ8 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_1/8.sdql"));
@@ -281,7 +281,7 @@ mod sf_1 {
     }
 
     #[test]
-    fn tpch_9() {
+    fn tpch_09() {
         let buffer = run_tpch::<false>(9, "1").unwrap();
         let actual: TypeQ9 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_1/9.sdql"));
@@ -406,7 +406,7 @@ mod parallel {
     use super::*;
 
     #[test]
-    fn tpch_1() {
+    fn tpch_01() {
         let buffer = run_tpch::<true>(1, "1").unwrap();
         let actual: TypeQ1 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_1/1.sdql"));
@@ -418,7 +418,7 @@ mod parallel {
     }
 
     #[test]
-    fn tpch_2() {
+    fn tpch_02() {
         let buffer = run_tpch::<true>(2, "1").unwrap();
         let _actual: TypeQ2 = bincode::deserialize(&buffer).unwrap();
         // FIXME stack overflow
@@ -431,7 +431,7 @@ mod parallel {
     }
 
     #[test]
-    fn tpch_3() {
+    fn tpch_03() {
         let buffer = run_tpch::<true>(3, "1").unwrap();
         let _actual: TypeQ3 = bincode::deserialize(&buffer).unwrap();
         // FIXME sdql_static! blows up compilation time due to size of result
@@ -441,7 +441,7 @@ mod parallel {
 
     // FIXME sum together vectors
     // #[test]
-    // fn tpch_4() {
+    // fn tpch_04() {
     //     let buffer = run_tpch::<true>(4, "1").unwrap();
     //     let actual: TypeQ4 = bincode::deserialize(&buffer).unwrap();
     //     let expected = sdql_static!(include!("tests/results/tpch/SF_1/4.sdql"));
@@ -449,7 +449,7 @@ mod parallel {
     // }
 
     #[test]
-    fn tpch_5() {
+    fn tpch_05() {
         let buffer = run_tpch::<true>(5, "1").unwrap();
         let actual: TypeQ5 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_1/5.sdql"));
@@ -457,7 +457,7 @@ mod parallel {
     }
 
     #[test]
-    fn tpch_6() {
+    fn tpch_06() {
         let buffer = run_tpch::<true>(6, "1").unwrap();
         let actual: TypeQ6 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_1/6.sdql"));
@@ -465,7 +465,7 @@ mod parallel {
     }
 
     #[test]
-    fn tpch_7() {
+    fn tpch_07() {
         let buffer = run_tpch::<true>(7, "1").unwrap();
         let actual: TypeQ7 = bincode::deserialize(&buffer).unwrap();
         let expected = sdql_static!(include!("tests/results/tpch/SF_1/7.sdql"));
@@ -474,7 +474,7 @@ mod parallel {
 
     // FIXME sum together vectors
     // #[test]
-    // fn tpch_8() {
+    // fn tpch_08() {
     //     let buffer = run_tpch::<true>(8, "1").unwrap();
     //     let actual: TypeQ8 = bincode::deserialize(&buffer).unwrap();
     //     let expected = sdql_static!(include!("tests/results/tpch/SF_1/8.sdql"));
@@ -483,7 +483,7 @@ mod parallel {
 
     // FIXME sum together vectors
     // #[test]
-    // fn tpch_9() {
+    // fn tpch_09() {
     //     let buffer = run_tpch::<true>(9, "1").unwrap();
     //     let actual: TypeQ9 = bincode::deserialize(&buffer).unwrap();
     //     let expected = sdql_static!(include!("tests/results/tpch/SF_1/9.sdql"));

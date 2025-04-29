@@ -4,7 +4,7 @@ use super::types::*;
 use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q1_query(lineitem: &Lineitem) -> TypeQ1 {
+pub fn tpch_01(lineitem: &Lineitem) -> TypeQ1 {
     let mut l_h: HashMap<
         Record<(VarChar<1>, VarChar<1>)>,
         Record<(
@@ -64,7 +64,7 @@ pub fn q1_query(lineitem: &Lineitem) -> TypeQ1 {
     )
 }
 
-pub fn q1_query_rayon(lineitem: &Lineitem) -> TypeQ1 {
+pub fn tpch_01_parallel(lineitem: &Lineitem) -> TypeQ1 {
     let mut l_h: HashMap<
         Record<(VarChar<1>, VarChar<1>)>,
         Record<(

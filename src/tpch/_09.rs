@@ -4,7 +4,7 @@ use super::types::*;
 // use rayon::prelude::*;
 use sdql_runtime::*;
 
-pub fn q9_query(
+pub fn tpch_09(
     part: &Part,
     supplier: &Supplier,
     lineitem: &Lineitem,
@@ -70,7 +70,7 @@ pub fn q9_query(
         .collect()
 }
 
-pub fn q9_query_rayon(
+pub fn tpch_09_parallel(
     _part: &Part,
     _supplier: &Supplier,
     _lineitem: &Lineitem,

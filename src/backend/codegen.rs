@@ -892,55 +892,55 @@ mod tests {
     use crate::rs;
 
     #[test]
-    fn tpch_1() {
+    fn tpch_01() {
         let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/1.sdql"));
         let _ = rs!(src);
     }
 
     #[test]
-    fn tpch_2() {
+    fn tpch_02() {
         let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/2.sdql"));
         let _ = rs!(src);
     }
 
     #[test]
-    fn tpch_3() {
+    fn tpch_03() {
         let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/3.sdql"));
         let _ = rs!(src);
     }
 
     #[test]
-    fn tpch_4() {
+    fn tpch_04() {
         let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/4.sdql"));
         let _ = rs!(src);
     }
 
     #[test]
-    fn tpch_5() {
+    fn tpch_05() {
         let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/5.sdql"));
         let _ = rs!(src);
     }
 
     #[test]
-    fn tpch_6() {
+    fn tpch_06() {
         let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/6.sdql"));
         let _ = rs!(src);
     }
 
     #[test]
-    fn tpch_7() {
+    fn tpch_07() {
         let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/7.sdql"));
         let _ = rs!(src);
     }
 
     #[test]
-    fn tpch_8() {
+    fn tpch_08() {
         let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/8.sdql"));
         let _ = rs!(src);
     }
 
     #[test]
-    fn tpch_9() {
+    fn tpch_09() {
         let src = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/progs/tpch/9.sdql"));
         let _ = rs!(src);
     }
