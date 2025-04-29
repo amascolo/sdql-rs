@@ -418,7 +418,7 @@ criterion_group!(
     benches,
     benchmark_tpch_01,
     benchmark_tpch_02,
-    benchmark_tpch_03, // TODO generated, not manually written
+    benchmark_tpch_03,
     benchmark_tpch_04,
     benchmark_tpch_05,
     benchmark_tpch_06, // TODO generated, not manually written
