@@ -431,9 +431,9 @@ criterion_group!(
     benchmark_q13,
     benchmark_q14,
     benchmark_q15,
-    // TODO
     benchmark_q16,
     benchmark_q17,
+    // TODO
     benchmark_q18,
     benchmark_q19,
     benchmark_q20,
