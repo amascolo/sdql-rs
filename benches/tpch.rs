@@ -4,6 +4,16 @@ use sdql::tpch::q1::{q1_query, q1_query_rayon};
 use sdql::tpch::q10::{q10_query, q10_query_rayon};
 use sdql::tpch::q11::{q11_query, q11_query_rayon};
 use sdql::tpch::q12::{q12_query, q12_query_rayon};
+use sdql::tpch::q13::{q13_query, q13_query_rayon};
+// use sdql::tpch::q14::{q14_query, q14_query_rayon};
+// use sdql::tpch::q15::{q15_query, q15_query_rayon};
+// use sdql::tpch::q16::{q16_query, q16_query_rayon};
+// use sdql::tpch::q17::{q17_query, q17_query_rayon};
+// use sdql::tpch::q18::{q18_query, q18_query_rayon};
+// use sdql::tpch::q19::{q19_query, q19_query_rayon};
+// use sdql::tpch::q20::{q20_query, q20_query_rayon};
+// use sdql::tpch::q21::{q21_query, q21_query_rayon};
+// use sdql::tpch::q22::{q22_query, q22_query_rayon};
 use sdql::tpch::q2::{q2_query, q2_query_rayon};
 use sdql::tpch::q3::{q3_query, q3_query_rayon};
 use sdql::tpch::q4::{q4_query, q4_query_rayon};
@@ -243,6 +253,21 @@ fn benchmark_q12(c: &mut Criterion) {
     }
 }
 
+fn benchmark_q13(c: &mut Criterion) {
+    let path = |table| format!("datasets/tpch_datasets/SF_1/{table}.tbl");
+    let orders = read_orders()(&path("orders")).unwrap();
+    let customer = read_customers()(&path("customer")).unwrap();
+    let data = (orders, customer);
+    for parallel in [false, true] {
+        let query = if parallel { q13_query_rayon } else { q13_query };
+        let variant = if parallel { "parallel" } else { "sequential" };
+        let id = BenchmarkId::new("q13", format!("SF1_{variant}"));
+        c.bench_with_input(id, &data, |b, (orders, customer)| {
+            b.iter(|| black_box(query(orders, customer)))
+        });
+    }
+}
+
 criterion_group!(
     benches,
     benchmark_q1,
@@ -256,6 +281,16 @@ criterion_group!(
     benchmark_q9,
     benchmark_q10,
     benchmark_q11,
-    benchmark_q12
+    benchmark_q12,
+    benchmark_q13,
+    // benchmark_q14,
+    // benchmark_q15,
+    // benchmark_q16,
+    // benchmark_q17,
+    // benchmark_q18,
+    // benchmark_q19,
+    // benchmark_q20,
+    // benchmark_q21,
+    // benchmark_q22,
 );
 criterion_main!(benches);
