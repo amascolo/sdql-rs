@@ -81,9 +81,7 @@ fn benchmark_tpch_04(c: &mut Criterion) {
     let orders = read_orders()(&path("orders")).unwrap();
     let lineitems = read_lineitems()(&path("lineitem")).unwrap();
     let data = (orders, lineitems);
-    // FIXME
-    //  for parallel in [false, true] {
-    for parallel in [false] {
+    for parallel in [false, true] {
         let query = if parallel { tpch_04_parallel } else { tpch_04 };
         let variant = if parallel { "parallel" } else { "sequential" };
         let id = BenchmarkId::new("tpch_04", format!("SF1_{variant}"));
@@ -166,9 +164,7 @@ fn benchmark_tpch_08(c: &mut Criterion) {
     let nation = read_nation()(&path("nation")).unwrap();
     let region = read_region()(&path("region")).unwrap();
     let data = (part, supplier, lineitems, orders, customers, nation, region);
-    // FIXME
-    //  for parallel in [false, true] {
-    for parallel in [false] {
+    for parallel in [false, true] {
         let query = if parallel { tpch_08_parallel } else { tpch_08 };
         let variant = if parallel { "parallel" } else { "sequential" };
         let id = BenchmarkId::new("tpch_08", format!("SF1_{variant}"));
@@ -195,9 +191,7 @@ fn benchmark_tpch_09(c: &mut Criterion) {
     let orders = read_orders()(&path("orders")).unwrap();
     let nation = read_nation()(&path("nation")).unwrap();
     let data = (part, supplier, lineitems, partsupp, orders, nation);
-    // FIXME
-    //  for parallel in [false, true] {
-    for parallel in [false] {
+    for parallel in [false, true] {
         let query = if parallel { tpch_09_parallel } else { tpch_09 };
         let variant = if parallel { "parallel" } else { "sequential" };
         let id = BenchmarkId::new("tpch_09", format!("SF1_{variant}"));
@@ -412,9 +406,7 @@ fn benchmark_tpch_22(c: &mut Criterion) {
     let customer = read_customers()(&path("customer")).unwrap();
     let orders = read_orders()(&path("orders")).unwrap();
     let data = (customer, orders);
-    // FIXME
-    //  for parallel in [false, true] {
-    for parallel in [false] {
+    for parallel in [false, true] {
         let query = if parallel { tpch_22_parallel } else { tpch_22 };
         let variant = if parallel { "parallel" } else { "sequential" };
         let id = BenchmarkId::new("tpch_22", format!("SF1_{variant}"));
