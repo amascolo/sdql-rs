@@ -26,6 +26,7 @@ pub fn tpch_17(lineitem: &Lineitem, part: &Part) -> TypeQ17 {
         );
     let mut tot: OrderedFloat<f64> = (0..lineitem.16)
         .into_iter()
+        .filter(|&i| l_h.contains_key(&lineitem.1[i as usize]))
         .map(|i| {
             (
                 i,
@@ -33,9 +34,7 @@ pub fn tpch_17(lineitem: &Lineitem, part: &Part) -> TypeQ17 {
                     / l_h[&lineitem.1[i as usize]].1,
             )
         })
-        .filter(|&(i, avg)| {
-            l_h.contains_key(&lineitem.1[i as usize]) && lineitem.4[i as usize] < avg
-        })
+        .filter(|&(i, avg)| lineitem.4[i as usize] < avg)
         .map(|(i, avg)| lineitem.5[i as usize])
         .sum();
     tot / OrderedFloat(7f64)
@@ -64,6 +63,7 @@ pub fn tpch_17_parallel(lineitem: &Lineitem, part: &Part) -> TypeQ17 {
         .sum();
     let mut tot: OrderedFloat<f64> = (0..lineitem.16)
         .into_par_iter()
+        .filter(|&i| l_h.contains_key(&lineitem.1[i as usize]))
         .map(|i| {
             (
                 i,
@@ -71,9 +71,7 @@ pub fn tpch_17_parallel(lineitem: &Lineitem, part: &Part) -> TypeQ17 {
                     / l_h[&lineitem.1[i as usize]].1,
             )
         })
-        .filter(|&(i, avg)| {
-            l_h.contains_key(&lineitem.1[i as usize]) && lineitem.4[i as usize] < avg
-        })
+        .filter(|&(i, avg)| lineitem.4[i as usize] < avg)
         .map(|(i, avg)| lineitem.5[i as usize])
         .sum();
     tot / OrderedFloat(7f64)

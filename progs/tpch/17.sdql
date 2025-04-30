@@ -13,8 +13,9 @@ let l_h =
 
 let tot =
   sum(<i,_> <- range(lineitem.size))
-    let avg = 0.2 * l_h(lineitem.l_partkey(i))(0) / l_h(lineitem.l_partkey(i))(1)
-    if((dom(l_h)(lineitem.l_partkey(i))) && (lineitem.l_quantity(i) < avg )) then
-      lineitem.l_extendedprice(i)
+    if(dom(l_h)(lineitem.l_partkey(i))) then
+      let avg = 0.2 * l_h(lineitem.l_partkey(i))(0) / l_h(lineitem.l_partkey(i))(1)
+      if (lineitem.l_quantity(i) < avg) then
+        lineitem.l_extendedprice(i)
 
 tot / 7.0
