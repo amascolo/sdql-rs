@@ -25,42 +25,18 @@ let l2_indexed =
 
 let l3_indexed =
   sum(<i,_> <- range(lineitem.size))
-    let l = <
-      l_orderkey=lineitem.l_orderkey(i),
-      l_partkey=lineitem.l_partkey(i),
-      l_suppkey=lineitem.l_suppkey(i),
-      l_linenumber=lineitem.l_linenumber(i),
-      l_quantity=lineitem.l_quantity(i),
-      l_extendedprice=lineitem.l_extendedprice(i),
-      l_discount=lineitem.l_discount(i),
-      l_tax=lineitem.l_tax(i),
-      l_returnflag=lineitem.l_returnflag(i),
-      l_linestatus=lineitem.l_linestatus(i),
-      l_shipdate=lineitem.l_shipdate(i),
-      l_commitdate=lineitem.l_commitdate(i),
-      l_receiptdate=lineitem.l_receiptdate(i),
-      l_shipinstruct=lineitem.l_shipinstruct(i),
-      l_shipmode=lineitem.l_shipmode(i),
-      l_comment=lineitem.l_comment(i)
-    >
     if(lineitem.l_commitdate(i) < lineitem.l_receiptdate(i)) then
       // TODO @smallvecdict(0) => @vecdict
       @vec(6000001) { lineitem.l_orderkey(i) -> @smallvecdict(0) { lineitem.l_suppkey(i) -> 1 } }
 
 let l1_probed =
   sum(<i,_> <- range(lineitem.size))
-//  TODO remove
-    let l2_size = ext(`Size`, l2_indexed(lineitem.l_orderkey(i)))
-    let l3_size = ext(`Size`, l3_indexed(lineitem.l_orderkey(i)))
     if(
       (lineitem.l_commitdate(i) < lineitem.l_receiptdate(i)) &&
       (dom(su_probed)(lineitem.l_suppkey(i))) &&
       (dom(ord_indexed)(lineitem.l_orderkey(i))) &&
-//      FIXME
-//      (1 < ext(`Size`, l2_indexed(lineitem.l_orderkey(i)))) &&
-//      (ext(`Size`, l3_indexed(lineitem.l_orderkey(i))) <= 1)
-      (1 < l2_size) &&
-      (l3_size <= 1)
+      (1 < ext(`Size`, l2_indexed(lineitem.l_orderkey(i)))) &&
+      (ext(`Size`, l3_indexed(lineitem.l_orderkey(i))) <= 1)
     ) then
       { < name = su_probed(lineitem.l_suppkey(i)) > -> < numwait = 1> }
 
