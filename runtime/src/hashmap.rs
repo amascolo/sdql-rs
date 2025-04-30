@@ -107,9 +107,25 @@ where
     }
 }
 
-// TODO
-//  impl<K, V> AddAssign for HashMap<K, V, { Addition::Min }>
-//  impl<K, V> AddAssign for HashMap<K, V, { Addition::Max }>
+impl<K, V> AddAssign for HashMap<K, V, { Addition::Min }>
+where
+    K: Copy + Eq + Hash,
+    V: AddAssign + DefaultRef,
+{
+    fn add_assign(&mut self, _other: Self) {
+        todo!()
+    }
+}
+
+impl<K, V> AddAssign for HashMap<K, V, { Addition::Max }>
+where
+    K: Copy + Eq + Hash,
+    V: AddAssign + DefaultRef,
+{
+    fn add_assign(&mut self, _other: Self) {
+        todo!()
+    }
+}
 
 impl<K, V, const ADD: Addition> Deref for HashMap<K, V, ADD>
 where
