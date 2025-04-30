@@ -24,6 +24,10 @@ impl<const CAP: usize> VarChar<CAP> {
     pub fn from(s: &str) -> Result<Self, CapacityError<&str>> {
         ArrayString::from(s).map(VarChar)
     }
+
+    pub const fn new_const() -> Self {
+        Self(ArrayString::new_const())
+    }
 }
 
 impl<const CAP: usize> FromStr for VarChar<CAP> {
