@@ -78,7 +78,10 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
         ExprFMF::String { val, max_len } => {
             let suffixed = match max_len {
                 None => quote! { VarChar },
-                Some(max_len) => quote! { VarChar::<#max_len> },
+                Some(max_len) => {
+                    let max_len = LitInt::new(&max_len.to_string(), Span::call_site());
+                    quote! { VarChar::<#max_len> }
+                }
             };
             quote! { #suffixed::from_str(#val).unwrap() }
         }
