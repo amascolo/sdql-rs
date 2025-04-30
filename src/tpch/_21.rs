@@ -135,7 +135,7 @@ pub fn tpch_21_parallel(
     //         (&mut *(ptr as *mut SmallVecDict<[i32; 0usize]>)
     //             .add(lineitem.0[i as usize] as usize))[lineitem.2[i as usize]] += 1;
     //     });
-    // // FIXME
+    // // FIXME would require SmallVecDict to be thread-safe
     // let mut l1_probed: HashMap<Record<(VarChar<25>,)>, Record<(i32,)>> = (0..lineitem.16)
     //     .into_par_iter()
     //     .filter(|&i| {
