@@ -41,8 +41,8 @@ pub fn tpch_19(lineitem: &Lineitem, part: &Part) -> TypeQ19 {
     let mut res: OrderedFloat<f64> = (0..lineitem.16)
         .into_iter()
         .map(|i| (i, p_h[&lineitem.1[i as usize]].0))
-        .map(|(i, p_brand)| {
-            if p_h.contains_key(&lineitem.1[i as usize])
+        .filter(|&(i, p_brand)| {
+            p_h.contains_key(&lineitem.1[i as usize])
                 && (lineitem.14[i as usize] == VarChar::from_str("AIR").unwrap()
                     || lineitem.14[i as usize] == VarChar::from_str("AIR REG").unwrap())
                 && lineitem.13[i as usize] == VarChar::from_str("DELIVER IN PERSON").unwrap()
@@ -55,12 +55,8 @@ pub fn tpch_19(lineitem: &Lineitem, part: &Part) -> TypeQ19 {
                     || p_brand == VarChar::from_str("Brand#34").unwrap()
                         && OrderedFloat(20f64) <= lineitem.4[i as usize]
                         && lineitem.4[i as usize] <= OrderedFloat(30f64))
-            {
-                lineitem.5[i as usize] * (OrderedFloat(1f64) - lineitem.6[i as usize])
-            } else {
-                OrderedFloat(0f64)
-            }
         })
+        .map(|(i, p_brand)| lineitem.5[i as usize] * (OrderedFloat(1f64) - lineitem.6[i as usize]))
         .sum();
     HashMap::from([(Record::new((res,)), TRUE)])
 }
@@ -101,8 +97,8 @@ pub fn tpch_19_parallel(lineitem: &Lineitem, part: &Part) -> TypeQ19 {
     let mut res: OrderedFloat<f64> = (0..lineitem.16)
         .into_par_iter()
         .map(|i| (i, p_h[&lineitem.1[i as usize]].0))
-        .map(|(i, p_brand)| {
-            if p_h.contains_key(&lineitem.1[i as usize])
+        .filter(|&(i, p_brand)| {
+            p_h.contains_key(&lineitem.1[i as usize])
                 && (lineitem.14[i as usize] == VarChar::from_str("AIR").unwrap()
                     || lineitem.14[i as usize] == VarChar::from_str("AIR REG").unwrap())
                 && lineitem.13[i as usize] == VarChar::from_str("DELIVER IN PERSON").unwrap()
@@ -115,12 +111,8 @@ pub fn tpch_19_parallel(lineitem: &Lineitem, part: &Part) -> TypeQ19 {
                     || p_brand == VarChar::from_str("Brand#34").unwrap()
                         && OrderedFloat(20f64) <= lineitem.4[i as usize]
                         && lineitem.4[i as usize] <= OrderedFloat(30f64))
-            {
-                lineitem.5[i as usize] * (OrderedFloat(1f64) - lineitem.6[i as usize])
-            } else {
-                OrderedFloat(0f64)
-            }
         })
+        .map(|(i, p_brand)| lineitem.5[i as usize] * (OrderedFloat(1f64) - lineitem.6[i as usize]))
         .sum();
     HashMap::from([(Record::new((res,)), TRUE)])
 }
