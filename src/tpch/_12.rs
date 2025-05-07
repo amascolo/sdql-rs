@@ -24,11 +24,18 @@ pub fn tpch_12(orders: &Orders, lineitem: &Lineitem) -> TypeQ12 {
         );
     let mut o_h: HashMap<Record<(VarChar<10>,)>, Record<(i32, i32)>> = (0..orders.9)
         .into_iter()
-        .filter_map(|i| l_h.remove(&orders.0[i as usize]).map(|inner| (i, inner)))
-        .flat_map(|(i, inner)| {
-            inner
-                .into_iter()
-                .map(move |(l_shipmode, c)| (i, l_shipmode, c))
+        // TODO update code generator
+        // .filter_map(|i| l_h.remove(&orders.0[i as usize]).map(|inner| (i, inner)))
+        // .flat_map(|(i, inner)| {
+        //     inner
+        //         .into_iter()
+        //         .map(move |(l_shipmode, c)| (i, l_shipmode, c))
+        // })
+        .filter(|&i| l_h.contains_key(&orders.0[i as usize]))
+        .flat_map(|i| {
+            l_h[&orders.0[i as usize]]
+                .iter()
+                .map(move |(&l_shipmode, &c)| (i, l_shipmode, c))
         })
         .fold(
             HashMap::default(),
@@ -81,14 +88,28 @@ pub fn tpch_12_parallel(orders: &Orders, lineitem: &Lineitem) -> TypeQ12 {
         )
         .sum();
     let mut o_h: HashMap<Record<(VarChar<10>,)>, Record<(i32, i32)>> = (0..orders.9)
-        .into_iter()
-        .filter_map(|i| l_h.remove(&orders.0[i as usize]).map(|inner| (i, inner)))
-        .par_bridge()
-        .flat_map_iter(|(i, inner)| {
-            inner
-                .into_iter()
-                .map(move |(l_shipmode, c)| (i, l_shipmode, c))
+        // TODO update code generator
+        // .into_iter()
+        // .filter_map(|i| l_h.remove(&orders.0[i as usize]).map(|inner| (i, inner)))
+        // .par_bridge()
+        // .flat_map_iter(|(i, inner)| {
+        //     inner
+        //         .into_iter()
+        //         .map(move |(l_shipmode, c)| (i, l_shipmode, c))
+        // })
+        .into_par_iter()
+        .filter(|&i| l_h.contains_key(&orders.0[i as usize]))
+        .flat_map_iter(|i| {
+            l_h[&orders.0[i as usize]]
+                .iter()
+                .map(move |(&l_shipmode, &c)| (i, l_shipmode, c))
         })
+        // note: we can parallelise on the inner map too, but the overhead makes it slower (on SF=1)
+        // .flat_map(|i| {
+        //     l_h[&orders.0[i as usize]]
+        //         .par_iter()
+        //         .map(move |(&l_shipmode, &c)| (i, l_shipmode, c))
+        // })
         .fold(
             HashMap::default,
             |mut acc: HashMap<Record<(VarChar<10>,)>, Record<(i32, i32)>>, (i, l_shipmode, c)| {
