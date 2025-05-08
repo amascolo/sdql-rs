@@ -186,7 +186,7 @@ where
     K: Eq + Hash,
 {
     fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> Self {
-        HashMap(iter.into_iter().collect())
+        Self(iter.into_iter().collect())
     }
 }
 
@@ -209,7 +209,7 @@ where
     V: Send,
 {
     fn from_par_iter<T: IntoParallelIterator<Item = (K, V)>>(iter: T) -> Self {
-        HashMap(iter.into_par_iter().collect())
+        Self(iter.into_par_iter().collect())
     }
 }
 
