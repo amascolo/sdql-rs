@@ -43,25 +43,9 @@ pub fn tpch_01(lineitem: &Lineitem) -> TypeQ1 {
                 acc
             },
         );
-    l_h.into_iter().fold(
-        HashMap::default(),
-        |mut acc: HashMap<
-            Record<(
-                VarChar<1>,
-                VarChar<1>,
-                OrderedFloat<f64>,
-                OrderedFloat<f64>,
-                OrderedFloat<f64>,
-                OrderedFloat<f64>,
-                i32,
-            )>,
-            Bool,
-        >,
-         (k, v)| {
-            acc[&Record::new((k.0, k.1, v.0, v.1, v.2, v.3, v.4))] += TRUE;
-            acc
-        },
-    )
+    l_h.into_iter()
+        .map(|(k, v)| (Record::new((k.0, k.1, v.0, v.1, v.2, v.3, v.4)), TRUE))
+        .collect()
 }
 
 pub fn tpch_01_parallel(lineitem: &Lineitem) -> TypeQ1 {
@@ -105,24 +89,6 @@ pub fn tpch_01_parallel(lineitem: &Lineitem) -> TypeQ1 {
         )
         .sum();
     l_h.into_par_iter()
-        .fold(
-            HashMap::default,
-            |mut acc: HashMap<
-                Record<(
-                    VarChar<1>,
-                    VarChar<1>,
-                    OrderedFloat<f64>,
-                    OrderedFloat<f64>,
-                    OrderedFloat<f64>,
-                    OrderedFloat<f64>,
-                    i32,
-                )>,
-                Bool,
-            >,
-             (k, v)| {
-                acc[&Record::new((k.0, k.1, v.0, v.1, v.2, v.3, v.4))] += TRUE;
-                acc
-            },
-        )
-        .sum()
+        .map(|(k, v)| (Record::new((k.0, k.1, v.0, v.1, v.2, v.3, v.4)), TRUE))
+        .collect()
 }

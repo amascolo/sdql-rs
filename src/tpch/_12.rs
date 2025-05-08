@@ -59,13 +59,9 @@ pub fn tpch_12(orders: &Orders, lineitem: &Lineitem) -> TypeQ12 {
                 acc
             },
         );
-    o_h.into_iter().fold(
-        HashMap::default(),
-        |mut acc: HashMap<Record<(VarChar<10>, i32, i32)>, Bool>, (k, v)| {
-            acc[&Record::new((k.0, v.0, v.1))] += TRUE;
-            acc
-        },
-    )
+    o_h.into_iter()
+        .map(|(k, v)| (Record::new((k.0, v.0, v.1)), TRUE))
+        .collect()
 }
 
 pub fn tpch_12_parallel(orders: &Orders, lineitem: &Lineitem) -> TypeQ12 {
@@ -134,12 +130,6 @@ pub fn tpch_12_parallel(orders: &Orders, lineitem: &Lineitem) -> TypeQ12 {
         )
         .sum();
     o_h.into_par_iter()
-        .fold(
-            HashMap::default,
-            |mut acc: HashMap<Record<(VarChar<10>, i32, i32)>, Bool>, (k, v)| {
-                acc[&Record::new((k.0, v.0, v.1))] += TRUE;
-                acc
-            },
-        )
-        .sum()
+        .map(|(k, v)| (Record::new((k.0, v.0, v.1)), TRUE))
+        .collect()
 }

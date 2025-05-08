@@ -25,4 +25,4 @@ let o_h =
         }
 
 sum(<k,v> <- o_h)
-  { concat(k,v) -> true }
+  { unique(concat(k,v)) -> true }
