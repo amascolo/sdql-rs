@@ -15,7 +15,7 @@ pub fn run_tpch<const PARALLEL: bool>(query: u8, sf: &str) -> io::Result<Vec<u8>
     // FIXME TPCH q15 add support for max
     let src = if query == 15 {
         src.replace(
-            "let max_revenue = sum(<_,v> <- suppkey_to_revenue) promote[max_sum](v)",
+            "let max_revenue = sum(<_,v> <- suppkey_to_revenue) promote[max_prod](v)",
             match sf {
                 "0.01" => "let max_revenue = 1161099.4635999997",
                 "1" => "let max_revenue = 1772627.2087",
