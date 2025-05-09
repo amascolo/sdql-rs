@@ -4,14 +4,14 @@ let lineitem = load[<l_orderkey: @vec {int -> int}, l_partkey: @vec {int -> int}
 let l_h =
   sum(<i,_> <- range(lineitem.size))
     if((lineitem.l_commitdate(i) < lineitem.l_receiptdate(i))) then
-      @vec(6000001) { lineitem.l_orderkey(i) -> 1 }
+      @vec(6000001) { lineitem.l_orderkey(i) -> true }
 
 let o_h =
   sum(<i,_> <- range(orders.size))
     if(
       (date(19930701) <= orders.o_orderdate(i))
       && (orders.o_orderdate(i) < date(19931001))
-      && l_h(orders.o_orderkey(i)) > 0
+      && l_h(orders.o_orderkey(i)) == true
     ) then
       { orders.o_orderpriority(i) -> 1 }
 

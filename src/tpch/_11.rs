@@ -10,10 +10,10 @@ pub fn tpch_11(supplier: &Supplier, partsupp: &Partsupp, nation: &Nation) -> Typ
         .filter(|&i| nation.1[i as usize] == VarChar::from_str("GERMANY").unwrap())
         .map(|i| (nation.0[i as usize], Record::new((nation.0[i as usize],))))
         .collect();
-    let mut s_h: HashMap<i32, i32> = (0..supplier.7)
+    let mut s_h: HashMap<i32, Bool> = (0..supplier.7)
         .into_iter()
         .filter(|&i| n_h.contains_key(&supplier.3[i as usize]))
-        .map(|i| (supplier.0[i as usize], 1i32))
+        .map(|i| (supplier.0[i as usize], TRUE))
         .collect();
     let mut ps_t: Record<(OrderedFloat<f64>, HashMap<i32, OrderedFloat<f64>>)> = (0..partsupp.5)
         .into_iter()
@@ -42,10 +42,10 @@ pub fn tpch_11_parallel(supplier: &Supplier, partsupp: &Partsupp, nation: &Natio
         .filter(|&i| nation.1[i as usize] == VarChar::from_str("GERMANY").unwrap())
         .map(|i| (nation.0[i as usize], Record::new((nation.0[i as usize],))))
         .collect();
-    let mut s_h: HashMap<i32, i32> = (0..supplier.7)
+    let mut s_h: HashMap<i32, Bool> = (0..supplier.7)
         .into_par_iter()
         .filter(|&i| n_h.contains_key(&supplier.3[i as usize]))
-        .map(|i| (supplier.0[i as usize], 1i32))
+        .map(|i| (supplier.0[i as usize], TRUE))
         .collect();
     let mut ps_t: Record<(OrderedFloat<f64>, HashMap<i32, OrderedFloat<f64>>)> = (0..partsupp.5)
         .into_par_iter()

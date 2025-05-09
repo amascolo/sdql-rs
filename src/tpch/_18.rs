@@ -12,10 +12,10 @@ pub fn tpch_18(customer: &Customer, orders: &Orders, lineitem: &Lineitem) -> Typ
             acc
         },
     );
-    let mut orderkeys: HashMap<i32, i32> = l_h
+    let mut orderkeys: HashMap<i32, Bool> = l_h
         .into_iter()
         .filter(|&(l_orderkey, l_quantity)| OrderedFloat(300f64) < l_quantity)
-        .map(|(l_orderkey, l_quantity)| (l_orderkey, 1i32))
+        .map(|(l_orderkey, l_quantity)| (l_orderkey, TRUE))
         .collect();
     let mut custkey_to_name: HashMap<i32, Record<(VarChar<25>,)>> = (0..customer.8)
         .into_iter()
@@ -80,10 +80,10 @@ pub fn tpch_18_parallel(customer: &Customer, orders: &Orders, lineitem: &Lineite
             },
         )
         .sum();
-    let mut orderkeys: HashMap<i32, i32> = l_h
+    let mut orderkeys: HashMap<i32, Bool> = l_h
         .into_par_iter()
         .filter(|&(l_orderkey, l_quantity)| OrderedFloat(300f64) < l_quantity)
-        .map(|(l_orderkey, l_quantity)| (l_orderkey, 1i32))
+        .map(|(l_orderkey, l_quantity)| (l_orderkey, TRUE))
         .collect();
     let mut custkey_to_name: HashMap<i32, Record<(VarChar<25>,)>> = (0..customer.8)
         .into_par_iter()

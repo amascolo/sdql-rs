@@ -384,7 +384,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             let lhs = ts_boxed::<PARALLEL>(expr);
             let rhs = ts_boxed::<PARALLEL>(rhs);
             match hint {
-                Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs as usize] != 0 },
+                Some(DictHint::Vec { .. }) => quote! { #lhs[#rhs as usize] == TRUE },
                 _ => quote! { #lhs.contains_key(&#rhs) },
             }
         }
@@ -671,12 +671,14 @@ fn split<'src>(
             return (lhs, rhs);
         }
 
-        // { ... -> @vec { ... -> 1 } }
+        // { ... -> @vec { ... -> true | 1 } }
         if let ExprFMF::Dict { map, hint } = &val.val.0
             && {
                 let DictEntry { key: _, val } = map.iter().next().unwrap();
-                matches!(val.val.0, ExprFMF::Int { val: 1 })
-                    && matches!(hint, Some(DictHint::Vec { .. }))
+                matches!(
+                    val.val.0,
+                    ExprFMF::Bool { val: true } | ExprFMF::Int { val: 1 }
+                ) && matches!(hint, Some(DictHint::Vec { .. }))
             }
         {
             let ExprFMF::Dict { map, hint: _ } = val.val.0 else {
@@ -686,9 +688,12 @@ fn split<'src>(
             return (vec![key], rhs);
         }
 
-        // @vec { < ... > -> 1 }
+        // @vec { < ... > -> true | 1 }
         if matches!(key.val.0, ExprFMF::Record { .. })
-            && matches!(val.val.0, ExprFMF::Int { val: 1 })
+            && matches!(
+                val.val.0,
+                ExprFMF::Bool { val: true } | ExprFMF::Int { val: 1 }
+            )
             && matches!(hint, Some(DictHint::Vec { .. }))
         {
             return (vec![], key);

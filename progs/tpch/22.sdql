@@ -3,7 +3,7 @@ let orders = load[<o_orderkey: @vec {int -> int}, o_custkey: @vec {int -> int}, 
 
 let o_h =
   sum(<i,_> <- range(orders.size))
-    @vec(150001) { orders.o_custkey(i) -> 1 }
+    @vec(150001) { orders.o_custkey(i) -> true }
 
 let fused =
   sum(<i,_> <- range(customer.size))
@@ -28,7 +28,7 @@ let res =
   sum(<i,_> <- range(customer.size))
     if(
       (avg < customer.c_acctbal(i)) &&
-      (o_h(customer.c_custkey(i)) == 0) &&
+      (o_h(customer.c_custkey(i)) == false) &&
       (
         // FIXME remove unnecessary parentheses
         (ext(`StrStartsWith`, customer.c_phone(i), "13")) ||

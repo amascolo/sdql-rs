@@ -21,20 +21,20 @@ pub fn tpch_21(
         .map(|i| (supplier.0[i as usize], supplier.1[i as usize]))
         .collect();
     // TODO update code generator
-    // let mut ord_indexed: Vec<i32> = (0..orders.9)
+    // let mut ord_indexed: Vec<Bool> = (0..orders.9)
     //     .into_iter()
     //     .filter(|&i| orders.2[i as usize] == VarChar::from_str("F").unwrap())
-    //     .fold(vec![i32::default(); 6000001], |mut acc: Vec<i32>, i| {
-    //         acc[orders.0[i as usize] as usize] += 1i32;
+    //     .fold(vec![Bool::default(); 6000001], |mut acc: Vec<Bool>, i| {
+    //         acc[orders.0[i as usize] as usize] += TRUE;
     //         acc
     //     });
-    let mut ord_indexed: Vec<i32> = vec![i32::default(); 6000001];
+    let mut ord_indexed: Vec<Bool> = vec![Bool::default(); 6000001];
     let ptr = ord_indexed.as_mut_ptr() as usize;
     (0..orders.9)
         .into_iter()
         .filter(|&i| orders.2[i as usize] == VarChar::from_str("F").unwrap())
         .for_each(move |i| unsafe {
-            *(ptr as *mut i32).add(orders.0[i as usize] as usize) += 1;
+            *(ptr as *mut Bool).add(orders.0[i as usize] as usize) = TRUE;
         });
     // TODO update code generator
     // let mut l2_indexed: Vec<SmallVecDict<[i32; 0usize]>> = (0..lineitem.16).into_iter().fold(
@@ -75,7 +75,7 @@ pub fn tpch_21(
         .filter(|&i| {
             lineitem.11[i as usize] < lineitem.12[i as usize]
                 && su_probed.contains_key(&lineitem.2[i as usize])
-                && ord_indexed[lineitem.0[i as usize] as usize] != 0
+                && ord_indexed[lineitem.0[i as usize] as usize] == TRUE
                 && 1i32 < l2_indexed[lineitem.0[i as usize] as usize].len() as i32
                 && l3_indexed[lineitem.0[i as usize] as usize].len() as i32 <= 1i32
         })
@@ -110,13 +110,13 @@ pub fn tpch_21_parallel(
     //     .map(|i| (supplier.0[i as usize], supplier.1[i as usize]))
     //     .collect();
     // // TODO update code generator
-    // let mut ord_indexed: Vec<i32> = vec![i32::default(); 6000001];
+    // let mut ord_indexed: Vec<Bool> = vec![Bool::default(); 6000001];
     // let ptr = ord_indexed.as_mut_ptr() as usize;
     // (0..orders.9)
     //     .into_par_iter()
     //     .filter(|&i| orders.2[i as usize] == VarChar::from_str("F").unwrap())
-    //     .for_each(|i| unsafe {
-    //         *(ptr as *mut i32).add(orders.0[i as usize] as usize) += 1;
+    //     .for_each(move |i| unsafe {
+    //         *(ptr as *mut Bool).add(orders.0[i as usize] as usize) = TRUE;
     //     });
     // // TODO update code generator
     // let mut l2_indexed: Vec<SmallVecDict<[i32; 0usize]>> = vec![SmallVecDict::default(); 6000001];
@@ -141,7 +141,7 @@ pub fn tpch_21_parallel(
     //     .filter(|&i| {
     //         lineitem.11[i as usize] < lineitem.12[i as usize]
     //             && su_probed.contains_key(&lineitem.2[i as usize])
-    //             && ord_indexed[lineitem.0[i as usize] as usize] != 0
+    //             && ord_indexed[lineitem.0[i as usize] as usize] == TRUE
     //             && 1i32 < l2_indexed[lineitem.0[i as usize] as usize].len() as i32
     //             && l3_indexed[lineitem.0[i as usize] as usize].len() as i32 <= 1i32
     //     })

@@ -7,17 +7,17 @@ use sdql_runtime::*;
 
 pub fn tpch_22(customer: &Customer, orders: &Orders) -> TypeQ22 {
     // TODO update code generator
-    // let mut o_h: Vec<i32> =
+    // let mut o_h: Vec<Bool> =
     //     (0..orders.9)
     //         .into_iter()
-    //         .fold(vec![i32::default(); 150001], |mut acc: Vec<i32>, i| {
-    //             acc[orders.1[i as usize] as usize] += 1i32;
+    //         .fold(vec![Bool::default(); 150001], |mut acc: Vec<Bool>, i| {
+    //             acc[orders.1[i as usize] as usize] += TRUE;
     //             acc
     //         });
-    let mut o_h = vec![i32::default(); 150001];
+    let mut o_h = vec![Bool::default(); 150001];
     let ptr = o_h.as_mut_ptr() as usize;
     (0..orders.9).into_iter().for_each(move |i| unsafe {
-        *(ptr as *mut i32).add(orders.1[i as usize] as usize) += 1;
+        *(ptr as *mut Bool).add(orders.1[i as usize] as usize) = TRUE;
     });
     let mut fused: Record<(OrderedFloat<f64>, OrderedFloat<f64>)> = (0..customer.8)
         .into_iter()
@@ -54,7 +54,7 @@ pub fn tpch_22(customer: &Customer, orders: &Orders) -> TypeQ22 {
         .into_iter()
         .filter(|&i| {
             avg < customer.5[i as usize]
-                && o_h[customer.0[i as usize] as usize] == 0i32
+                && o_h[customer.0[i as usize] as usize] == FALSE
                 && (customer.4[i as usize].starts_with(&"13")
                     || customer.4[i as usize].starts_with(&"31")
                     || customer.4[i as usize].starts_with(&"23")
@@ -80,10 +80,10 @@ pub fn tpch_22(customer: &Customer, orders: &Orders) -> TypeQ22 {
 
 pub fn tpch_22_parallel(customer: &Customer, orders: &Orders) -> TypeQ22 {
     // TODO update code generator
-    let mut o_h = vec![i32::default(); 150001];
+    let mut o_h = vec![Bool::default(); 150001];
     let ptr = o_h.as_mut_ptr() as usize;
     (0..orders.9).into_par_iter().for_each(move |i| unsafe {
-        *(ptr as *mut i32).add(orders.1[i as usize] as usize) += 1;
+        *(ptr as *mut Bool).add(orders.1[i as usize] as usize) = TRUE;
     });
     let mut fused: Record<(OrderedFloat<f64>, OrderedFloat<f64>)> = (0..customer.8)
         .into_par_iter()
@@ -120,7 +120,7 @@ pub fn tpch_22_parallel(customer: &Customer, orders: &Orders) -> TypeQ22 {
         .into_par_iter()
         .filter(|&i| {
             avg < customer.5[i as usize]
-                && o_h[customer.0[i as usize] as usize] == 0i32
+                && o_h[customer.0[i as usize] as usize] == FALSE
                 && (customer.4[i as usize].starts_with(&"13")
                     || customer.4[i as usize].starts_with(&"31")
                     || customer.4[i as usize].starts_with(&"23")

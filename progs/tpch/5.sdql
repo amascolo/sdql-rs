@@ -31,7 +31,7 @@ let o_h =
 
 let s_h =
   sum(<i,_> <- range(supplier.size))
-    { unique(< _ = supplier.s_suppkey(i), _ = supplier.s_nationkey(i) >) -> 1 }
+    { unique(< _ = supplier.s_suppkey(i), _ = supplier.s_nationkey(i) >) -> true }
 
 let l_h =
   sum(<i,_> <- range(lineitem.size))

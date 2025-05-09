@@ -10,7 +10,7 @@ let n_h =
 let s_h =
   sum(<i,_> <- range(supplier.size))
     if(dom(n_h)(supplier.s_nationkey(i))) then
-      { unique(supplier.s_suppkey(i)) -> 1 }
+      { unique(supplier.s_suppkey(i)) -> true }
 
 let ps_t =
   sum(<i,_> <- range(partsupp.size))

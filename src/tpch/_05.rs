@@ -46,12 +46,12 @@ pub fn tpch_05(
             )
         })
         .collect();
-    let mut s_h: HashMap<Record<(i32, i32)>, i32> = (0..supplier.7)
+    let mut s_h: HashMap<Record<(i32, i32)>, Bool> = (0..supplier.7)
         .into_iter()
         .map(|i| {
             (
                 Record::new((supplier.0[i as usize], supplier.3[i as usize])),
-                1i32,
+                TRUE,
             )
         })
         .collect();
@@ -119,12 +119,12 @@ pub fn tpch_05_parallel(
             )
         })
         .collect();
-    let mut s_h: HashMap<Record<(i32, i32)>, i32> = (0..supplier.7)
+    let mut s_h: HashMap<Record<(i32, i32)>, Bool> = (0..supplier.7)
         .into_par_iter()
         .map(|i| {
             (
                 Record::new((supplier.0[i as usize], supplier.3[i as usize])),
-                1i32,
+                TRUE,
             )
         })
         .collect();

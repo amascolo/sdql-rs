@@ -9,7 +9,7 @@ let l_h =
 let orderkeys =
   sum(<l_orderkey,l_quantity> <- l_h)
     if(300.0 < l_quantity) then
-      { unique(l_orderkey) -> 1 }
+      { unique(l_orderkey) -> true }
 
 let custkey_to_name =
   sum(<i,_> <- range(customer.size))

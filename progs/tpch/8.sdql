@@ -14,7 +14,7 @@ let r_h =
 let n_h =
   sum(<i,_> <- range(nation.size))
     if(dom(r_h)(nation.n_regionkey(i))) then
-      { unique(nation.n_nationkey(i)) -> 1 }
+      { unique(nation.n_nationkey(i)) -> true }
 
 let nationkey_to_name =
   sum(<i,_> <- range(nation.size))

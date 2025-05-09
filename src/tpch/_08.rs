@@ -19,10 +19,10 @@ pub fn tpch_08(
         .filter(|&i| region.1[i as usize] == VarChar::from_str("AMERICA").unwrap())
         .map(|i| (region.0[i as usize], Record::new((region.0[i as usize],))))
         .collect();
-    let mut n_h: HashMap<i32, i32> = (0..nation.4)
+    let mut n_h: HashMap<i32, Bool> = (0..nation.4)
         .into_iter()
         .filter(|&i| r_h.contains_key(&nation.2[i as usize]))
-        .map(|i| (nation.0[i as usize], 1i32))
+        .map(|i| (nation.0[i as usize], TRUE))
         .collect();
     let mut nationkey_to_name: HashMap<i32, Record<(VarChar<25>,)>> = (0..nation.4)
         .into_iter()
@@ -126,10 +126,10 @@ pub fn tpch_08_parallel(
         .filter(|&i| region.1[i as usize] == VarChar::from_str("AMERICA").unwrap())
         .map(|i| (region.0[i as usize], Record::new((region.0[i as usize],))))
         .collect();
-    let mut n_h: HashMap<i32, i32> = (0..nation.4)
+    let mut n_h: HashMap<i32, Bool> = (0..nation.4)
         .into_par_iter()
         .filter(|&i| r_h.contains_key(&nation.2[i as usize]))
-        .map(|i| (nation.0[i as usize], 1i32))
+        .map(|i| (nation.0[i as usize], TRUE))
         .collect();
     let mut nationkey_to_name: HashMap<i32, Record<(VarChar<25>,)>> = (0..nation.4)
         .into_par_iter()
