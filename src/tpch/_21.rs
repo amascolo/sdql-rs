@@ -37,37 +37,37 @@ pub fn tpch_21(
             *(ptr as *mut Bool).add(orders.0[i as usize] as usize) = TRUE;
         });
     // TODO update code generator
-    // let mut l2_indexed: Vec<SmallVecDict<[i32; 0usize]>> = (0..lineitem.16).into_iter().fold(
+    // let mut l2_indexed: Vec<SmallVecDict<[i32; 4usize]>> = (0..lineitem.16).into_iter().fold(
     //     vec![SmallVecDict::default(); 6000001],
-    //     |mut acc: Vec<SmallVecDict<[i32; 0usize]>>, i| {
+    //     |mut acc: Vec<SmallVecDict<[i32; 4usize]>>, i| {
     //         acc[lineitem.0[i as usize] as usize][lineitem.2[i as usize]] += 1i32;
     //         acc
     //     },
     // );
-    let mut l2_indexed: Vec<SmallVecDict<[i32; 0usize]>> = vec![SmallVecDict::default(); 6000001];
+    let mut l2_indexed: Vec<SmallVecDict<[i32; 4usize]>> = vec![SmallVecDict::default(); 6000001];
     let ptr = l2_indexed.as_mut_ptr() as usize;
     (0..lineitem.16).into_iter().for_each(move |i| unsafe {
-        (&mut (*(ptr as *mut SmallVecDict<[i32; 0usize]>).add(lineitem.0[i as usize] as usize)))
+        (&mut (*(ptr as *mut SmallVecDict<[i32; 4usize]>).add(lineitem.0[i as usize] as usize)))
             [lineitem.2[i as usize]] += 1;
     });
     // TODO update code generator
-    // let mut l3_indexed: Vec<SmallVecDict<[i32; 0usize]>> = (0..lineitem.16)
+    // let mut l3_indexed: Vec<SmallVecDict<[i32; 4usize]>> = (0..lineitem.16)
     //     .into_iter()
     //     .filter(|&i| lineitem.11[i as usize] < lineitem.12[i as usize])
     //     .fold(
     //         vec![SmallVecDict::default(); 6000001],
-    //         |mut acc: Vec<SmallVecDict<[i32; 0usize]>>, i| {
+    //         |mut acc: Vec<SmallVecDict<[i32; 4usize]>>, i| {
     //             acc[lineitem.0[i as usize] as usize][lineitem.2[i as usize]] += 1i32;
     //             acc
     //         },
     //     );
-    let mut l3_indexed: Vec<SmallVecDict<[i32; 0usize]>> = vec![SmallVecDict::default(); 6000001];
+    let mut l3_indexed: Vec<SmallVecDict<[i32; 4usize]>> = vec![SmallVecDict::default(); 6000001];
     let ptr = l3_indexed.as_mut_ptr() as usize;
     (0..lineitem.16)
         .into_iter()
         .filter(|&i| lineitem.11[i as usize] < lineitem.12[i as usize])
         .for_each(move |i| unsafe {
-            (&mut *(ptr as *mut SmallVecDict<[i32; 0usize]>)
+            (&mut *(ptr as *mut SmallVecDict<[i32; 4usize]>)
                 .add(lineitem.0[i as usize] as usize))[lineitem.2[i as usize]] += 1;
         });
     let mut l1_probed: HashMap<Record<(VarChar<25>,)>, Record<(i32,)>> = (0..lineitem.16)
@@ -119,20 +119,20 @@ pub fn tpch_21_parallel(
     //         *(ptr as *mut Bool).add(orders.0[i as usize] as usize) = TRUE;
     //     });
     // // TODO update code generator
-    // let mut l2_indexed: Vec<SmallVecDict<[i32; 0usize]>> = vec![SmallVecDict::default(); 6000001];
+    // let mut l2_indexed: Vec<SmallVecDict<[i32; 4usize]>> = vec![SmallVecDict::default(); 6000001];
     // let ptr = l2_indexed.as_mut_ptr() as usize;
     // (0..lineitem.16).into_par_iter().for_each(|i| unsafe {
-    //     (&mut (*(ptr as *mut SmallVecDict<[i32; 0usize]>).add(lineitem.0[i as usize] as usize)))
+    //     (&mut (*(ptr as *mut SmallVecDict<[i32; 4usize]>).add(lineitem.0[i as usize] as usize)))
     //         [lineitem.2[i as usize]] += 1;
     // });
     // // TODO update code generator
-    // let mut l3_indexed: Vec<SmallVecDict<[i32; 0usize]>> = vec![SmallVecDict::default(); 6000001];
+    // let mut l3_indexed: Vec<SmallVecDict<[i32; 4usize]>> = vec![SmallVecDict::default(); 6000001];
     // let ptr = l3_indexed.as_mut_ptr() as usize;
     // (0..lineitem.16)
     //     .into_par_iter()
     //     .filter(|&i| lineitem.11[i as usize] < lineitem.12[i as usize])
     //     .for_each(|i| unsafe {
-    //         (&mut *(ptr as *mut SmallVecDict<[i32; 0usize]>)
+    //         (&mut *(ptr as *mut SmallVecDict<[i32; 4usize]>)
     //             .add(lineitem.0[i as usize] as usize))[lineitem.2[i as usize]] += 1;
     //     });
     // // FIXME would require SmallVecDict to be thread-safe
