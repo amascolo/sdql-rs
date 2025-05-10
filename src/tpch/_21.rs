@@ -118,14 +118,16 @@ pub fn tpch_21_parallel(
     //     .for_each(move |i| unsafe {
     //         *(ptr as *mut Bool).add(orders.0[i as usize] as usize) = TRUE;
     //     });
-    // // TODO update code generator
+    // // FIXME would require SmallVecDict to be thread-safe - runtime crash on borrow_mut()
+    // //  (note: sdqlpy's C++ solution used tbb::concurrent_vector for the inner vector)
     // let mut l2_indexed: Vec<SmallVecDict<[i32; 4usize]>> = vec![SmallVecDict::default(); 6000001];
     // let ptr = l2_indexed.as_mut_ptr() as usize;
     // (0..lineitem.16).into_par_iter().for_each(|i| unsafe {
     //     (&mut (*(ptr as *mut SmallVecDict<[i32; 4usize]>).add(lineitem.0[i as usize] as usize)))
     //         [lineitem.2[i as usize]] += 1;
     // });
-    // // TODO update code generator
+    // // FIXME would require SmallVecDict to be thread-safe - runtime crash on borrow_mut()
+    // //  (note: sdqlpy's C++ solution used tbb::concurrent_vector for the inner vector)
     // let mut l3_indexed: Vec<SmallVecDict<[i32; 4usize]>> = vec![SmallVecDict::default(); 6000001];
     // let ptr = l3_indexed.as_mut_ptr() as usize;
     // (0..lineitem.16)
@@ -135,7 +137,7 @@ pub fn tpch_21_parallel(
     //         (&mut *(ptr as *mut SmallVecDict<[i32; 4usize]>)
     //             .add(lineitem.0[i as usize] as usize))[lineitem.2[i as usize]] += 1;
     //     });
-    // // FIXME would require SmallVecDict to be thread-safe
+    // // FIXME would require SmallVecDict to be thread-safe - won't compile
     // let mut l1_probed: HashMap<Record<(VarChar<25>,)>, Record<(i32,)>> = (0..lineitem.16)
     //     .into_par_iter()
     //     .filter(|&i| {
