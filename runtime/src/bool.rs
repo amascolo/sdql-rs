@@ -24,6 +24,7 @@ pub const TRUE: Bool = Bool(true);
 #[display("{_0}")]
 pub struct Bool(bool);
 
+// note: += (therefore the newtype Bool) isn't needed for TPC-H queries since they all use unique()
 impl AddAssign for Bool {
     fn add_assign(&mut self, rhs: Self) {
         *self = Self(self.0 || rhs.0);

@@ -42,13 +42,9 @@ pub fn tpch_13(orders: &Orders, customer: &Customer) -> TypeQ13 {
             acc
         },
     );
-    c_h.into_iter().fold(
-        HashMap::default(),
-        |mut acc: HashMap<Record<(i32, i32)>, Bool>, (k, v)| {
-            acc[&Record::new((k.0, v.0))] += TRUE;
-            acc
-        },
-    )
+    c_h.into_iter()
+        .map(|(k, v)| (Record::new((k.0, v.0)), TRUE))
+        .collect()
 }
 
 pub fn tpch_13_parallel(orders: &Orders, customer: &Customer) -> TypeQ13 {
@@ -94,12 +90,6 @@ pub fn tpch_13_parallel(orders: &Orders, customer: &Customer) -> TypeQ13 {
         )
         .sum();
     c_h.into_par_iter()
-        .fold(
-            HashMap::default,
-            |mut acc: HashMap<Record<(i32, i32)>, Bool>, (k, v)| {
-                acc[&Record::new((k.0, v.0))] += TRUE;
-                acc
-            },
-        )
-        .sum()
+        .map(|(k, v)| (Record::new((k.0, v.0)), TRUE))
+        .collect()
 }
