@@ -79,6 +79,14 @@ pub fn tpch_22(customer: &Customer, orders: &Orders) -> TypeQ22 {
 }
 
 pub fn tpch_22_parallel(customer: &Customer, orders: &Orders) -> TypeQ22 {
+    // TODO experiment - consider switching to paradis if we can get it to work with i32
+    // use paradis::index::{narrow_access, IndexList};
+    // use paradis::rayon::create_par_iter;
+    // let orders: Vec<_> = orders.1.iter().copied().map(|i| i as usize).collect();
+    // // let indices = orders.check_unique().unwrap();
+    // let indices = unsafe { orders.assume_unique() };
+    // let access = narrow_access(o_h.as_mut_slice(), &indices).unwrap();
+    // create_par_iter(access).for_each(|flag| *flag = TRUE);
     // TODO update code generator
     let mut o_h = vec![Bool::default(); 150001];
     let ptr = o_h.as_mut_ptr() as usize;

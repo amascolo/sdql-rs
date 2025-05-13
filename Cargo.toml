@@ -20,6 +20,7 @@ chumsky = "0.10.1"
 derive_more = { version = "2.0.1", features = ["display"] }
 im-rc = "15.1.0"
 itertools = "0.14.0"
+#paradis = { version = "0.2.1", features = ["rayon"] } # TODO experiment
 prettyplease = "0.2"
 proc-macro2 = "1.0"
 quote = "1.0"
