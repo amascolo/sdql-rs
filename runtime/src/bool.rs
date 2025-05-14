@@ -1,7 +1,7 @@
 use approx::AbsDiffEq;
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
-use std::ops::{AddAssign, Deref};
+use std::ops::{AddAssign, Deref, DerefMut};
 use std::str::{FromStr, ParseBoolError};
 
 pub const FALSE: Bool = Bool(false);
@@ -44,6 +44,12 @@ impl Deref for Bool {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl DerefMut for Bool {
+    fn deref_mut(&mut self) -> &mut bool {
+        &mut self.0
     }
 }
 

@@ -15,6 +15,10 @@ pub fn tpch_22(customer: &Customer, orders: &Orders) -> TypeQ22 {
     //             acc
     //         });
     let mut o_h = vec![Bool::default(); 150001];
+    // TODO this also works - but sequential only (unless you use AtomicBool + Ordering::Relaxed)
+    // (0..orders.9).into_iter().for_each(|i| {
+    //     *o_h[orders.1[i as usize] as usize] = *TRUE;
+    // });
     let ptr = o_h.as_mut_ptr() as usize;
     (0..orders.9).into_iter().for_each(move |i| unsafe {
         *(ptr as *mut Bool).add(orders.1[i as usize] as usize) = TRUE;
