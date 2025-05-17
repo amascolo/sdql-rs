@@ -41,3 +41,6 @@ sdql_macros = { path = "macros" }
 [[bench]]
 name = "tpch"
 harness = false
+
+[profile.bench]
+inherits = "release"

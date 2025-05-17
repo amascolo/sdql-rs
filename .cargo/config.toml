@@ -1,2 +1,5 @@
 [alias]
 compile = "run --release --bin main"
+
+[target.'cfg(not(debug_assertions))']
+rustflags = ["-C", "target-cpu=native"]
