@@ -34,7 +34,7 @@ strum_macros = "0.27.1" # TODO optional, only for binaries
 
 [dev-dependencies]
 approx = { package = "approxim", version = "0.6.4", features = ["ordered-float", "tuple_impl"] }
-criterion = "0.5.1"
+criterion = "0.6.0"
 
 sdql_macros = { path = "macros" }
 
