@@ -1,6 +1,6 @@
-use sdql::tpch::types::{TypeQ1, TypeQ18, TypeQ3, TypeQ5, TypeQ6, TypeQ9};
+use sdql::tpch::types::{TypeQ1, TypeQ3, TypeQ5, TypeQ6, TypeQ9, TypeQ18};
 use sdql_macros::sdql_static;
-use sdql_runtime::{date, HashMap, OrderedFloat, Record, FALSE, TRUE};
+use sdql_runtime::{FALSE, HashMap, OrderedFloat, Record, TRUE, date};
 
 #[test]
 fn sdql_static() {
@@ -23,7 +23,7 @@ fn sdql_static() {
     );
     assert_eq!(
         sdql_static!({<false, true, 1, -1, 3.14, date(20001231)> -> true}),
-        HashMap::<_, _>::from_iter([(
+        HashMap::<_, _>::from([(
             sdql_static!(<false, true, 1, -1, 3.14, date(20001231)>),
             TRUE
         )])

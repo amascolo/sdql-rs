@@ -21,7 +21,7 @@ pub fn tpch_11(supplier: &Supplier, partsupp: &Partsupp, nation: &Nation) -> Typ
         .map(|i| {
             Record::new((
                 partsupp.3[i as usize] * partsupp.2[i as usize] * OrderedFloat(0.0001f64),
-                HashMap::from_iter([(
+                HashMap::from([(
                     partsupp.0[i as usize],
                     partsupp.3[i as usize] * partsupp.2[i as usize],
                 )]),
@@ -53,7 +53,7 @@ pub fn tpch_11_parallel(supplier: &Supplier, partsupp: &Partsupp, nation: &Natio
         .map(|i| {
             Record::new((
                 partsupp.3[i as usize] * partsupp.2[i as usize] * OrderedFloat(0.0001f64),
-                HashMap::from_iter([(
+                HashMap::from([(
                     partsupp.0[i as usize],
                     partsupp.3[i as usize] * partsupp.2[i as usize],
                 )]),

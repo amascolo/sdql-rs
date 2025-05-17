@@ -174,7 +174,7 @@ mod sf_0_01 {
         let actual: TypeQ19 = bincode::deserialize(&buffer).unwrap();
         // FIXME
         // let expected = sdql_static!(include!("tests/results/tpch/SF_0.01/19.sdql"));
-        let expected = HashMap::from_iter([(Record::new((OrderedFloat(22923.028),)), TRUE)]);
+        let expected = HashMap::from([(Record::new((OrderedFloat(22923.028),)), TRUE)]);
         assert_abs_diff_eq!(actual, expected, epsilon = ((1e-4,), ()));
     }
 
@@ -373,7 +373,7 @@ mod sf_1 {
         let actual: TypeQ19 = bincode::deserialize(&buffer).unwrap();
         // FIXME
         // let expected = sdql_static!(include!("tests/results/tpch/SF_1/19.sdql"));
-        let expected = HashMap::from_iter([(Record::new((OrderedFloat(3083843.0578),)), TRUE)]);
+        let expected = HashMap::from([(Record::new((OrderedFloat(3083843.0578),)), TRUE)]);
         assert_abs_diff_eq!(actual, expected, epsilon = ((1e-4,), ()));
     }
 
@@ -575,7 +575,7 @@ mod parallel {
         let actual: TypeQ19 = bincode::deserialize(&buffer).unwrap();
         // FIXME
         // let expected = sdql_static!(include!("tests/results/tpch/SF_1/19.sdql"));
-        let expected = HashMap::from_iter([(Record::new((OrderedFloat(3083843.0578),)), TRUE)]);
+        let expected = HashMap::from([(Record::new((OrderedFloat(3083843.0578),)), TRUE)]);
         assert_abs_diff_eq!(actual, expected, epsilon = ((1e-4,), ()));
     }
 

@@ -2,7 +2,6 @@ use crate::bool::Bool;
 use crate::default::DefaultRef;
 use crate::semiring::Addition;
 use approx::AbsDiffEq;
-use gxhash::GxBuildHasher;
 use hashbrown::hash_map::rayon::IntoParIter;
 use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
@@ -14,9 +13,7 @@ use std::ops::{Add, AddAssign, Deref, DerefMut, Index, IndexMut};
 pub type HashSet<T, const ADD: Addition = { Addition::Plus }> = HashMap<T, Bool, ADD>;
 
 #[derive(Clone, Default, PartialEq, Deserialize, Serialize)]
-pub struct HashMap<K, V, const ADD: Addition = { Addition::Plus }>(
-    hashbrown::HashMap<K, V, GxBuildHasher>,
-)
+pub struct HashMap<K, V, const ADD: Addition = { Addition::Plus }>(hashbrown::HashMap<K, V>)
 where
     K: Eq + Hash;
 
@@ -51,21 +48,18 @@ where
     K: Eq + Hash,
 {
     pub fn new() -> Self {
-        Self(hashbrown::HashMap::with_hasher(GxBuildHasher::default()))
+        Self(hashbrown::HashMap::new())
     }
 
     pub fn with_capacity(capacity: usize) -> Self {
-        Self(hashbrown::HashMap::with_capacity_and_hasher(
-            capacity,
-            GxBuildHasher::default(),
-        ))
+        Self(hashbrown::HashMap::with_capacity(capacity))
     }
 }
 
 impl<K, V, T, const ADD: Addition> From<T> for HashMap<K, V, ADD>
 where
     K: Eq + Hash,
-    T: Into<hashbrown::HashMap<K, V, GxBuildHasher>>,
+    T: Into<hashbrown::HashMap<K, V>>,
 {
     fn from(value: T) -> Self {
         Self(value.into())
@@ -137,7 +131,7 @@ impl<K, V, const ADD: Addition> Deref for HashMap<K, V, ADD>
 where
     K: Eq + Hash,
 {
-    type Target = hashbrown::HashMap<K, V, GxBuildHasher>;
+    type Target = hashbrown::HashMap<K, V>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -255,7 +249,7 @@ mod tests {
 
     #[test]
     fn add_assign() {
-        let mut map: HashMap<_, _> = [((), 0)].into_iter().collect();
+        let mut map: HashMap<_, _> = [((), 0)].into();
         assert_eq!(map[&()], 0);
         map[&()] += 1;
         assert_eq!(map[&()], 1);
