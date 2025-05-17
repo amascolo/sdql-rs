@@ -95,7 +95,7 @@ pub fn tpch_22_parallel(customer: &Customer, orders: &Orders) -> TypeQ22 {
     //         .map(|i| i as usize)
     //         .collect::<Vec<_>>(),
     // );
-    // // let indices = orders.check_unique().unwrap();
+    // // let indices = orders.1.check_unique().unwrap();
     // let indices = unsafe { orders.1.assume_unique() };
     // let access = narrow_access(o_h.as_mut_slice(), &indices).unwrap();
     // create_par_iter(access).for_each(|flag| *flag = TRUE);
