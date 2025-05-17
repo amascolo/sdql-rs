@@ -58,7 +58,7 @@ pub fn tpch_19(lineitem: &Lineitem, part: &Part) -> TypeQ19 {
         })
         .map(|(i, p_brand)| lineitem.5[i as usize] * (OrderedFloat(1f64) - lineitem.6[i as usize]))
         .sum();
-    HashMap::from([(Record::new((res,)), TRUE)])
+    HashMap::from_iter([(Record::new((res,)), TRUE)])
 }
 
 pub fn tpch_19_parallel(lineitem: &Lineitem, part: &Part) -> TypeQ19 {
@@ -114,5 +114,5 @@ pub fn tpch_19_parallel(lineitem: &Lineitem, part: &Part) -> TypeQ19 {
         })
         .map(|(i, p_brand)| lineitem.5[i as usize] * (OrderedFloat(1f64) - lineitem.6[i as usize]))
         .sum();
-    HashMap::from([(Record::new((res,)), TRUE)])
+    HashMap::from_iter([(Record::new((res,)), TRUE)])
 }

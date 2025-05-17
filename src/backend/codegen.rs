@@ -462,7 +462,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
             let r#type = to_type(hint);
             let key = ts_typed::<PARALLEL>(entry.key);
             let val = ts_typed::<PARALLEL>(entry.val);
-            quote! { #r#type::from([(#key, #val)]) }
+            quote! { #r#type::from_iter([(#key, #val)]) }
         }
         ExprFMF::Dom { .. } => unimplemented!(),
         ExprFMF::If { r#if, then, r#else } => {
