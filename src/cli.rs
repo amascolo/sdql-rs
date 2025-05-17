@@ -43,6 +43,7 @@ pub fn filename(code: &str) -> String {
 pub fn run(name: &str, code: &str) -> io::Result<Vec<u8>> {
     write_if_different(name, code)?; // avoids triggering recompilation
     let output = Command::new("cargo")
+        .env("RUSTFLAGS", "-C target-cpu=native")
         .arg("run")
         .arg("--release")
         .arg("--quiet")
