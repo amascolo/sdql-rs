@@ -1,3 +1,6 @@
+Thesis experiments, not my Magnum Opus, run with `cargo bench` and print results with `./print_benches.sh`.
+
+<!--
 ### Usage
 
 ```
@@ -9,7 +12,4 @@ e.g.
 ```
 cargo compile progs/tpch/6.sdql
 ```
-
-```
-cargo interpret progs/tpch/6.sdql
-```
+-->
