@@ -1,5 +1,8 @@
+import os
 import warnings
 from enum import Enum
+from pathlib import Path
+from typing import Final
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -8,6 +11,8 @@ import seaborn as sns
 warnings.filterwarnings(
     "ignore", category=FutureWarning, message=".*length-1 list-like.*get_group.*"
 )
+
+DIR: Final[str] = os.path.dirname(os.path.realpath(__file__))
 
 
 class Engine(Enum):
@@ -22,12 +27,10 @@ def plot(df: pd.DataFrame, us: Engine, cmp: Engine) -> None:
     us = us.value
     cmp = cmp.value
 
+    df = df.copy()
     df = df[[us, cmp]]
     df = df.head(22)
-
-    df = df.copy()
     df["Query"] = "Q" + (df.index + 1).astype(str)
-
     df_melt = df.melt(
         id_vars="Query",
         value_vars=[us, cmp],
@@ -64,7 +67,9 @@ def plot(df: pd.DataFrame, us: Engine, cmp: Engine) -> None:
     )
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.show()
+
+    path = Path(DIR) / f"{us} vs {cmp}.pdf"
+    plt.savefig(path, bbox_inches="tight")
 
 
 if __name__ == "__main__":
