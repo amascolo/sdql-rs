@@ -14,9 +14,9 @@ path = "src/main.rs"
 [dependencies]
 bincode = "1.3.3"
 #bincode = { version = "2.0.1", features = ["serde"] } # TODO
-clap = { version = "4.5.28", features = ["derive"] }
+clap = { version = "4.5.49", features = ["derive"] }
 csv = "1.3.1" # TODO eventually get rid, it's for runtime
-chumsky = "0.10.1"
+chumsky = "0.11.1"
 derive_more = { version = "2.0.1", features = ["display"] }
 im-rc = "15.1.0"
 itertools = "0.14.0"
@@ -24,9 +24,9 @@ itertools = "0.14.0"
 prettyplease = "0.2"
 proc-macro2 = "1.0"
 quote = "1.0"
-rayon = "1.10.0" # TODO eventually get rid, it's for runtime
+rayon = "1.11.0" # TODO eventually get rid, it's for runtime
 syn = { version = "2.0", features = ["extra-traits", "full"] }
-strum = "0.27.1"
+strum = "0.27.2"
 time = { version = "0.3.40", features = ["parsing"] }
 
 sdql_runtime = { path = "runtime" }
@@ -34,7 +34,7 @@ strum_macros = "0.27.1" # TODO optional, only for binaries
 
 [dev-dependencies]
 approx = { package = "approxim", version = "0.6.4", features = ["ordered-float", "tuple_impl"] }
-criterion = "0.6.0"
+criterion = "0.7.0"
 
 sdql_macros = { path = "macros" }
 
