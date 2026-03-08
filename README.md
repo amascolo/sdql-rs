@@ -20,7 +20,7 @@ Covers TPC-H queries from:
 
 * A. Shaikhha, M. Huot, S. Hashemian, A. Kaboli, **A. Mascolo**, M. Nikolic, J. Smith, D. Olteanu.\
   *A Semi-ring Dictionary Query Language for Data Science*\
-  www.research.ed.ac.uk/en/publications/a-semi-ring-dictionary-query-language-for-data-science
+  [www.research.ed.ac.uk/en/publications/a-semi-ring-dictionary-query-language-for-data-science](https://web.archive.org/web/20250517094429/https://www.pure.ed.ac.uk/ws/portalfiles/portal/458590328/PAPERS_2024_JFP_SDQL_1_.pdf)
 
 JOB and LSQB queries are in:
 
