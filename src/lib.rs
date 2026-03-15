@@ -1,4 +1,3 @@
-#![feature(assert_matches)]
 #![feature(box_patterns)]
 #![feature(impl_trait_in_bindings)]
 

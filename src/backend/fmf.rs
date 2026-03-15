@@ -4,7 +4,7 @@ use crate::ir::expr::{BinOp, DictEntry, External, RecordValue, UnaryOp};
 use crate::ir::r#type::{DictHint, Field, Type};
 use im_rc::vector;
 use sdql_runtime::Date;
-use std::assert_matches::debug_assert_matches;
+use std::debug_assert_matches;
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq)]
