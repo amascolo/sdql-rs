@@ -107,7 +107,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
                 .map(|val| {
                     let r#type = match val.r#type {
                         Type::Dict {
-                            key: box Type::Int,
+                            key: deref!(Type::Int),
                             val,
                             hint: Some(DictHint::Vec { capacity: None }),
                         } => *val,
@@ -174,31 +174,31 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
         ExprFMF::FMF {
             op: OpFMF::Filter, args,
             inner: Typed {
-                val: Spanned(box ExprFMF::Get {
+                val: Spanned(deref!(ExprFMF::Get {
                     lhs: Typed {
-                        val: Spanned(box ExprFMF::Dom { expr }, _),
+                        val: Spanned(deref!(ExprFMF::Dom { expr }), _),
                         r#type: Type::Dict { hint: None | Some(DictHint::HashDict { .. }), .. },
                     },
                     rhs,
-                }, _),
+                }), _),
                 r#type: _,
             },
             cont: Some(Typed {
-                val: Spanned(box ExprFMF::FMF {
+                val: Spanned(deref!(ExprFMF::FMF {
                     op: OpFMF::FlatMap, args: _,
                     inner: Typed {
-                        val: Spanned(box ExprFMF::Sum {
+                        val: Spanned(deref!(ExprFMF::Sum {
                             key, val,
                             head: Typed {
-                                val: Spanned(box ExprFMF::Get { lhs: _lhs_head, rhs: _rhs_head }, _),
+                                val: Spanned(deref!(ExprFMF::Get { lhs: _lhs_head, rhs: _rhs_head }), _),
                                 r#type: _,
                             },
                             body,
-                        }, _),
+                        }), _),
                         r#type: _,
                     },
                     cont: _,
-                }, _),
+                }), _),
                 r#type: _,
             }),
         }
@@ -372,7 +372,7 @@ fn ts<const PARALLEL: bool>(expr: ExprFMF<'_>) -> TokenStream {
         ExprFMF::Get {
             lhs:
                 Typed {
-                    val: Spanned(box ExprFMF::Dom { expr }, _),
+                    val: Spanned(deref!(ExprFMF::Dom { expr }), _),
                     r#type: _,
                 },
             rhs,

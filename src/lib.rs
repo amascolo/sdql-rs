@@ -1,4 +1,4 @@
-#![feature(box_patterns)]
+#![feature(deref_patterns)]
 #![feature(impl_trait_in_bindings)]
 
 pub mod backend;

@@ -218,7 +218,7 @@ fn from<'src>(
                     val: "_",
                     head:
                         head @ Typed {
-                            val: Spanned(box TypedExpr::Range { .. }, _),
+                            val: Spanned(deref!(TypedExpr::Range { .. }), _),
                             r#type: _,
                         },
                     body,
