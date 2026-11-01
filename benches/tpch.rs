@@ -385,7 +385,7 @@ fn benchmark_tpch_20(c: &mut Criterion) {
 
 fn benchmark_tpch_21(c: &mut Criterion) {
     let path = |table| format!("datasets/tpch_datasets/SF_1/{table}.tbl");
-    let supplier = read_supplier()(&path("lineitem")).unwrap();
+    let supplier = read_supplier()(&path("supplier")).unwrap();
     let lineitems = read_lineitems()(&path("lineitem")).unwrap();
     let orders = read_orders()(&path("orders")).unwrap();
     let nation = read_nation()(&path("nation")).unwrap();
